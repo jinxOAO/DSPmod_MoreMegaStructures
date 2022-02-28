@@ -1,0 +1,10 @@
+D:\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\UniverseScience.dll
+D:\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\UniverseScience.pdb
+D:\Work\CSFile\UniverseScience\Water electrolysis\obj\Debug\UniverseScience.csprojAssemblyReference.cache
+D:\Work\CSFile\UniverseScience\Water electrolysis\obj\Debug\UniverseScience.csproj.CoreCompileInputs.cache
+D:\Work\CSFile\UniverseScience\Water electrolysis\obj\Debug\UniverseScience.dll
+D:\Work\CSFile\UniverseScience\Water electrolysis\obj\Debug\UniverseScience.pdb
+D:\Work\CSFile\RecycleFuelRodsTempPatch\Water electrolysis\obj\Debug\UniverseScience.csprojAssemblyReference.cache
+D:\Work\CSFile\RecycleFuelRodsTempPatch\Water electrolysis\obj\Debug\UniverseScience.csproj.CoreCompileInputs.cache
+D:\Work\CSFile\RecycleFuelRodsTempPatch\Water electrolysis\obj\Debug\UniverseScience.dll
+D:\Work\CSFile\RecycleFuelRodsTempPatch\Water electrolysis\obj\Debug\UniverseScience.pdb

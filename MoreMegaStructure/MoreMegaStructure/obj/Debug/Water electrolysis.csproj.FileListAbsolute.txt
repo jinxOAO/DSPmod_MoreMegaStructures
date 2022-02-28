@@ -1,0 +1,11 @@
+D:\Work\CSFile\Water electrolysis\Water electrolysis\obj\Debug\Water electrolysis.csprojAssemblyReference.cache
+D:\Work\CSFile\Water electrolysis\Water electrolysis\obj\Debug\Water electrolysis.csproj.CoreCompileInputs.cache
+D:\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\Water electrolysis.dll
+D:\Work\CSFile\Water electrolysis\Water electrolysis\obj\Debug\Water electrolysis.dll
+D:\Work\CSFile\Water electrolysis\Water electrolysis\obj\Debug\Water electrolysis.pdb
+D:\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\SuperCollectors.dll
+D:\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\SuperCollectors.pdb
+D:\Work\CSFile\OrbitalCollectorMKII\Water electrolysis\obj\Debug\Water electrolysis.csprojAssemblyReference.cache
+D:\Work\CSFile\OrbitalCollectorMKII\Water electrolysis\obj\Debug\Water electrolysis.csproj.CoreCompileInputs.cache
+D:\Work\CSFile\OrbitalCollectorMKII\Water electrolysis\obj\Debug\SuperCollectors.dll
+D:\Work\CSFile\OrbitalCollectorMKII\Water electrolysis\obj\Debug\SuperCollectors.pdb

@@ -1,0 +1,10 @@
+D:\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\MoreMegaStructure.dll
+D:\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\MoreMegaStructure.pdb
+D:\Work\CSFile\MoreMegaStructure\Water electrolysis\obj\Debug\MoreMegaStructure.csprojAssemblyReference.cache
+D:\Work\CSFile\MoreMegaStructure\Water electrolysis\obj\Debug\MoreMegaStructure.csproj.CoreCompileInputs.cache
+D:\Work\CSFile\MoreMegaStructure\Water electrolysis\obj\Debug\MoreMegaStructure.dll
+D:\Work\CSFile\MoreMegaStructure\Water electrolysis\obj\Debug\MoreMegaStructure.pdb
+D:\Work\CSFile\MoreMegaStructure\MoreMegaStructure\obj\Debug\MoreMegaStructure.csprojAssemblyReference.cache
+D:\Work\CSFile\MoreMegaStructure\MoreMegaStructure\obj\Debug\MoreMegaStructure.csproj.CoreCompileInputs.cache
+D:\Work\CSFile\MoreMegaStructure\MoreMegaStructure\obj\Debug\MoreMegaStructure.dll
+D:\Work\CSFile\MoreMegaStructure\MoreMegaStructure\obj\Debug\MoreMegaStructure.pdb

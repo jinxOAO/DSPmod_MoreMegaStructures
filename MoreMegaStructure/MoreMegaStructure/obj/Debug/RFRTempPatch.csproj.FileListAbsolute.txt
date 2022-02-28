@@ -1,0 +1,5 @@
+D:\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\RFRTempPatch.dll
+D:\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\RFRTempPatch.pdb
+D:\Work\CSFile\RecycleFuelRodsTempPatch\Water electrolysis\obj\Debug\RFRTempPatch.csproj.CoreCompileInputs.cache
+D:\Work\CSFile\RecycleFuelRodsTempPatch\Water electrolysis\obj\Debug\RFRTempPatch.dll
+D:\Work\CSFile\RecycleFuelRodsTempPatch\Water electrolysis\obj\Debug\RFRTempPatch.pdb

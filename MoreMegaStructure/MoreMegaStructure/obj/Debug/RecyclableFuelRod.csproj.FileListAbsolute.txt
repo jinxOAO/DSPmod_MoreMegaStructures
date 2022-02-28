@@ -1,0 +1,6 @@
+D:\Work\CSFile\RecyclableFuelRods\Water electrolysis\obj\Debug\RecyclableFuelRod.csprojAssemblyReference.cache
+D:\Work\CSFile\RecyclableFuelRods\Water electrolysis\obj\Debug\RecyclableFuelRod.csproj.CoreCompileInputs.cache
+D:\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\RecyclableFuelRod.dll
+D:\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\RecyclableFuelRod.pdb
+D:\Work\CSFile\RecyclableFuelRods\Water electrolysis\obj\Debug\RecyclableFuelRod.dll
+D:\Work\CSFile\RecyclableFuelRods\Water electrolysis\obj\Debug\RecyclableFuelRod.pdb

@@ -1,0 +1,6 @@
+D:\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\SuperCollectors.dll
+D:\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\SuperCollectors.pdb
+D:\Work\CSFile\OrbitalCollectorMKII\Water electrolysis\obj\Debug\SuperCollectors.csproj.CoreCompileInputs.cache
+D:\Work\CSFile\OrbitalCollectorMKII\Water electrolysis\obj\Debug\SuperCollectors.dll
+D:\Work\CSFile\OrbitalCollectorMKII\Water electrolysis\obj\Debug\SuperCollectors.pdb
+D:\Work\CSFile\OrbitalCollectorMKII\Water electrolysis\obj\Debug\SuperCollectors.csprojAssemblyReference.cache
