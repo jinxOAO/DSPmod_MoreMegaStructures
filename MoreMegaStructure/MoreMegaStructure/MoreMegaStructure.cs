@@ -581,21 +581,25 @@ namespace MoreMegaStructure
                 }
 
                 int researchTechId = num;
-                long baseHashP = (__instance.energyGenCurrentTick - __instance.energyReqCurrentTick) / HashGenDivisor;
-                long HashP = baseHashP * history.techSpeed;//默认情况下每tick增加这么多的研究哈希值
-                HashP = (HashP < ts.hashNeeded - ts.hashUploaded) ? HashP : (ts.hashNeeded - ts.hashUploaded - 1);//但每次增加的值不会达到最终需求点数，总会差一点。
+                long HashP = (__instance.energyGenCurrentTick - __instance.energyReqCurrentTick) * history.techSpeed / HashGenDivisor;
+                // 先乘后除 避免在研究速度有加成的时候，被抹去过多的小数，导致数值不平滑
+                //long baseHashP = (__instance.energyGenCurrentTick - __instance.energyReqCurrentTick) / HashGenDivisor;
+                //long HashP = baseHashP * history.techSpeed;//默认情况下每tick增加这么多的研究哈希值
+                //HashP = (HashP < ts.hashNeeded - ts.hashUploaded) ? HashP : (ts.hashNeeded - ts.hashUploaded - 1);//但每次增加的值不会达到最终需求点数，总会差一点。
 
                 //下面的if其实没必要。阻止锅盖直接完成科技的全部哈希值，而是剩下最后一点。如果完成全部的hash会出现各种错误。因此最后一点hash交由游戏本身的研究所或者机甲研究完成科技的解锁。
-                if (ts.hashUploaded < ts.hashNeeded - HashP)
-                {
-                    ts.hashUploaded += HashP;
-                    universeMatrixPointUploaded += (long)ts.uPointPerHash * HashP;
-                    techHashedThisFrame += (int)HashP;
-                }
+                //if (ts.hashUploaded < ts.hashNeeded - HashP)
+                //{
+                //    ts.hashUploaded += HashP;
+                //    universeMatrixPointUploaded += (long)ts.uPointPerHash * HashP;
+                //    techHashedThisFrame += (int)HashP;
+                //}
+                // 使用这个方法增加的hash可以正确升级/解锁科技，目前没有发现副作用
+                history.AddTechHash(HashP);
 
-                history.techStates[researchTechId] = ts;
-                statistics.techHashedThisFrame = techHashedThisFrame;
-                history.universeMatrixPointUploaded = universeMatrixPointUploaded;
+                //history.techStates[researchTechId] = ts;
+                //statistics.techHashedThisFrame = techHashedThisFrame;
+                //history.universeMatrixPointUploaded = universeMatrixPointUploaded;
                 //如果找到了工厂，就记录数据面板研究点数
                 if (factoryProductionStat != null)
                 {
@@ -946,14 +950,16 @@ namespace MoreMegaStructure
             {
                 if (StarMegaStructureType[curDysonSphere.starData.id - 1] == 2)//如果是科学枢纽
                 {
-                    long baseSpeed = (curDysonSphere.energyGenCurrentTick - curDysonSphere.energyReqCurrentTick) / HashGenDivisor * 60L;
-                    RightMaxPowGenValueText.text = Capacity2Str(baseSpeed * GameMain.history.techSpeed) + "H/s";
+                    long baseSpeed = (curDysonSphere.energyGenCurrentTick - curDysonSphere.energyReqCurrentTick) * GameMain.history.techSpeed / HashGenDivisor * 60L;
+                    // 先乘后除 避免在研究速度有加成的时候，被抹去过多的小数，导致数值不平滑
+                    // long baseSpeed = (curDysonSphere.energyGenCurrentTick - curDysonSphere.energyReqCurrentTick) / HashGenDivisor * 60L * GameMain.history.techSpeed ;
+                    RightMaxPowGenValueText.text = Capacity2Str(baseSpeed) + " H/s";
                 }
                 else if (StarMegaStructureType[curDysonSphere.starData.id - 1] == 3)//如果是折跃场广播阵列
                 {
                     long DysonEnergy = (curDysonSphere.energyGenCurrentTick - curDysonSphere.energyReqCurrentTick) / WarpAccDivisor;
                     DysonEnergy = DysonEnergy > WarpAccMax ? WarpAccMax : DysonEnergy;
-                    RightMaxPowGenValueText.text = Capacity2SpeedAcc((int)DysonEnergy) + "ly/s";
+                    RightMaxPowGenValueText.text = Capacity2SpeedAcc((int)DysonEnergy) + " ly/s";
                 }
             }
             catch (Exception)
