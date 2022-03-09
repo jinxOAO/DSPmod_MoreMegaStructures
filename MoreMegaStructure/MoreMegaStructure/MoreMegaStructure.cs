@@ -29,7 +29,7 @@ namespace MoreMegaStructure
         /// mod版本会进行存档
         /// </summary>
         public static int modVersion = 100;
-        public static bool CompatibilityPatchUnlocked = true;
+        public static bool CompatibilityPatchUnlocked = false;
         public static bool GenesisCompatibility = false;
 
 
@@ -38,7 +38,9 @@ namespace MoreMegaStructure
         public static string GUID = "Gnimaerd.DSP.plugin.MoreMegaStructure";
         public static string MODID_tab = "MegaStructures";
         public static int pagenum = 3;
-        public static long HashGenDivisor = 4000000L; //巨构能量转换为哈希点数的除数，每帧hash = 巨构每帧能量 / 此值
+        public static long HashGenDivisor = 40000000L; //巨构能量转换为哈希点数的除数，每帧hash = 巨构每帧能量 / 此值 * (HashBaseSpeedScale + 1)，每级研究速度科技则等于巨构每帧能量 / 此值 * HashBonusPerLevel
+        public static int HashBasicSpeedScale = 99;
+        public static int HashBonusPerLevel = 1;
         public static long WarpAccDivisor = 10000000L; //计算曲速倍率加成时，每帧巨构能量先除以这个数。如果是10^6，代表每60MW提供100%曲速。此值越大，每MW提供的加速效果越少。
         public static int WarpAccMax = 5000; //巨构提供的最大曲速倍数
         //public static Color defaultType = new Color(0.566f, 0.915f, 1f, 0.07f); //原本是按钮的颜色，后来因为UIButton的鼠标移入移出事件我不会改，那个会扰乱按钮颜色的设定，所以不再用按钮颜色，改用文字颜色
@@ -193,7 +195,7 @@ namespace MoreMegaStructure
             iconQuickCollider = Resources.Load<Sprite>("Assets/MegaStructureTab/Rcollider");
             iconQuickLab = Resources.Load<Sprite>("Assets/MegaStructureTab/Rlab");
             iconQuickPLog = Resources.Load<Sprite>("Assets/MegaStructureTab/Rlogistic");
-            iconQuickILog = Resources.Load<Sprite>("Assets/MegaStructureTab/Rislogistic");
+            iconQuickILog = Resources.Load<Sprite>("Assets/MegaStructureTab/Rstellalogistic");
             iconQuickPower = Resources.Load<Sprite>("Assets/MegaStructureTab/Rpower");
             iconQuickReactor = Resources.Load<Sprite>("Assets/MegaStructureTab/Rreactor");
             iconQuickRefinery = Resources.Load<Sprite>("Assets/MegaStructureTab/Rrefinery");
@@ -581,25 +583,25 @@ namespace MoreMegaStructure
                 }
 
                 int researchTechId = num;
-                long HashP = (__instance.energyGenCurrentTick - __instance.energyReqCurrentTick) * history.techSpeed / HashGenDivisor;
-                // 先乘后除 避免在研究速度有加成的时候，被抹去过多的小数，导致数值不平滑
+                long HashP = (__instance.energyGenCurrentTick - __instance.energyReqCurrentTick) * (HashBasicSpeedScale + HashBonusPerLevel * history.techSpeed) / HashGenDivisor;
                 //long baseHashP = (__instance.energyGenCurrentTick - __instance.energyReqCurrentTick) / HashGenDivisor;
-                //long HashP = baseHashP * history.techSpeed;//默认情况下每tick增加这么多的研究哈希值
-                //HashP = (HashP < ts.hashNeeded - ts.hashUploaded) ? HashP : (ts.hashNeeded - ts.hashUploaded - 1);//但每次增加的值不会达到最终需求点数，总会差一点。
+                //long HashP = baseHashP * (HashBasicSpeedScale + HashBonusPerLevel * history.techSpeed);//默认情况下每tick增加这么多的研究哈希值
+
+                HashP = (HashP < ts.hashNeeded - ts.hashUploaded) ? HashP : (ts.hashNeeded - ts.hashUploaded - 1);//但每次增加的值不会达到最终需求点数，总会差一点。
 
                 //下面的if其实没必要。阻止锅盖直接完成科技的全部哈希值，而是剩下最后一点。如果完成全部的hash会出现各种错误。因此最后一点hash交由游戏本身的研究所或者机甲研究完成科技的解锁。
-                //if (ts.hashUploaded < ts.hashNeeded - HashP)
-                //{
-                //    ts.hashUploaded += HashP;
-                //    universeMatrixPointUploaded += (long)ts.uPointPerHash * HashP;
-                //    techHashedThisFrame += (int)HashP;
-                //}
-                // 使用这个方法增加的hash可以正确升级/解锁科技，目前没有发现副作用
-                history.AddTechHash(HashP);
+                if (ts.hashUploaded < ts.hashNeeded - HashP)
+                {
+                    ts.hashUploaded += HashP;
+                    universeMatrixPointUploaded += (long)ts.uPointPerHash * HashP;
+                    techHashedThisFrame += (int)HashP;
+                }
 
-                //history.techStates[researchTechId] = ts;
-                //statistics.techHashedThisFrame = techHashedThisFrame;
-                //history.universeMatrixPointUploaded = universeMatrixPointUploaded;
+                //history.AddTechHash(HashP);
+
+                history.techStates[researchTechId] = ts;
+                statistics.techHashedThisFrame = techHashedThisFrame;
+                history.universeMatrixPointUploaded = universeMatrixPointUploaded;
                 //如果找到了工厂，就记录数据面板研究点数
                 if (factoryProductionStat != null)
                 {
@@ -666,7 +668,12 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(SiloComponent), "InternalUpdate")]
         public static void SiloUpdatePatch(ref SiloComponent __instance)
         {
-            int starIndex = __instance.planetId / 100 - 1;
+            int planetId = __instance.planetId;
+            int starIndex = planetId / 100 - 1;
+            PlanetFactory factory = GameMain.galaxy.stars[starIndex].planets[planetId % 100 - 1].factory;
+            int gmProtoId = factory.entityPool[__instance.entityId].protoId;
+            if (gmProtoId != 2312) return; //只修改原始火箭发射器
+
             if (starIndex < 0 || starIndex > 999)
             {
                 Debug.LogWarning("SiloInternalUpdate Patch Error because starIndex out of range.");
@@ -950,16 +957,15 @@ namespace MoreMegaStructure
             {
                 if (StarMegaStructureType[curDysonSphere.starData.id - 1] == 2)//如果是科学枢纽
                 {
-                    long baseSpeed = (curDysonSphere.energyGenCurrentTick - curDysonSphere.energyReqCurrentTick) * GameMain.history.techSpeed / HashGenDivisor * 60L;
-                    // 先乘后除 避免在研究速度有加成的时候，被抹去过多的小数，导致数值不平滑
-                    // long baseSpeed = (curDysonSphere.energyGenCurrentTick - curDysonSphere.energyReqCurrentTick) / HashGenDivisor * 60L * GameMain.history.techSpeed ;
-                    RightMaxPowGenValueText.text = Capacity2Str(baseSpeed) + " H/s";
+                    //long baseSpeed = (curDysonSphere.energyGenCurrentTick - curDysonSphere.energyReqCurrentTick) / HashGenDivisor * 60L;
+                    long HashP = (curDysonSphere.energyGenCurrentTick - curDysonSphere.energyReqCurrentTick) * (HashBasicSpeedScale + HashBonusPerLevel * GameMain.history.techSpeed) / HashGenDivisor;
+                    RightMaxPowGenValueText.text = Capacity2Str(HashP*60) + "H/s";
                 }
                 else if (StarMegaStructureType[curDysonSphere.starData.id - 1] == 3)//如果是折跃场广播阵列
                 {
                     long DysonEnergy = (curDysonSphere.energyGenCurrentTick - curDysonSphere.energyReqCurrentTick) / WarpAccDivisor;
                     DysonEnergy = DysonEnergy > WarpAccMax ? WarpAccMax : DysonEnergy;
-                    RightMaxPowGenValueText.text = Capacity2SpeedAcc((int)DysonEnergy) + " ly/s";
+                    RightMaxPowGenValueText.text = Capacity2SpeedAcc((int)DysonEnergy) + "ly/s";
                 }
             }
             catch (Exception)
