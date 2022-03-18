@@ -76,6 +76,12 @@ namespace MoreMegaStructure
             itemConstrainRingRecipe.description = "位面约束环描述".Translate();
             itemConstrainRingRecipe.Items = new int[] { 1205, 1304 };
             itemConstrainRingRecipe.ItemCounts = new int[] { 2, 1 };
+            if(MoreMegaStructure.GenesisCompatibility)
+            {
+                itemConstrainRingRecipe.Items = new int[] { 1205, 1119, 1126 };
+                itemConstrainRingRecipe.ItemCounts = new int[] { 2, 1, 1 };
+
+            }
             itemConstrainRingRecipe.Results = new int[] { 9481 };
             itemConstrainRingRecipe.ResultCounts = new int[] { 2 };
             itemConstrainRingRecipe.TimeSpend = 180;
@@ -114,16 +120,21 @@ namespace MoreMegaStructure
             itemExciterRecipe.Description = "隧穿激发装置描述";
             itemExciterRecipe.description = "隧穿激发装置描述".Translate();
             itemExciterRecipe.Items = new int[] { 1206, 1404 };
-            if(MoreMegaStructure.GenesisCompatibility)
-            {
-                itemExciterRecipe.Items = new int[] { 1303, 1404 };
-            }
             itemExciterRecipe.ItemCounts = new int[] { 1, 1 };
+            if (MoreMegaStructure.GenesisCompatibility)
+            {
+                itemExciterRecipe.Items = new int[] { 1303, 1014 };
+                itemExciterRecipe.ItemCounts = new int[] { 1, 2 };
+            }
             itemExciterRecipe.Results = new int[] { 9483 };
             itemExciterRecipe.ResultCounts = new int[] { 6 };
             itemExciterRecipe.TimeSpend = 360;
             itemExciterRecipe.GridIndex = 104 + pagePlus;
             itemExciterRecipe.preTech = LDB.techs.Select(1703);
+            if (MoreMegaStructure.GenesisCompatibility)
+            {
+                itemExciterRecipe.preTech = LDB.techs.Select(1302);
+            }
             Traverse.Create(itemExciterRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconTunnExciter);
             ProtoRegistry.RegisterItem(9483, "隧穿激发装置".Translate(), "隧穿激发装置描述".Translate(), "Assets/MegaStructureTab/tunnelingexciter", 104 + pagePlus, 200,
                 EItemType.Component, ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.1f, 0.0f)));
@@ -155,6 +166,11 @@ namespace MoreMegaStructure
             itemProbeRecipe.description = "光子探针描述".Translate();
             itemProbeRecipe.Items = new int[] { 1404, 1208 };
             itemProbeRecipe.ItemCounts = new int[] { 2, 1 };
+            if (MoreMegaStructure.GenesisCompatibility)
+            {
+                itemProbeRecipe.Items = new int[] { 1014, 1208 };
+                itemProbeRecipe.ItemCounts = new int[] { 4, 1 };
+            }
             itemProbeRecipe.Results = new int[] { 9485 };
             itemProbeRecipe.ResultCounts = new int[] { 1 };
             itemProbeRecipe.TimeSpend = 240;
@@ -616,6 +632,11 @@ namespace MoreMegaStructure
             ReceiverIronRecipe.description = "接收重构装置描述".Translate();
             ReceiverIronRecipe.Items = new int[] { 1103, 1404, 1303, 9481 };
             ReceiverIronRecipe.ItemCounts = new int[] { 20, 10, 5, 2 };
+            if(MoreMegaStructure.GenesisCompatibility)
+            {
+                ReceiverIronRecipe.Items = new int[] { 1103, 1014, 1303, 9481 };
+                ReceiverIronRecipe.ItemCounts = new int[] { 20, 20, 5, 2 };
+            }
             ReceiverIronRecipe.Results = new int[] { 9493 };
             ReceiverIronRecipe.ResultCounts = new int[] { 1 };
             ReceiverIronRecipe.GridIndex = 301 + pagePlus;
@@ -648,6 +669,11 @@ namespace MoreMegaStructure
             ReceiverCopperRecipe.description = "接收重构装置描述".Translate();
             ReceiverCopperRecipe.Items = new int[] { 1103, 1404, 1303, 9481 };
             ReceiverCopperRecipe.ItemCounts = new int[] { 20, 10, 5, 2 };
+            if (MoreMegaStructure.GenesisCompatibility)
+            {
+                ReceiverCopperRecipe.Items = new int[] { 1103, 1014, 1303, 9481 };
+                ReceiverCopperRecipe.ItemCounts = new int[] { 20, 20, 5, 2 };
+            }
             ReceiverCopperRecipe.Results = new int[] { 9494 };
             ReceiverCopperRecipe.ResultCounts = new int[] { 1 };
             ReceiverCopperRecipe.GridIndex = 302 + pagePlus;
@@ -680,6 +706,11 @@ namespace MoreMegaStructure
             ReceiverSiliconRecipe.description = "接收重构装置描述".Translate();
             ReceiverSiliconRecipe.Items = new int[] { 1103, 1404, 1303, 9481 };
             ReceiverSiliconRecipe.ItemCounts = new int[] { 20, 10, 5, 2 };
+            if (MoreMegaStructure.GenesisCompatibility)
+            {
+                ReceiverSiliconRecipe.Items = new int[] { 1103, 1014, 1303, 9481 };
+                ReceiverSiliconRecipe.ItemCounts = new int[] { 20, 20, 5, 2 };
+            }
             ReceiverSiliconRecipe.Results = new int[] { 9495 };
             ReceiverSiliconRecipe.ResultCounts = new int[] { 1 };
             ReceiverSiliconRecipe.GridIndex = 303 + pagePlus;
@@ -712,6 +743,11 @@ namespace MoreMegaStructure
             ReceiverTitaniumRecipe.description = "接收重构装置描述".Translate();
             ReceiverTitaniumRecipe.Items = new int[] { 1103, 1404, 1303, 9481 };
             ReceiverTitaniumRecipe.ItemCounts = new int[] { 20, 10, 5, 2 };
+            if (MoreMegaStructure.GenesisCompatibility)
+            {
+                ReceiverTitaniumRecipe.Items = new int[] { 1103, 1014, 1303, 9481 };
+                ReceiverTitaniumRecipe.ItemCounts = new int[] { 20, 20, 5, 2 };
+            }
             ReceiverTitaniumRecipe.Results = new int[] { 9496 };
             ReceiverTitaniumRecipe.ResultCounts = new int[] { 1 };
             ReceiverTitaniumRecipe.GridIndex = 304 + pagePlus;
@@ -744,6 +780,11 @@ namespace MoreMegaStructure
             ReceiverMagoreRecipe.description = "接收重构装置描述".Translate();
             ReceiverMagoreRecipe.Items = new int[] { 1103, 1404, 1303, 9481 };
             ReceiverMagoreRecipe.ItemCounts = new int[] { 20, 10, 5, 2 };
+            if (MoreMegaStructure.GenesisCompatibility)
+            {
+                ReceiverMagoreRecipe.Items = new int[] { 1103, 1014, 1303, 9481 };
+                ReceiverMagoreRecipe.ItemCounts = new int[] { 20, 20, 5, 2 };
+            }
             ReceiverMagoreRecipe.Results = new int[] { 9497 };
             ReceiverMagoreRecipe.ResultCounts = new int[] { 1 };
             ReceiverMagoreRecipe.GridIndex = 305 + pagePlus;
@@ -776,6 +817,11 @@ namespace MoreMegaStructure
             ReceiverCoalRecipe.description = "接收重构装置描述".Translate();
             ReceiverCoalRecipe.Items = new int[] { 1103, 1404, 1303, 9481 };
             ReceiverCoalRecipe.ItemCounts = new int[] { 20, 10, 5, 2 };
+            if (MoreMegaStructure.GenesisCompatibility)
+            {
+                ReceiverCoalRecipe.Items = new int[] { 1103, 1014, 1303, 9481 };
+                ReceiverCoalRecipe.ItemCounts = new int[] { 20, 20, 5, 2 };
+            }
             ReceiverCoalRecipe.Results = new int[] { 9501 };
             ReceiverCoalRecipe.ResultCounts = new int[] { 1 };
             ReceiverCoalRecipe.GridIndex = 306 + pagePlus;
@@ -810,8 +856,8 @@ namespace MoreMegaStructure
             ReceiverCasimirRecipe.ItemCounts = new int[] { 10, 10, 5, 5 };
             if (MoreMegaStructure.GenesisCompatibility)
             {
-                ReceiverCasimirRecipe.Items = new int[] { 1107, 1404, 1303 };
-                ReceiverCasimirRecipe.ItemCounts = new int[] { 10, 10, 10 };
+                ReceiverCasimirRecipe.Items = new int[] { 1107, 1014, 1303 };
+                ReceiverCasimirRecipe.ItemCounts = new int[] { 10, 20, 10 };
             }
             ReceiverCasimirRecipe.Results = new int[] { 9498 };
             ReceiverCasimirRecipe.ResultCounts = new int[] { 1 };
@@ -847,8 +893,8 @@ namespace MoreMegaStructure
             ReceiverGratingRecipe.ItemCounts = new int[] { 10, 10, 5, 5 };
             if (MoreMegaStructure.GenesisCompatibility)
             {
-                ReceiverGratingRecipe.Items = new int[] { 1107, 1404, 1303 };
-                ReceiverGratingRecipe.ItemCounts = new int[] { 10, 10, 10 };
+                ReceiverGratingRecipe.Items = new int[] { 1107, 1014, 1303 };
+                ReceiverGratingRecipe.ItemCounts = new int[] { 10, 20, 10 };
             }
             ReceiverGratingRecipe.Results = new int[] { 9502 };
             ReceiverGratingRecipe.ResultCounts = new int[] { 1 };
@@ -885,8 +931,8 @@ namespace MoreMegaStructure
             ReceiverICRecipe.ItemCounts = new int[] { 10, 10, 5, 5 };
             if (MoreMegaStructure.GenesisCompatibility)
             {
-                ReceiverICRecipe.Items = new int[] { 1125, 1404, 1303 };
-                ReceiverICRecipe.ItemCounts = new int[] { 10, 10, 10 };
+                ReceiverICRecipe.Items = new int[] { 1125, 1014, 1303 };
+                ReceiverICRecipe.ItemCounts = new int[] { 10, 20, 10 };
             }
             ReceiverICRecipe.Results = new int[] { 9499 };
             ReceiverICRecipe.ResultCounts = new int[] { 1 };
@@ -1254,21 +1300,21 @@ namespace MoreMegaStructure
             tr15.ZHCN = "物质合成";
             tr15.ENUS = "Substance generation";
             tr15.FRFR = "Substance generation";
-            /*
+            
             tr16.ID = 10645;
-            tr16.Name = "自由组件工作效率";
-            tr16.name = "自由组件工作效率";
-            tr16.ZHCN = "自由组件工作效率";
-            tr16.ENUS = "Generation of Floating Components";
-            tr16.FRFR = "Generation of Floating Components";
+            tr16.Name = "恒星炮";
+            tr16.name = "恒星炮";
+            tr16.ZHCN = "恒星炮";
+            tr16.ENUS = "Star cannon";
+            tr16.FRFR = "Star cannon";
 
             tr17.ID = 10646;
-            tr17.Name = "锚定结构工作效率";
-            tr17.name = "锚定结构工作效率";
-            tr17.ZHCN = "锚定结构工作效率";
-            tr17.ENUS = "Generation of Anchored Structure";
-            tr17.FRFR = "Generation of Anchored Structure";
-            */
+            tr17.Name = "警告最多一个恒星炮";
+            tr17.name = "警告最多一个恒星炮";
+            tr17.ZHCN = "恒星炮最多建造一个，请检查星系:";
+            tr17.ENUS = "You can only build one Star cannon, please check:";
+            tr17.FRFR = "You can only build one Star cannon, please check:";
+            
 
             LDBTool.PreAddProto(tr1);
             LDBTool.PreAddProto(tr2);
@@ -1285,8 +1331,8 @@ namespace MoreMegaStructure
             LDBTool.PreAddProto(tr13);
             LDBTool.PreAddProto(tr14);
             LDBTool.PreAddProto(tr15);
-            //LDBTool.PreAddProto(tr16);
-            //LDBTool.PreAddProto(tr17);
+            LDBTool.PreAddProto(tr16);
+            LDBTool.PreAddProto(tr17);
         }
 
         public static void AddTranslateProtoNames1()

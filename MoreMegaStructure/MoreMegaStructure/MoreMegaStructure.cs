@@ -31,7 +31,7 @@ namespace MoreMegaStructure
         public static int modVersion = 100;
         public static bool CompatibilityPatchUnlocked = false;
         public static bool GenesisCompatibility = false;
-
+        public static bool isBattleActive = false;
 
         //private static Sprite iconAntiInject;
         public static List<int> RelatedGammas;
@@ -124,19 +124,22 @@ namespace MoreMegaStructure
         public static GameObject set2SciNexusButtonObj;
         public static GameObject set2WarpFieldGenButtonObj;
         public static GameObject set2MegaAssemButtonObj;
-        public static GameObject set2CrystalMinerButtonObj; 
+        public static GameObject set2CrystalMinerButtonObj;
+        public static GameObject set2StarCannonButtonObj;
         public static Button set2DysonButton;
         public static Button set2MatDecomButton;
         public static Button set2SciNexusButton;
         public static Button set2WarpFieldGenButton;
         public static Button set2MegaAssemButton;
         public static Button set2CrystalMinerButton;
+        public static Button set2StarCannonButton;
         public static Transform set2DysonButtonTextTrans;
         public static Transform set2MatDecomButtonTextTrans;
         public static Transform set2SciNexusButtonTextTrans;
         public static Transform set2WarpFieldGenButtonTextTrans;
         public static Transform set2MegaAssemButtonTextTrans;
         public static Transform set2CrystalMinerButtonTextTrans;
+        public static Transform set2StarCannonButtonTextTrans;
 
         public static Text SetMegaStructureLabelText;
         public static Text SetMegaStructureWarningText;
@@ -146,6 +149,7 @@ namespace MoreMegaStructure
         public static StarData curStar; //编辑巨构建筑页面当前显示的恒星的数据
         public static DysonSphere curDysonSphere; //戴森球编辑界面正在浏览的戴森球
         public static int WarpBuiltStarIndex; //折跃场已经在该地址的恒星上建造过了
+        public static int CannonBuiltStarIndex; //恒星炮已经在该地址的恒星上建造过了
 
         /// <summary>
         /// 下面的数据为游戏运行时的关键数据，且会进行存档
@@ -236,13 +240,16 @@ namespace MoreMegaStructure
                 AccessTools.StaticFieldRefAccess<ConfigFile>(typeof(LDBTool), "CustomStringENUS").Clear();
                 AccessTools.StaticFieldRefAccess<ConfigFile>(typeof(LDBTool), "CustomStringFRFR").Clear();
             }
-
         }
 
         public void Start()
         {
             GetVanillaUITexts();
             InitMegaSetUI();
+            if(isBattleActive)
+            {
+                Harmony.CreateAndPatchAll(typeof(StarCannon));
+            }
         }
         public void Update()
         {
@@ -381,6 +388,7 @@ namespace MoreMegaStructure
                 SetMegaStructureWarningText.text = "警告文本";
                 SetMegaStructureWarningText.fontSize = 14;
                 SetMegaStructureWarningText.color = new Color(0.9f, 0.1f, 0.1f, 0.8f);
+                LeftMegaBuildWarning.SetActive(false); //不再需要警告文本，而使用鼠标右边弹出警告的方式
 
                 //按钮
                 GameObject addNewLayerButton = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Dyson Sphere Editor/Dyson Editor Control Panel/hierarchy/layers/buttons-group/buttons/add-button");
@@ -445,6 +453,16 @@ namespace MoreMegaStructure
                 set2CrystalMinerButton = set2CrystalMinerButtonObj.GetComponent<Button>();
                 set2CrystalMinerButton.interactable = true;
 
+                set2StarCannonButtonObj = Instantiate(addNewLayerButton);
+                set2StarCannonButtonObj.SetActive(isBattleActive);
+                set2StarCannonButtonObj.name = "set-mega-6"; //名字
+                set2StarCannonButtonObj.transform.SetParent(DysonUILeft.transform, false);
+                set2StarCannonButtonObj.transform.localPosition = new Vector3(30 + biasX, -1015 + biasY, 0); //位置
+                set2StarCannonButtonObj.GetComponent<RectTransform>().sizeDelta = new Vector2(220, 28); //按钮大小
+                set2StarCannonButtonTextTrans = set2StarCannonButtonObj.transform.Find("Text");
+                set2StarCannonButton = set2StarCannonButtonObj.GetComponent<Button>();
+                set2StarCannonButton.interactable = true;
+
                 set2DysonButton.onClick.RemoveAllListeners();
                 set2DysonButton.onClick.AddListener(() => { SetMegaStructure(0); });//按下按钮，设置巨构类型
                 set2MatDecomButton.onClick.RemoveAllListeners();
@@ -457,6 +475,8 @@ namespace MoreMegaStructure
                 set2MegaAssemButton.onClick.AddListener(() => { SetMegaStructure(4); });
                 set2CrystalMinerButton.onClick.RemoveAllListeners();
                 set2CrystalMinerButton.onClick.AddListener(() => { SetMegaStructure(5); });
+                set2StarCannonButton.onClick.RemoveAllListeners();
+                set2StarCannonButton.onClick.AddListener(() => { SetMegaStructure(6); });
 
             }
             catch (Exception)
@@ -587,21 +607,21 @@ namespace MoreMegaStructure
                 //long baseHashP = (__instance.energyGenCurrentTick - __instance.energyReqCurrentTick) / HashGenDivisor;
                 //long HashP = baseHashP * (HashBasicSpeedScale + HashBonusPerLevel * history.techSpeed);//默认情况下每tick增加这么多的研究哈希值
 
-                HashP = (HashP < ts.hashNeeded - ts.hashUploaded) ? HashP : (ts.hashNeeded - ts.hashUploaded - 1);//但每次增加的值不会达到最终需求点数，总会差一点。
+                //HashP = (HashP < ts.hashNeeded - ts.hashUploaded) ? HashP : (ts.hashNeeded - ts.hashUploaded - 1);//但每次增加的值不会达到最终需求点数，总会差一点。
 
                 //下面的if其实没必要。阻止锅盖直接完成科技的全部哈希值，而是剩下最后一点。如果完成全部的hash会出现各种错误。因此最后一点hash交由游戏本身的研究所或者机甲研究完成科技的解锁。
-                if (ts.hashUploaded < ts.hashNeeded - HashP)
-                {
-                    ts.hashUploaded += HashP;
-                    universeMatrixPointUploaded += (long)ts.uPointPerHash * HashP;
-                    techHashedThisFrame += (int)HashP;
-                }
+                //if (ts.hashUploaded < ts.hashNeeded - HashP)
+                //{
+                //    ts.hashUploaded += HashP;
+                //    universeMatrixPointUploaded += (long)ts.uPointPerHash * HashP;
+                //    techHashedThisFrame += (int)HashP;
+                //}
 
-                //history.AddTechHash(HashP);
+                history.AddTechHash(HashP);
 
-                history.techStates[researchTechId] = ts;
-                statistics.techHashedThisFrame = techHashedThisFrame;
-                history.universeMatrixPointUploaded = universeMatrixPointUploaded;
+                //history.techStates[researchTechId] = ts;
+                //statistics.techHashedThisFrame = techHashedThisFrame;
+                //history.universeMatrixPointUploaded = universeMatrixPointUploaded;
                 //如果找到了工厂，就记录数据面板研究点数
                 if (factoryProductionStat != null)
                 {
@@ -778,109 +798,129 @@ namespace MoreMegaStructure
 
         public static void RefreshUILabels(StarData star)//改变UI中显示的文本，不能再叫戴森球了。另外改变新增的设置巨构建筑类型的按钮的状态
         {
-            curStar = star;
-
-            int idx = star.id - 1;
-            idx = idx < 0 ? 0 : (idx > 999 ? 999 : idx);
-
-            //Console.WriteLine($"Refreshing phase. ori_idx={star.id -1} and finding idx the name is {GameMain.galaxy.stars[idx].displayName}, while cur name is {star.displayName}");
-
-            SetMegaStructureLabelText.text = "规划巨构建筑类型".Translate();
-
-            LeftDysonCloudTitle.text = "自由组件云".Translate();
-            LeftDysonCloudBluePrintText.text = "组件云蓝图".Translate();
-            LeftDysonShellTitle.text = "锚定结构".Translate();
-            LeftDysonShellOrbitTitleText.text = "结构层级".Translate();
-            LeftDysonShellBluePrintText.text = "锚定结构蓝图".Translate();
-            RightStarPowRatioText.text = "恒星功效系数".Translate();
-            RightMaxPowGenText.text = "最大工作效率".Translate();
-            RightDysonBluePrintText.text = "巨构建筑蓝图".Translate();
-            SpSailAmoutText.text = "自由组件数量".Translate();
-            SpSailLifeTimeText.text = "自由组件寿命分布".Translate();
-            SpSailLifeTimeBarText.text = "自由组件状态统计".Translate();
-            SpSwarmPowGenText.text = "自由组件工作效率".Translate();
-            SpShellPowGenText.text = "锚定结构工作效率".Translate();
-            SoSailAmoutText.text = "自由组件数量".Translate();
-            SoSailPowGenText.text = "工作效率".Translate();
-            SoSailLifeTimeText.text = "自由组件寿命分布".Translate();
-            SoSailLifeTimeBarText.text = "自由组件状态统计".Translate();
-            LyPowGenText.text = "工作效率".Translate();
-            NdPowGenText.text = "工作效率".Translate();
-            FrPowGenText.text = "工作效率".Translate();
-            ShPowGenText.text = "工作效率".Translate();
-
-            //初始化按钮等显示
-            set2DysonButtonTextTrans.GetComponent<Text>().text = "规划".Translate() + "戴森球jinx".Translate();
-            set2MatDecomButtonTextTrans.GetComponent<Text>().text = "规划".Translate() + "物质解压器".Translate();
-            set2SciNexusButtonTextTrans.GetComponent<Text>().text = "规划".Translate() + "科学枢纽".Translate();
-            set2WarpFieldGenButtonTextTrans.GetComponent<Text>().text = "规划".Translate() + "折跃场广播阵列".Translate();//WarpFieldBroadcastArray
-            set2MegaAssemButtonTextTrans.GetComponent<Text>().text = "规划".Translate() + "星际组装厂".Translate();//生产多功能预制件
-            set2CrystalMinerButtonTextTrans.GetComponent<Text>().text = "规划".Translate() + "晶体重构器".Translate();
-            SetMegaStructureWarningText.text = "";
-
-            set2DysonButtonTextTrans.GetComponent<Text>().color = normalTextColor;
-            set2MatDecomButtonTextTrans.GetComponent<Text>().color = normalTextColor;
-            set2SciNexusButtonTextTrans.GetComponent<Text>().color = normalTextColor;
-            set2WarpFieldGenButtonTextTrans.GetComponent<Text>().color = normalTextColor;
-            set2MegaAssemButtonTextTrans.GetComponent<Text>().color = normalTextColor;
-            set2CrystalMinerButtonTextTrans.GetComponent<Text>().color = normalTextColor;
-
-            //根据当前恒星和巨构的状态修正显示
-            int curtype = StarMegaStructureType[idx];
-            RightDysonTitle.text = "巨构建筑".Translate() + " " + star.displayName;
-
-            if (star.type != EStarType.BlackHole)
+            try
             {
-                set2MatDecomButtonTextTrans.GetComponent<Text>().color = disableTextColor;
-            }
-            if (star.type != EStarType.NeutronStar && star.type != EStarType.WhiteDwarf)
-            {
-                set2CrystalMinerButtonTextTrans.GetComponent<Text>().color = disableTextColor;
-            }
-            WarpBuiltStarIndex = CheckWarpArrayBuilt();
-            if (WarpBuiltStarIndex >= 0)
-            {
-                set2WarpFieldGenButtonTextTrans.GetComponent<Text>().color = disableTextColor;
-            }
+                curStar = star;
 
-            switch (curtype)
-            {
-                case 0:
-                    RightDysonTitle.text = "戴森球jinx".Translate() + " " + star.displayName;
-                    set2DysonButtonTextTrans.GetComponent<Text>().color = currentTextColor;
-                    set2DysonButtonTextTrans.GetComponent<Text>().text = "当前".Translate() + " " + "戴森球jinx".Translate();
-                    break;
-                case 1:
-                    RightDysonTitle.text = "物质解压器".Translate() + " " + star.displayName;
-                    set2MatDecomButtonTextTrans.GetComponent<Text>().color = currentTextColor;
-                    set2MatDecomButtonTextTrans.GetComponent<Text>().text = "当前".Translate() + " " + "物质解压器".Translate();
-                    break;
-                case 2:
-                    RightDysonTitle.text = "科学枢纽".Translate() + " " + star.displayName;
-                    set2SciNexusButtonTextTrans.GetComponent<Text>().color = currentTextColor;
-                    set2SciNexusButtonTextTrans.GetComponent<Text>().text = "当前".Translate() + " " + "科学枢纽".Translate();
-                    RightMaxPowGenText.text = "研究效率".Translate();
-                    
-                    break;
-                case 3:
-                    RightDysonTitle.text = "折跃场广播阵列".Translate() + " " + star.displayName;
-                    set2WarpFieldGenButtonTextTrans.GetComponent<Text>().color = currentTextColor;
-                    set2WarpFieldGenButtonTextTrans.GetComponent<Text>().text = "当前".Translate() + " " + "折跃场广播阵列".Translate();
-                    RightMaxPowGenText.text = "折跃场加速".Translate();
-                    break;
-                case 4:
-                    RightDysonTitle.text = "星际组装厂".Translate() + " " + star.displayName;
-                    set2MegaAssemButtonTextTrans.GetComponent<Text>().color = currentTextColor;
-                    set2MegaAssemButtonTextTrans.GetComponent<Text>().text = "当前".Translate() + " " + "星际组装厂".Translate();
-                    break;
-                case 5:
-                    RightDysonTitle.text = "晶体重构器".Translate() + " " + star.displayName;
-                    set2CrystalMinerButtonTextTrans.GetComponent<Text>().color = currentTextColor;
-                    set2CrystalMinerButtonTextTrans.GetComponent<Text>().text = "当前".Translate() + " " + "晶体重构器".Translate();
-                    break;
-                default:
-                    break;
+                int idx = star.id - 1;
+                idx = idx < 0 ? 0 : (idx > 999 ? 999 : idx);
+
+                //Console.WriteLine($"Refreshing phase. ori_idx={star.id -1} and finding idx the name is {GameMain.galaxy.stars[idx].displayName}, while cur name is {star.displayName}");
+
+                SetMegaStructureLabelText.text = "规划巨构建筑类型".Translate();
+
+                LeftDysonCloudTitle.text = "自由组件云".Translate();
+                LeftDysonCloudBluePrintText.text = "组件云蓝图".Translate();
+                LeftDysonShellTitle.text = "锚定结构".Translate();
+                LeftDysonShellOrbitTitleText.text = "结构层级".Translate();
+                LeftDysonShellBluePrintText.text = "锚定结构蓝图".Translate();
+                RightStarPowRatioText.text = "恒星功效系数".Translate();
+                RightMaxPowGenText.text = "最大工作效率".Translate();
+                RightDysonBluePrintText.text = "巨构建筑蓝图".Translate();
+                SpSailAmoutText.text = "自由组件数量".Translate();
+                SpSailLifeTimeText.text = "自由组件寿命分布".Translate();
+                SpSailLifeTimeBarText.text = "自由组件状态统计".Translate();
+                SpSwarmPowGenText.text = "自由组件工作效率".Translate();
+                SpShellPowGenText.text = "锚定结构工作效率".Translate();
+                SoSailAmoutText.text = "自由组件数量".Translate();
+                SoSailPowGenText.text = "工作效率".Translate();
+                SoSailLifeTimeText.text = "自由组件寿命分布".Translate();
+                SoSailLifeTimeBarText.text = "自由组件状态统计".Translate();
+                LyPowGenText.text = "工作效率".Translate();
+                NdPowGenText.text = "工作效率".Translate();
+                FrPowGenText.text = "工作效率".Translate();
+                ShPowGenText.text = "工作效率".Translate();
+
+                //初始化按钮等显示
+                set2DysonButtonTextTrans.GetComponent<Text>().text = "规划".Translate() + "戴森球jinx".Translate();
+                set2MatDecomButtonTextTrans.GetComponent<Text>().text = "规划".Translate() + "物质解压器".Translate();
+                set2SciNexusButtonTextTrans.GetComponent<Text>().text = "规划".Translate() + "科学枢纽".Translate();
+                set2WarpFieldGenButtonTextTrans.GetComponent<Text>().text = "规划".Translate() + "折跃场广播阵列".Translate();//WarpFieldBroadcastArray
+                set2MegaAssemButtonTextTrans.GetComponent<Text>().text = "规划".Translate() + "星际组装厂".Translate();//生产多功能预制件
+                set2CrystalMinerButtonTextTrans.GetComponent<Text>().text = "规划".Translate() + "晶体重构器".Translate();
+                set2StarCannonButtonTextTrans.GetComponent<Text>().text = "规划".Translate() + "恒星炮".Translate();
+                SetMegaStructureWarningText.text = "";
+
+                set2DysonButtonTextTrans.GetComponent<Text>().color = normalTextColor;
+                set2MatDecomButtonTextTrans.GetComponent<Text>().color = normalTextColor;
+                set2SciNexusButtonTextTrans.GetComponent<Text>().color = normalTextColor;
+                set2WarpFieldGenButtonTextTrans.GetComponent<Text>().color = normalTextColor;
+                set2MegaAssemButtonTextTrans.GetComponent<Text>().color = normalTextColor;
+                set2CrystalMinerButtonTextTrans.GetComponent<Text>().color = normalTextColor;
+                set2StarCannonButtonTextTrans.GetComponent<Text>().color = normalTextColor;
+
+                //根据当前恒星和巨构的状态修正显示
+                int curtype = StarMegaStructureType[idx];
+                RightDysonTitle.text = "巨构建筑".Translate() + " " + star.displayName;
+
+                if (star.type != EStarType.BlackHole)
+                {
+                    set2MatDecomButtonTextTrans.GetComponent<Text>().color = disableTextColor;
+                }
+                if (star.type != EStarType.NeutronStar && star.type != EStarType.WhiteDwarf)
+                {
+                    set2CrystalMinerButtonTextTrans.GetComponent<Text>().color = disableTextColor;
+                }
+                WarpBuiltStarIndex = CheckWarpArrayBuilt();
+                CannonBuiltStarIndex = CheckStarCannonBuilt();
+                if (WarpBuiltStarIndex >= 0)
+                {
+                    set2WarpFieldGenButtonTextTrans.GetComponent<Text>().color = disableTextColor;
+                }
+                if (CannonBuiltStarIndex >= 0)
+                {
+                    set2StarCannonButtonTextTrans.GetComponent<Text>().color = disableTextColor;
+                }
+
+                switch (curtype)
+                {
+                    case 0:
+                        RightDysonTitle.text = "戴森球jinx".Translate() + " " + star.displayName;
+                        set2DysonButtonTextTrans.GetComponent<Text>().color = currentTextColor;
+                        set2DysonButtonTextTrans.GetComponent<Text>().text = "当前".Translate() + " " + "戴森球jinx".Translate();
+                        break;
+                    case 1:
+                        RightDysonTitle.text = "物质解压器".Translate() + " " + star.displayName;
+                        set2MatDecomButtonTextTrans.GetComponent<Text>().color = currentTextColor;
+                        set2MatDecomButtonTextTrans.GetComponent<Text>().text = "当前".Translate() + " " + "物质解压器".Translate();
+                        break;
+                    case 2:
+                        RightDysonTitle.text = "科学枢纽".Translate() + " " + star.displayName;
+                        set2SciNexusButtonTextTrans.GetComponent<Text>().color = currentTextColor;
+                        set2SciNexusButtonTextTrans.GetComponent<Text>().text = "当前".Translate() + " " + "科学枢纽".Translate();
+                        RightMaxPowGenText.text = "研究效率".Translate();
+
+                        break;
+                    case 3:
+                        RightDysonTitle.text = "折跃场广播阵列".Translate() + " " + star.displayName;
+                        set2WarpFieldGenButtonTextTrans.GetComponent<Text>().color = currentTextColor;
+                        set2WarpFieldGenButtonTextTrans.GetComponent<Text>().text = "当前".Translate() + " " + "折跃场广播阵列".Translate();
+                        RightMaxPowGenText.text = "折跃场加速".Translate();
+                        break;
+                    case 4:
+                        RightDysonTitle.text = "星际组装厂".Translate() + " " + star.displayName;
+                        set2MegaAssemButtonTextTrans.GetComponent<Text>().color = currentTextColor;
+                        set2MegaAssemButtonTextTrans.GetComponent<Text>().text = "当前".Translate() + " " + "星际组装厂".Translate();
+                        break;
+                    case 5:
+                        RightDysonTitle.text = "晶体重构器".Translate() + " " + star.displayName;
+                        set2CrystalMinerButtonTextTrans.GetComponent<Text>().color = currentTextColor;
+                        set2CrystalMinerButtonTextTrans.GetComponent<Text>().text = "当前".Translate() + " " + "晶体重构器".Translate();
+                        break;
+                    case 6:
+                        RightDysonTitle.text = "恒星炮".Translate() + " " + star.displayName;
+                        set2StarCannonButtonTextTrans.GetComponent<Text>().color = currentTextColor;
+                        set2StarCannonButtonTextTrans.GetComponent<Text>().text = "当前".Translate() + " " + "恒星炮".Translate();
+                        break;
+                    default:
+                        break;
+                }
             }
+            catch (Exception)
+            {
+
+            }
+            
 
 
         }
@@ -906,7 +946,8 @@ namespace MoreMegaStructure
                 {
                     if (curDysonSphere.totalNodeCount > 0) //如果有框架，则不允许修改巨构类型，在后续的UI刷新时对应修改按钮状态和文本
                     {
-                        SetMegaStructureWarningText.text = "警告先拆除".Translate();
+                        //SetMegaStructureWarningText.text = "警告先拆除".Translate();
+                        UIRealtimeTip.Popup("警告先拆除".Translate());
                         //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!开发者专用 记得还原return;!!!!!!!!!!!!!!!!!!!
                         return;
                         //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -921,18 +962,28 @@ namespace MoreMegaStructure
                 //各种不满足条件不能修改巨构类型的情况
                 if (type == 1 && curStar.type != EStarType.BlackHole)
                 {
-                    SetMegaStructureWarningText.text = "警告仅黑洞".Translate();
+                    //SetMegaStructureWarningText.text = "警告仅黑洞".Translate();
+                    UIRealtimeTip.Popup("警告仅黑洞".Translate());
                     return;
                 }
-                if (type == 3 && WarpBuiltStarIndex >= 0)
+                else if (type == 3 && WarpBuiltStarIndex >= 0)
                 {
                     string systemName = GameMain.galaxy.stars[WarpBuiltStarIndex].displayName;
-                    SetMegaStructureWarningText.text = "警告最多一个".Translate() + " " + systemName;
+                    //SetMegaStructureWarningText.text = "警告最多一个".Translate() + " " + systemName;
+                    UIRealtimeTip.Popup("警告最多一个".Translate() + " " + systemName);
                     return;
                 }
-                if (type == 5 && curStar.type != EStarType.NeutronStar && curStar.type != EStarType.WhiteDwarf)
+                else if (type == 5 && curStar.type != EStarType.NeutronStar && curStar.type != EStarType.WhiteDwarf)
                 {
-                    SetMegaStructureWarningText.text = "警告仅中子星白矮星".Translate();
+                    //SetMegaStructureWarningText.text = "警告仅中子星白矮星".Translate();
+                    UIRealtimeTip.Popup("警告仅中子星白矮星".Translate());
+                    return;
+                }
+                else if (type == 6 && CannonBuiltStarIndex >= 0)
+                {
+                    string systemName = GameMain.galaxy.stars[CannonBuiltStarIndex].displayName;
+                    //SetMegaStructureWarningText.text = "警告最多一个".Translate() + " " + systemName;
+                    UIRealtimeTip.Popup("警告最多一个恒星炮".Translate() + " " + systemName);
                     return;
                 }
 
@@ -942,7 +993,8 @@ namespace MoreMegaStructure
             }
             catch (Exception)
             {
-                SetMegaStructureWarningText.text = "警告未知错误".Translate();
+                //SetMegaStructureWarningText.text = "警告未知错误".Translate();
+                UIRealtimeTip.Popup("警告未知错误".Translate());
                 return;
             }
             
@@ -980,6 +1032,16 @@ namespace MoreMegaStructure
             for (int i = 0; i < 200; i++) //应该是1000，但是考虑到一般不会有人用恒星数超过200的mod吧？
             {
                 if (StarMegaStructureType[i] == 3)
+                    return i;
+            }
+            return -1;
+        }
+
+        public static int CheckStarCannonBuilt()
+        {
+            for (int i = 0; i < 200; i++) //应该是1000，但是考虑到一般不会有人用恒星数超过200的mod吧？
+            {
+                if (StarMegaStructureType[i] == 6)
                     return i;
             }
             return -1;
@@ -1058,6 +1120,10 @@ namespace MoreMegaStructure
             {
                 IntoOtherSave();
             }
+            if(isBattleActive)
+            {
+                StarCannon.InitUI();
+            }
         }
 
         public void Export(BinaryWriter w)
@@ -1067,12 +1133,17 @@ namespace MoreMegaStructure
             {
                 w.Write(StarMegaStructureType[i]);
             }
+            
         }
         public void IntoOtherSave()
         {
             for (int i = 0; i < 1000; i++)
             {
                 StarMegaStructureType[i] = 0;
+            }
+            if (isBattleActive)
+            {
+                StarCannon.InitUI();
             }
             // Initialize here. This method will only be called if there is no saved data.
         }
@@ -1159,6 +1230,17 @@ namespace MoreMegaStructure
             {
                 MoreMegaStructure.GenesisCompatibility = true;
             }
+        }
+    }
+
+
+    [BepInDependency("com.ckcz123.DSP_Battle", BepInDependency.DependencyFlags.HardDependency)]
+    [BepInPlugin("Gnimaerd.DSP.plugin.MMSBattle", "MMSBattle", "1.0")]
+    public class DSPBattleCompatibilityPatch: BaseUnityPlugin
+    {
+        void Awake()
+        {
+            MoreMegaStructure.isBattleActive = true;
         }
     }
 
