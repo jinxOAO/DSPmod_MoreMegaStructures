@@ -11,7 +11,7 @@ using CommonAPI.Systems;
 
 namespace MoreMegaStructure
 {
-    class StarCannon
+    public class StarCannon
     {
 
 		public static List<long> energyPerTickRequiredByLevel = new List<long> { 0, 100000000, 500000000, 1000000000, 2000000000, 3000000000, 3000000000 };
