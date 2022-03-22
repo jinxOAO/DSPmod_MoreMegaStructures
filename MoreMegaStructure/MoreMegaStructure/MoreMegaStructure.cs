@@ -51,7 +51,6 @@ namespace MoreMegaStructure
         public static Color disableTextColor = new Color(0.75f, 0.75f, 0.75f, 1f);
 
         public static ConfigEntry<bool> LowResolutionMode;
-        public static bool resolutionLower1080 = false;
 
         public static ResourceData resources;
         public static ResourceData iconResources;
@@ -105,15 +104,12 @@ namespace MoreMegaStructure
         public static Text RightMaxPowGenText;
         public static Text RightMaxPowGenValueText;
         public static Text RightDysonBluePrintText;
-        public static Text SpSailAmountText;
-        public static Text SpNodeAmountText;
+        public static Text SpSailAmoutText;
         public static Text SpSailLifeTimeText;
         public static Text SpSailLifeTimeBarText;
-        public static Text SpConsumePowText;
         public static Text SpSwarmPowGenText;
         public static Text SpShellPowGenText;
-        public static Text SpEnergySatisfiedLabelText;
-        public static Text SoSailAmountText;
+        public static Text SoSailAmoutText;
         public static Text SoSailPowGenText;
         public static Text SoSailLifeTimeText;
         public static Text SoSailLifeTimeBarText;
@@ -130,7 +126,6 @@ namespace MoreMegaStructure
         public static GameObject set2MegaAssemButtonObj;
         public static GameObject set2CrystalMinerButtonObj;
         public static GameObject set2StarCannonButtonObj;
-        public static GameObject DysonEditorPowerDescLabel4BarObj;
         public static Button set2DysonButton;
         public static Button set2MatDecomButton;
         public static Button set2SciNexusButton;
@@ -182,7 +177,7 @@ namespace MoreMegaStructure
 
                 pagenum = TabSystem.RegisterTab($"{MODID_tab}:{MODID_tab}Tab", new TabData("MegaStructures", "Assets/MegaStructureTab/megaStructureTabIcon"));
             }
-            LowResolutionMode = Config.Bind<bool>("config", "LowResolutionMode", false, "Trun this to true if your game resolution is lower than 1920*1080. 如果你的游戏分辨率低于1920*1080，建议设置此项为true。");
+            LowResolutionMode = Config.Bind<bool>("config", "LowResolutionMode", false, "Trun this to true if your game resolution is lower than 1920*1080. 如果你的游戏分辨率低于1920*1080，请设置此项为true。");
             //var ab = AssetBundle.LoadFromStream(Assembly.GetExecutingAssembly().GetManifestResourceStream("MoreMegaStructure.megastructureicons"));
             iconRocketMattD = Resources.Load<Sprite>("Assets/MegaStructureTab/rocketMatter");
             iconRocketScieN = Resources.Load<Sprite>("Assets/MegaStructureTab/rocketScience");
@@ -225,7 +220,6 @@ namespace MoreMegaStructure
             iconReceiverGrating = Resources.Load<Sprite>("Assets/MegaStructureTab/Cgrating");
 
             Harmony.CreateAndPatchAll(typeof(MoreMegaStructure));
-            Harmony.CreateAndPatchAll(typeof(StarCannon));
 
             LDBTool.EditDataAction += MMSProtos.ChangeReceiverRelatedStringProto;
 
@@ -234,7 +228,6 @@ namespace MoreMegaStructure
             LDBTool.PreAddDataAction += MMSProtos.AddTranslateProtoNames1;
             LDBTool.PreAddDataAction += MMSProtos.AddTranslateProtoNames2;
             LDBTool.PreAddDataAction += MMSProtos.AddTranslateProtoNames3;
-            LDBTool.PreAddDataAction += MMSProtos.AddTranslateProtoNames4;
             LDBTool.PreAddDataAction += MMSProtos.AddNewItems;
             LDBTool.PostAddDataAction += MMSProtos.AddReceivers;
             LDBTool.PostAddDataAction += MMSProtos.RefreshInitAll;
@@ -308,17 +301,13 @@ namespace MoreMegaStructure
 
             try
             {
-                SpSailAmountText = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Dyson Sphere Editor/Dyson Editor Control Panel/inspector/sphere-group/prop-label-0").GetComponent<Text>();
-                SpNodeAmountText = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Dyson Sphere Editor/Dyson Editor Control Panel/inspector/sphere-group/prop-label-1").GetComponent<Text>();
+                SpSailAmoutText = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Dyson Sphere Editor/Dyson Editor Control Panel/inspector/sphere-group/prop-label-0").GetComponent<Text>();
                 SpSailLifeTimeText = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Dyson Sphere Editor/Dyson Editor Control Panel/inspector/sphere-group/sail-stat/sail-histogram/title").GetComponent<Text>();
                 SpSailLifeTimeBarText = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Dyson Sphere Editor/Dyson Editor Control Panel/inspector/sphere-group/sail-stat/bar-group/title").GetComponent<Text>();
-                //太阳帆总数 节点总数（已规划） 太阳帆寿命分布 太阳帆状态统计
-                SpConsumePowText = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Dyson Sphere Editor/Dyson Editor Control Panel/inspector/sphere-group/power-desc/label-2").GetComponent<Text>();
+                //太阳帆总数 太阳帆寿命分布 太阳帆状态统计
                 SpSwarmPowGenText = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Dyson Sphere Editor/Dyson Editor Control Panel/inspector/sphere-group/power-desc/label-3").GetComponent<Text>();
                 SpShellPowGenText = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Dyson Sphere Editor/Dyson Editor Control Panel/inspector/sphere-group/power-desc/label-4").GetComponent<Text>();
-                //请求功率、戴森云发电性能 戴森壳发电性能 
-                SpEnergySatisfiedLabelText = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Dyson Sphere Editor/Dyson Editor Control Panel/inspector/sphere-group/power-desc/Graph/cons-circle/label-c").GetComponent<Text>();
-                //供电率 
+                //戴森云发电性能 戴森壳发电性能 
             }
             catch (Exception)
             {
@@ -327,7 +316,7 @@ namespace MoreMegaStructure
 
             try
             {
-                SoSailAmountText = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Dyson Sphere Editor/Dyson Editor Control Panel/inspector/swarm-orbit-group/self-info/prop-label-0").GetComponent<Text>();
+                SoSailAmoutText = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Dyson Sphere Editor/Dyson Editor Control Panel/inspector/swarm-orbit-group/self-info/prop-label-0").GetComponent<Text>();
                 SoSailPowGenText = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Dyson Sphere Editor/Dyson Editor Control Panel/inspector/swarm-orbit-group/self-info/prop-label-1").GetComponent<Text>();
                 SoSailLifeTimeText = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Dyson Sphere Editor/Dyson Editor Control Panel/inspector/swarm-orbit-group/sail-stat/sail-histogram/title").GetComponent<Text>();
                 SoSailLifeTimeBarText = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Dyson Sphere Editor/Dyson Editor Control Panel/inspector/swarm-orbit-group/sail-stat/bar-group/title").GetComponent<Text>();
@@ -336,8 +325,6 @@ namespace MoreMegaStructure
                 //层的 发电性能
                 NdPowGenText = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Dyson Sphere Editor/Dyson Editor Control Panel/inspector/node-group/self-info/prop-label-5").GetComponent<Text>();
                 //节点的 发电性能
-                DysonEditorPowerDescLabel4BarObj = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Dyson Sphere Editor/Dyson Editor Control Panel/inspector/sphere-group/power-desc/label-4/legend-4");
-                //右边圆圈，三个圆圈颜色示例的短横线，的第三个短横线
             }
             catch (Exception)
             {
@@ -375,8 +362,7 @@ namespace MoreMegaStructure
                 //低分辨率
                 int biasX = 0;
                 int biasY = 0;
-                resolutionLower1080 = DSPGame.globalOption.resolution.height < 1080 ? true : false;
-                if (LowResolutionMode.Value || resolutionLower1080)
+                if (LowResolutionMode.Value)
                 {
                     biasX = 300;
                     biasY = 800;
@@ -831,12 +817,12 @@ namespace MoreMegaStructure
                 RightStarPowRatioText.text = "恒星功效系数".Translate();
                 RightMaxPowGenText.text = "最大工作效率".Translate();
                 RightDysonBluePrintText.text = "巨构建筑蓝图".Translate();
-                SpSailAmountText.text = "自由组件数量".Translate();
+                SpSailAmoutText.text = "自由组件数量".Translate();
                 SpSailLifeTimeText.text = "自由组件寿命分布".Translate();
                 SpSailLifeTimeBarText.text = "自由组件状态统计".Translate();
                 SpSwarmPowGenText.text = "自由组件工作效率".Translate();
                 SpShellPowGenText.text = "锚定结构工作效率".Translate();
-                SoSailAmountText.text = "自由组件数量".Translate();
+                SoSailAmoutText.text = "自由组件数量".Translate();
                 SoSailPowGenText.text = "工作效率".Translate();
                 SoSailLifeTimeText.text = "自由组件寿命分布".Translate();
                 SoSailLifeTimeBarText.text = "自由组件状态统计".Translate();
@@ -844,32 +830,6 @@ namespace MoreMegaStructure
                 NdPowGenText.text = "工作效率".Translate();
                 FrPowGenText.text = "工作效率".Translate();
                 ShPowGenText.text = "工作效率".Translate();
-
-
-                if(curDysonSphere != null && StarMegaStructureType[curStar.index] == 6)
-                {
-                    SpSailAmountText.text = "连续开火次数".Translate();
-                    SpNodeAmountText.text = "最大射程".Translate();
-                    SpConsumePowText.text = "当前能量水平".Translate();
-                    SpSwarmPowGenText.text = "下一阶段所需能量水平".Translate();
-                    SpShellPowGenText.text = "冷却及充能时间".Translate();
-
-                    SpEnergySatisfiedLabelText.text = "修建进度".Translate();
-                    SpEnergySatisfiedLabelText.lineSpacing = 0.65f;
-
-                    if (StarCannon.GetStarCannonProperties(curDysonSphere)[0] >=5)
-                    {
-                        SpEnergySatisfiedLabelText.text = "最终阶段".Translate();
-                    }
-                    DysonEditorPowerDescLabel4BarObj.SetActive(false);
-                }
-                else
-                {
-                    SpEnergySatisfiedLabelText.text = "供电率".Translate();
-                    SpNodeAmountText.text = "节点总数（已规划）gm".Translate();
-                    SpConsumePowText.text = "请求功率gm".Translate();
-                    DysonEditorPowerDescLabel4BarObj.SetActive(true);
-                }
 
                 //初始化按钮等显示
                 set2DysonButtonTextTrans.GetComponent<Text>().text = "规划".Translate() + "戴森球jinx".Translate();
@@ -948,10 +908,9 @@ namespace MoreMegaStructure
                         set2CrystalMinerButtonTextTrans.GetComponent<Text>().text = "当前".Translate() + " " + "晶体重构器".Translate();
                         break;
                     case 6:
-                        RightDysonTitle.text = "恒星炮".Translate() + " - " + "阶段" + StarCannon.GetStarCannonProperties(curDysonSphere)[0].ToString() + " " + star.displayName;
+                        RightDysonTitle.text = "恒星炮".Translate() + " " + star.displayName;
                         set2StarCannonButtonTextTrans.GetComponent<Text>().color = currentTextColor;
                         set2StarCannonButtonTextTrans.GetComponent<Text>().text = "当前".Translate() + " " + "恒星炮".Translate();
-                        RightMaxPowGenText.text = "每秒伤害gm".Translate();
                         break;
                     default:
                         break;
@@ -990,7 +949,7 @@ namespace MoreMegaStructure
                         //SetMegaStructureWarningText.text = "警告先拆除".Translate();
                         UIRealtimeTip.Popup("警告先拆除".Translate());
                         //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!开发者专用 记得还原return;!!!!!!!!!!!!!!!!!!!
-                        //return;
+                        return;
                         //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
                     }
@@ -1059,11 +1018,6 @@ namespace MoreMegaStructure
                     long DysonEnergy = (curDysonSphere.energyGenCurrentTick - curDysonSphere.energyReqCurrentTick) / WarpAccDivisor;
                     DysonEnergy = DysonEnergy > WarpAccMax ? WarpAccMax : DysonEnergy;
                     RightMaxPowGenValueText.text = Capacity2SpeedAcc((int)DysonEnergy) + "ly/s";
-                }
-                else if (StarMegaStructureType[curDysonSphere.starData.id - 1] == 6)//如果是恒星炮
-                {
-                    RightDysonTitle.text = "恒星炮".Translate() + " - " + "阶段" + StarCannon.GetStarCannonProperties(curDysonSphere)[0].ToString() + " " + curStar.displayName; //因为阶段可能会变，巨构的标题里面有stage阶段，因此也会变
-                    RightMaxPowGenValueText.text = (StarCannon.GetStarCannonProperties(curDysonSphere)[1] * 60).ToString();
                 }
             }
             catch (Exception)
@@ -1168,6 +1122,7 @@ namespace MoreMegaStructure
             }
             if(isBattleActive)
             {
+                StarCannon.InitUI();
             }
         }
 
@@ -1188,6 +1143,7 @@ namespace MoreMegaStructure
             }
             if (isBattleActive)
             {
+                StarCannon.InitUI();
             }
             // Initialize here. This method will only be called if there is no saved data.
         }

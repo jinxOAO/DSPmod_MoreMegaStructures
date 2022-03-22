@@ -1906,22 +1906,6 @@ namespace MoreMegaStructure
         }
 
 
-        public static void AddTranslateProtoNames4()
-        {
-            ProtoRegistry.RegisterString("每秒伤害gm", "Damage per second", "每秒伤害");
-            ProtoRegistry.RegisterString("阶段", "stage", "阶段");
-            ProtoRegistry.RegisterString("连续开火次数", "Maximum fire times per charging", "连续开火次数");
-            ProtoRegistry.RegisterString("最大射程", "Maximum fire range", "最大射程");
-            ProtoRegistry.RegisterString("当前能量水平", "Current capacity", "当前能量水平");
-            ProtoRegistry.RegisterString("下一阶段所需能量水平", "Next stage required capacity", "下一阶段所需能量水平");
-            ProtoRegistry.RegisterString("冷却及充能时间", "Cooldown & charge time", "冷却及充能时间");
-            ProtoRegistry.RegisterString("修建进度", "\nProgress to\nnext stage", "修建进度");
-            ProtoRegistry.RegisterString("最终阶段", "Final stage", "最终阶段");
-            ProtoRegistry.RegisterString("节点总数（已规划）gm", "Nodes in total(Planned)", "节点总数（已规划）");
-            ProtoRegistry.RegisterString("请求功率gm", "Requested power", "最终阶段");
-            ProtoRegistry.RegisterString("无限制gm", "Infinite", "无限制");
-        }
-
         /// <summary>
         /// 用于在接收器面板显示的文本修正，因为并非总是生成光子
         /// </summary>
