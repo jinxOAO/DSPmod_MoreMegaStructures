@@ -38,6 +38,10 @@ namespace MoreMegaStructure
         public static void AddNewItems()
         {
             int pagePlus = MoreMegaStructure.pagenum * 1000;
+            if(MoreMegaStructure.isBattleActive)
+            {
+                pagePlus = MoreMegaStructure.battlePagenum * 1000;
+            }
 
             var oriRecipe = LDB.recipes.Select(51);
             var oriItem = LDB.items.Select(1303);
@@ -613,6 +617,10 @@ namespace MoreMegaStructure
         public static void AddReceivers()
         {
             int pagePlus = MoreMegaStructure.pagenum * 1000;
+            if (MoreMegaStructure.isBattleActive)
+            {
+                pagePlus = MoreMegaStructure.battlePagenum * 1000;
+            }
             int recipeIdBias = 0;
             if (MoreMegaStructure.GenesisCompatibility)
             {

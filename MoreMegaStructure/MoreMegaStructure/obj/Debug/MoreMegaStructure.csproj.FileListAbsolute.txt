@@ -8,3 +8,7 @@ D:\Work\CSFile\MoreMegaStructure\MoreMegaStructure\obj\Debug\MoreMegaStructure.c
 D:\Work\CSFile\MoreMegaStructure\MoreMegaStructure\obj\Debug\MoreMegaStructure.csproj.CoreCompileInputs.cache
 D:\Work\CSFile\MoreMegaStructure\MoreMegaStructure\obj\Debug\MoreMegaStructure.dll
 D:\Work\CSFile\MoreMegaStructure\MoreMegaStructure\obj\Debug\MoreMegaStructure.pdb
+D:\Work\CSFile\DSPmod_MoreMegaStructures\MoreMegaStructure\MoreMegaStructure\obj\Debug\MoreMegaStructure.csprojAssemblyReference.cache
+D:\Work\CSFile\DSPmod_MoreMegaStructures\MoreMegaStructure\MoreMegaStructure\obj\Debug\MoreMegaStructure.csproj.CoreCompileInputs.cache
+D:\Work\CSFile\DSPmod_MoreMegaStructures\MoreMegaStructure\MoreMegaStructure\obj\Debug\MoreMegaStructure.dll
+D:\Work\CSFile\DSPmod_MoreMegaStructures\MoreMegaStructure\MoreMegaStructure\obj\Debug\MoreMegaStructure.pdb

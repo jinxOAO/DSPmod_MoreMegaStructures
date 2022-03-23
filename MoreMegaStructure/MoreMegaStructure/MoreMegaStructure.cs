@@ -38,6 +38,7 @@ namespace MoreMegaStructure
         public static string GUID = "Gnimaerd.DSP.plugin.MoreMegaStructure";
         public static string MODID_tab = "MegaStructures";
         public static int pagenum = 3;
+        public static int battlePagenum = 3;
         public static long HashGenDivisor = 40000000L; //巨构能量转换为哈希点数的除数，每帧hash = 巨构每帧能量 / 此值 * (HashBaseSpeedScale + 1)，每级研究速度科技则等于巨构每帧能量 / 此值 * HashBonusPerLevel
         public static int HashBasicSpeedScale = 99;
         public static int HashBonusPerLevel = 1;
@@ -179,7 +180,6 @@ namespace MoreMegaStructure
             }
             catch (Exception)
             {
-
                 pagenum = TabSystem.RegisterTab($"{MODID_tab}:{MODID_tab}Tab", new TabData("MegaStructures", "Assets/MegaStructureTab/megaStructureTabIcon"));
             }
             LowResolutionMode = Config.Bind<bool>("config", "LowResolutionMode", false, "Trun this to true if your game resolution is lower than 1920*1080. 如果你的游戏分辨率低于1920*1080，建议设置此项为true。");
