@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -18,7 +18,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\</OutputPath>
+    <OutputPath>..\..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -35,28 +35,28 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony20">
-      <HintPath>..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\BepInEx\core\0Harmony20.dll</HintPath>
+      <HintPath>..\..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\BepInEx\core\0Harmony20.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\DSPGAME_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>..\..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\DSPGAME_Data\Managed\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="BepInEx">
-      <HintPath>..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\BepInEx\core\BepInEx.dll</HintPath>
+      <HintPath>..\..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\BepInEx\core\BepInEx.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="CommonAPI">
-      <HintPath>..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\CommonAPI\plugins\CommonAPI.dll</HintPath>
+      <HintPath>..\..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\CommonAPI\plugins\CommonAPI.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="DSPModSave, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\DSPModSave.dll</HintPath>
+      <HintPath>..\..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\DSPModSave.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="LDBTool">
-      <HintPath>..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\LDBTool.dll</HintPath>
+      <HintPath>..\..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\LDBTool.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -66,27 +66,27 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine">
-      <HintPath>..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\DSPGAME_Data\backuplower\Managed\UnityEngine.dll</HintPath>
+      <HintPath>..\..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\DSPGAME_Data\Managed\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.AssetBundleModule">
-      <HintPath>..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\DSPGAME_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
+      <HintPath>..\..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\DSPGAME_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\DSPGAME_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>..\..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\DSPGAME_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.IMGUIModule">
-      <HintPath>..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\DSPGAME_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+      <HintPath>..\..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\DSPGAME_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\DSPGAME_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <HintPath>..\..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\DSPGAME_Data\Managed\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UIElementsModule">
-      <HintPath>..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\DSPGAME_Data\Managed\UnityEngine.UIElementsModule.dll</HintPath>
+      <HintPath>..\..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\DSPGAME_Data\Managed\UnityEngine.UIElementsModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
