@@ -736,6 +736,9 @@ namespace MoreMegaStructure
                 case 5:
                     bulletIdExpected = 9492;
                     break;
+                case 6:
+                    bulletIdExpected = 9501;
+                    break;
                 default:
                     break;
             }
