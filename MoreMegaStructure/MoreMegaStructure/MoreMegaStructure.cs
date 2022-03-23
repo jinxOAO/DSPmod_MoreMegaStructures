@@ -236,6 +236,7 @@ namespace MoreMegaStructure
             LDBTool.PreAddDataAction += MMSProtos.AddTranslateProtoNames3;
             LDBTool.PreAddDataAction += MMSProtos.AddTranslateProtoNames4;
             LDBTool.PreAddDataAction += MMSProtos.AddNewItems;
+            LDBTool.PreAddDataAction += MMSProtos.AddNewItems2;
             LDBTool.PostAddDataAction += MMSProtos.AddReceivers;
             LDBTool.PostAddDataAction += MMSProtos.RefreshInitAll;
 
