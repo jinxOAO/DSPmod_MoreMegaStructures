@@ -142,7 +142,7 @@ namespace MoreMegaStructure
                 itemExciterRecipe.preTech = LDB.techs.Select(1302);
             }
             Traverse.Create(itemExciterRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconTunnExciter);
-            ProtoRegistry.RegisterItem(9483, "隧穿激发装置".Translate(), "隧穿激发装置描述".Translate(), "Assets/MegaStructureTab/tunnelingexciter", 104 + pagePlus + linePlus, 200,
+            ProtoRegistry.RegisterItem(9483, "隧穿激发装置".Translate(), "隧穿激发装置描述".Translate(), "Assets/MegaStructureTab/tunnelingexciter2", 104 + pagePlus + linePlus, 200,
                 EItemType.Component, ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.1f, 0.0f)));
             //谐振盘
             var itemDiscRecipe = oriRecipe.Copy();
@@ -206,7 +206,7 @@ namespace MoreMegaStructure
             Traverse.Create(itemQuanCompRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconQuanComp);
             var icondesc_alpha2 = ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0f, 0.7f, 1f));
             icondesc_alpha2.solidAlpha = 0f;
-            ProtoRegistry.RegisterItem(9486, "量子计算机".Translate(), "量子计算机描述".Translate(), "Assets/MegaStructureTab/quantumcomputer2", 107 + pagePlus + linePlus, 200,
+            ProtoRegistry.RegisterItem(9486, "量子计算机".Translate(), "量子计算机描述".Translate(), "Assets/MegaStructureTab/quantumcomputer3", 107 + pagePlus + linePlus, 200,
                 EItemType.Component, icondesc_alpha2);
             //星际组装厂组件
             var itemIACompoRecipe = oriRecipe.Copy();
@@ -625,35 +625,35 @@ namespace MoreMegaStructure
             //itemId 9503 available
             //recipeId 565 available
 
-            ProtoRegistry.RegisterItem(9503, "力场发生器", "力场发生器描述", "Assets/MegaStructureTab/integratedcomponents", 201 + pagePlus, 20, EItemType.Component,
+            ProtoRegistry.RegisterItem(9503, "力场发生器", "力场发生器描述", "Assets/MegaStructureTab/forceGen", 201 + pagePlus, 20, EItemType.Component,
                 ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.7f, 0.7f)));
-            ProtoRegistry.RegisterItem(9504, "复合态晶体", "复合态晶体描述", "Assets/MegaStructureTab/integratedcomponents", 202 + pagePlus, 100, EItemType.Component,
+            ProtoRegistry.RegisterItem(9504, "复合态晶体", "复合态晶体描述", "Assets/MegaStructureTab/compoCrystal", 202 + pagePlus, 100, EItemType.Component,
                 ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.7f, 0.7f)));
-            ProtoRegistry.RegisterItem(9505, "电磁力抑制器", "电磁力抑制器描述", "Assets/MegaStructureTab/integratedcomponents", 203 + pagePlus, 50, EItemType.Component,
+            ProtoRegistry.RegisterItem(9505, "电磁力抑制器", "电磁力抑制器描述", "Assets/MegaStructureTab/elemaginhibitor2", 203 + pagePlus, 50, EItemType.Component,
                 ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.7f, 0.7f)));
-            ProtoRegistry.RegisterItem(9506, "胶子发生器", "胶子发生器描述", "Assets/MegaStructureTab/integratedcomponents", 204 + pagePlus, 50, EItemType.Component,
+            ProtoRegistry.RegisterItem(9506, "胶子发生器", "胶子发生器描述", "Assets/MegaStructureTab/gluonGen", 204 + pagePlus, 50, EItemType.Component,
                 ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.7f, 0.7f)));
-            ProtoRegistry.RegisterItem(9507, "强力过载装置", "强力过载装置描述", "Assets/MegaStructureTab/integratedcomponents", 205 + pagePlus, 20, EItemType.Component,
+            ProtoRegistry.RegisterItem(9507, "强力过载装置", "强力过载装置描述", "Assets/MegaStructureTab/strIntOverloader", 205 + pagePlus, 20, EItemType.Component,
                 ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.7f, 0.7f)));
-            ProtoRegistry.RegisterItem(9508, "导流框架", "导流框架描述", "Assets/MegaStructureTab/integratedcomponents", 206 + pagePlus, 20, EItemType.Component,
+            ProtoRegistry.RegisterItem(9508, "导流框架", "导流框架描述", "Assets/MegaStructureTab/starcannonframe", 206 + pagePlus, 20, EItemType.Component,
                 ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.7f, 0.7f)));
-            ProtoRegistry.RegisterItem(9509, "恒星炮组件", "恒星炮组件描述", "Assets/MegaStructureTab/integratedcomponents", 207 + pagePlus, 20, EItemType.Component,
+            ProtoRegistry.RegisterItem(9509, "恒星炮组件", "恒星炮组件描述", "Assets/MegaStructureTab/starcannoncompo", 207 + pagePlus, 20, EItemType.Component,
                 ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.3f, 0.3f, 0.9f)));
-            ProtoRegistry.RegisterItem(9510, "恒星炮运载火箭", "恒星炮运载火箭描述", "Assets/MegaStructureTab/integratedcomponents", 306 + pagePlus, 20, EItemType.Product,
+            ProtoRegistry.RegisterItem(9510, "恒星炮运载火箭", "恒星炮运载火箭描述", "Assets/MegaStructureTab/rocketStarcannon", 306 + pagePlus, 20, EItemType.Product,
                 ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.3f, 0.9f, 0.9f)));
 
-            ProtoRegistry.RegisterItem(9511, "水滴gm", "水滴描述gm", "Assets/MegaStructureTab/integratedcomponents", 707 + pagePlus, 1, EItemType.Product,
+            ProtoRegistry.RegisterItem(9511, "水滴gm", "水滴描述gm", "Assets/MegaStructureTab/drop1", 707 + pagePlus, 1, EItemType.Product,
                 ProtoRegistry.GetDefaultIconDesc(Color.white, Color.white));
 
-            ProtoRegistry.RegisterRecipe(565, ERecipeType.Assemble, 240, new int[] { 9480, 9484 }, new int[] { 2, 2 }, new int[] { 9503 }, new int[] { 1 }, "力场发生器描述", 1916, 201 + pagePlus, "Assets/MegaStructureTab/integratedcomponents");
-            ProtoRegistry.RegisterRecipe(566, ERecipeType.Assemble, 120, new int[] { 1014, 1126, 1124, 1118, 1120 }, new int[] { 1, 1, 1, 1, 1 }, new int[] { 9504 }, new int[] { 1 }, "复合态晶体描述", 1919, 202 + pagePlus, "Assets/MegaStructureTab/integratedcomponents");
-            ProtoRegistry.RegisterRecipe(567, ERecipeType.Assemble, 360, new int[] { 1305, 1205 }, new int[] { 1, 2 }, new int[] { 9505 }, new int[] { 1 }, "电磁力抑制器描述", 1919, 203 + pagePlus, "Assets/MegaStructureTab/integratedcomponents");
-            RecipeProto gluonGenRecipe = ProtoRegistry.RegisterRecipe(568, ERecipeType.Assemble, 360, new int[] { 9483, 1402, 1122 }, new int[] { 1, 1, 2 }, new int[] { 9506 }, new int[] { 1 }, "胶子发生器描述", 1919, 204 + pagePlus, "Assets/MegaStructureTab/integratedcomponents");
-            RecipeProto strIntOverloaderRecipe = ProtoRegistry.RegisterRecipe(569, ERecipeType.Assemble, 600, new int[] { 9506, 9486 }, new int[] { 2, 2 }, new int[] { 9507 }, new int[] { 1 }, "强力过载装置描述", 1919, 205 + pagePlus, "Assets/MegaStructureTab/integratedcomponents");
-            ProtoRegistry.RegisterRecipe(570, ERecipeType.Assemble, 180, new int[] { 1125, 9481 }, new int[] { 3, 2 }, new int[] { 9508 }, new int[] { 1 }, "导流框架描述", 1918, 206 + pagePlus, "Assets/MegaStructureTab/integratedcomponents");
-            ProtoRegistry.RegisterRecipe(571, ERecipeType.Assemble, 480, new int[] { 1209, 9508, 9484 }, new int[] { 3, 2, 1 }, new int[] { 9509 }, new int[] { 1 }, "恒星炮组件描述", 1918, 207 + pagePlus, "Assets/MegaStructureTab/integratedcomponents");
-            ProtoRegistry.RegisterRecipe(572, ERecipeType.Assemble, 360, new int[] { 9509, 1802, 1305 }, new int[] { 2, 2, 2 }, new int[] { 9510 }, new int[] { 1 }, "恒星炮运载火箭描述", 1918, 306 + pagePlus, "Assets/MegaStructureTab/integratedcomponents");
-            RecipeProto dropRecipe = ProtoRegistry.RegisterRecipe(573, ERecipeType.Assemble, 3600, new int[] { 9505, 9507, 9504 }, new int[] { 20, 20, 50 }, new int[] { 9511 }, new int[] { 1 }, "水滴描述", 1919, 707 + pagePlus, "Assets/MegaStructureTab/integratedcomponents");
+            ProtoRegistry.RegisterRecipe(565, ERecipeType.Assemble, 240, new int[] { 9480, 9484 }, new int[] { 2, 2 }, new int[] { 9503 }, new int[] { 1 }, "力场发生器描述", 1916, 201 + pagePlus, "Assets/MegaStructureTab/forceGen");
+            ProtoRegistry.RegisterRecipe(566, ERecipeType.Assemble, 120, new int[] { 1014, 1126, 1124, 1118, 1120 }, new int[] { 1, 1, 1, 1, 1 }, new int[] { 9504 }, new int[] { 1 }, "复合态晶体描述", 1919, 202 + pagePlus, "Assets/MegaStructureTab/compoCrystal");
+            ProtoRegistry.RegisterRecipe(567, ERecipeType.Assemble, 360, new int[] { 1305, 1205 }, new int[] { 1, 2 }, new int[] { 9505 }, new int[] { 1 }, "电磁力抑制器描述", 1919, 203 + pagePlus, "Assets/MegaStructureTab/elemaginhibitor2");
+            RecipeProto gluonGenRecipe = ProtoRegistry.RegisterRecipe(568, ERecipeType.Assemble, 360, new int[] { 9483, 1402, 1122 }, new int[] { 1, 1, 2 }, new int[] { 9506 }, new int[] { 1 }, "胶子发生器描述", 1919, 204 + pagePlus, "Assets/MegaStructureTab/gluonGen");
+            RecipeProto strIntOverloaderRecipe = ProtoRegistry.RegisterRecipe(569, ERecipeType.Assemble, 600, new int[] { 9506, 9486 }, new int[] { 2, 2 }, new int[] { 9507 }, new int[] { 1 }, "强力过载装置描述", 1919, 205 + pagePlus, "Assets/MegaStructureTab/strIntOverloader");
+            ProtoRegistry.RegisterRecipe(570, ERecipeType.Assemble, 180, new int[] { 1125, 9481 }, new int[] { 3, 2 }, new int[] { 9508 }, new int[] { 1 }, "导流框架描述", 1918, 206 + pagePlus, "Assets/MegaStructureTab/starcannonframe");
+            ProtoRegistry.RegisterRecipe(571, ERecipeType.Assemble, 480, new int[] { 1209, 9508, 9484 }, new int[] { 3, 2, 1 }, new int[] { 9509 }, new int[] { 1 }, "恒星炮组件描述", 1918, 207 + pagePlus, "Assets/MegaStructureTab/starcannoncompo");
+            ProtoRegistry.RegisterRecipe(572, ERecipeType.Assemble, 360, new int[] { 9509, 1802, 1305 }, new int[] { 2, 2, 2 }, new int[] { 9510 }, new int[] { 1 }, "恒星炮运载火箭描述", 1918, 306 + pagePlus, "Assets/MegaStructureTab/rocketStarcannon");
+            RecipeProto dropRecipe = ProtoRegistry.RegisterRecipe(573, ERecipeType.Assemble, 3600, new int[] { 9505, 9507, 9504 }, new int[] { 20, 20, 50 }, new int[] { 9511 }, new int[] { 1 }, "水滴描述", 1919, 707 + pagePlus, "Assets/MegaStructureTab/drop1");
             gluonGenRecipe.Handcraft = false;
             strIntOverloaderRecipe.Handcraft = false;
             dropRecipe.Handcraft = false;

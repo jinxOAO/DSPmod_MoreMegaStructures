@@ -195,9 +195,9 @@ namespace MoreMegaStructure
             iconIACompo = Resources.Load<Sprite>("Assets/MegaStructureTab/iacomponent");
             iconInterCompo = Resources.Load<Sprite>("Assets/MegaStructureTab/integratedcomponents");
             iconPhotonProbe = Resources.Load<Sprite>("Assets/MegaStructureTab/photonprobeflipsmall");
-            iconQuanComp = Resources.Load<Sprite>("Assets/MegaStructureTab/quantumcomputer2");
+            iconQuanComp = Resources.Load<Sprite>("Assets/MegaStructureTab/quantumcomputer3");
             iconResDisc = Resources.Load<Sprite>("Assets/MegaStructureTab/resonancedisc");
-            iconTunnExciter = Resources.Load<Sprite>("Assets/MegaStructureTab/tunnelingexciter");
+            iconTunnExciter = Resources.Load<Sprite>("Assets/MegaStructureTab/tunnelingexciter2");
             iconQuickAssembly = Resources.Load<Sprite>("Assets/MegaStructureTab/Rassembly");
             iconQuickBelt = Resources.Load<Sprite>("Assets/MegaStructureTab/Rbelt");
             iconQuickChemical = Resources.Load<Sprite>("Assets/MegaStructureTab/Rchemical");
