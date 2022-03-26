@@ -33,6 +33,8 @@ namespace MoreMegaStructure
         public static bool GenesisCompatibility = false;
         public static bool isBattleActive = false;
 
+        public static bool developerMode = true; // 发布前修改！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
+
         //private static Sprite iconAntiInject;
         public static List<int> RelatedGammas;
         public static string GUID = "Gnimaerd.DSP.plugin.MoreMegaStructure";
@@ -182,6 +184,7 @@ namespace MoreMegaStructure
             {
                 pagenum = TabSystem.RegisterTab($"{MODID_tab}:{MODID_tab}Tab", new TabData("MegaStructures", "Assets/MegaStructureTab/megaStructureTabIcon"));
             }
+            battlePagenum = pagenum; //深空来敌mod开启后将使用battlePagenum
             LowResolutionMode = Config.Bind<bool>("config", "LowResolutionMode", false, "Trun this to true if your game resolution is lower than 1920*1080. 如果你的游戏分辨率低于1920*1080，建议设置此项为true。");
             //var ab = AssetBundle.LoadFromStream(Assembly.GetExecutingAssembly().GetManifestResourceStream("MoreMegaStructure.megastructureicons"));
             iconRocketMattD = Resources.Load<Sprite>("Assets/MegaStructureTab/rocketMatter");
@@ -989,14 +992,10 @@ namespace MoreMegaStructure
                 //根据是否有现存框架，是否允许改变巨构类型
                 if (curDysonSphere != null)
                 {
-                    if (curDysonSphere.totalNodeCount > 0) //如果有框架，则不允许修改巨构类型，在后续的UI刷新时对应修改按钮状态和文本
+                    if (curDysonSphere.totalNodeCount > 0 && !developerMode) //如果有框架，则不允许修改巨构类型，在后续的UI刷新时对应修改按钮状态和文本
                     {
-                        //SetMegaStructureWarningText.text = "警告先拆除".Translate();
                         UIRealtimeTip.Popup("警告先拆除".Translate());
-                        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!开发者专用 记得还原return;!!!!!!!!!!!!!!!!!!!
-                        //return;
-                        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+                        return;
                     }
                 }
                 else
