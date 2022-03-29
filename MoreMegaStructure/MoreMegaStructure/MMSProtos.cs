@@ -642,8 +642,9 @@ namespace MoreMegaStructure
             ProtoRegistry.RegisterItem(9510, "恒星炮运载火箭", "恒星炮运载火箭描述", "Assets/MegaStructureTab/rocketStarcannon", 306 + pagePlus, 20, EItemType.Product,
                 ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.3f, 0.9f, 0.9f)));
 
-            ProtoRegistry.RegisterItem(9511, "水滴gm", "水滴描述gm", "Assets/MegaStructureTab/drop1", 707 + pagePlus, 1, EItemType.Product,
+            ItemProto dropletItem = ProtoRegistry.RegisterItem(9511, "水滴gm", "水滴描述gm", "Assets/MegaStructureTab/drop1", 707 + pagePlus, 1, EItemType.Product,
                 ProtoRegistry.GetDefaultIconDesc(Color.white, Color.white));
+            dropletItem.DescFields = new int[] { 50, 51, 54, 55, 1 };
 
             ProtoRegistry.RegisterRecipe(565, ERecipeType.Assemble, 240, new int[] { 9480, 9484 }, new int[] { 2, 2 }, new int[] { 9503 }, new int[] { 1 }, "力场发生器描述", 1916, 201 + pagePlus, "Assets/MegaStructureTab/forceGen");
             ProtoRegistry.RegisterRecipe(566, ERecipeType.Assemble, 120, new int[] { 1014, 1126, 1124, 1118, 1120 }, new int[] { 1, 1, 1, 1, 1 }, new int[] { 9504 }, new int[] { 1 }, "复合态晶体描述", 1919, 202 + pagePlus, "Assets/MegaStructureTab/compoCrystal");
@@ -1973,6 +1974,37 @@ namespace MoreMegaStructure
             ProtoRegistry.RegisterString("节点总数（已规划）gm", "Nodes in total(Planned)", "节点总数（已规划）");
             ProtoRegistry.RegisterString("请求功率gm", "Requested power", "最终阶段");
             ProtoRegistry.RegisterString("无限制gm", "Infinite", "无限制");
+
+            ProtoRegistry.RegisterString("力场发生器", "Force field generator", "力场发生器");
+            ProtoRegistry.RegisterString("力场发生器描述", "With the help of the gravity generator, the force field generator can multiply the gravitational force in a fixed resonance field and give it a highly controllable directivity. If the energy supply is sufficient, the force field generator is able to deflects or even reverses the direction of the force field, making it possible to encode the resonant frequency of the force field.", 
+                "借助引力发生装置，力场发生器可以将引力在固定的谐振场域成倍放大，并赋予其高度可控的指向性。如果能量供应足够，力场发生器快速偏折甚至掉转力场方向，这使得对力场谐振频率进行编码成为可能。");
+            ProtoRegistry.RegisterString("复合态晶体", "Compound cyrstal", "复合态晶体");
+            ProtoRegistry.RegisterString("复合态晶体描述", "This single-molecule crystal has a normal density like ordinary matter, but can be reshaped into a material with extremely high hardness under the constraints of strong interaction force, so this material is also called strong interaction material (SIM).", 
+                "这种单分子晶体像普通物质一样拥有正常的密度，但能够在强相互作用力的束缚下，被重塑为硬度极高的物质，因此这种物质又被称为强相互作用力材料（SIM）。");
+            ProtoRegistry.RegisterString("电磁力抑制器", "Electromagnetic force suppressor", "电磁力抑制器");
+            ProtoRegistry.RegisterString("电磁力抑制器描述", "By eliminating the electromagnetic force between atomic nucleus, it allows the range of the strong interaction force to overflow the nucleus and expand to atom scope, providing the conditions for precise control of the strong interaction force. The suppressed electromagnetic force can also be redirected to create a vacuum Valsex field vortex ring.", 
+                "通过消除原子核之间的电磁力，允许强相互作用力的范围溢出原子核，并扩展到原子大小，为精确控制强力提供了条件。被抑制的电磁力还可以被引导至特定方向用以产生真空瓦尔塞克斯电场涡环。");
+            ProtoRegistry.RegisterString("胶子发生器", "Gluon generator", "胶子发生器");
+            ProtoRegistry.RegisterString("胶子发生器描述", "Generate controllable gluons to limit or expand the strength and scope of the strong interaction. The gluon generator must be controlled by quantum computers, so as to precisely control the arrangement of atoms on the quantum scale.", 
+                "产生可控胶子，以此限制或扩大强相互作用力的强度和作用范围。胶子发生器必须在量子计算机的协助下才能提高控制的精准程度，从而在量子尺度上精确控制原子排布。");
+            ProtoRegistry.RegisterString("强力过载装置", "Strong interaction overload device", "强力过载装置");
+            ProtoRegistry.RegisterString("强力过载装置描述", "The SIO device can make the repulsive and the attractive force peak to coincide precisely at a specific point, so that any deviation of the nucleus will be pulled back by the strong interaction force. If electromagnetic interference is removed, the nucleus will be fully anchored.", 
+                "强力过载装置可以使强力的排斥力峰值和吸引力峰值在特定的点精准重合，因而原子核的任何偏离都会被强力拉回。如果剔除了电磁力干扰，原子核将被完全锚定。");
+            ProtoRegistry.RegisterString("导流框架", "Flow guid frame", "导流框架");
+            ProtoRegistry.RegisterString("导流框架描述", "Storing, directing the energy of stars in a specific direction, creating a very high power output.", "将恒星的能量存储并引导、集中至特定方向，创造极高功率的能量输出。"); 
+            ProtoRegistry.RegisterString("恒星炮组件", "Star cannon component", "恒星炮组件");
+            ProtoRegistry.RegisterString("恒星炮组件描述", "The star cannon can store the energy of the star and guide it to the front of the muzzle through the frame. The concentrated energy pulse will be released at the target site, and will continuously destabilize the wormhole, eventually closing the high-dimensional channel.", "恒星炮能够储存恒星的能量，并通过框架引导至炮口前方，汇聚的能量脉冲将在目标地点释放，并不断破坏虫洞的稳定性，最终关闭高维通道。");
+            ProtoRegistry.RegisterString("恒星炮运载火箭", "Star cannon carrier rocket", "恒星炮运载火箭");
+            ProtoRegistry.RegisterString("恒星炮运载火箭描述", "The delivery vehicle for the components of the Star cannon.", "恒星炮相关组件的运载工具。"); 
+            ProtoRegistry.RegisterString("水滴gm", "Droplet", "水滴");
+            ProtoRegistry.RegisterString("水滴描述gm", "If the battle is in the current galaxy, the droplets will leave the mecha and hit the enemy's key structures with its extremely hard surface. Since precise control of the propulsion and steering of the droplets requires powerful remote computing power, and the launch of droplets and manipulation require the remote supply of mecha energy, there is an upper limit to the number of droplets that the mecha can control at one time. Do not take droplet as an ultimate weapon,, it's only a temporary supplement to a galaxy lacking in firepower.", 
+                "如果战斗发生在当前星系，水滴将从机甲中离开，并使用极其坚硬的表面撞击敌人的关键结构。由于精确地控制水滴的推进和转向需要强大的远端运算能力，且发射水滴和操控均需要机甲能量的远程供给，机甲一次性能够操控的水滴数量是有上限的。不要把水滴作为一个终极武器，它只能为火力空缺的星系提供临时的补充。");
+
+            ProtoRegistry.RegisterString("恒星炮设计说明题目", "Design Instructions", "恒星炮设计说明");
+            ProtoRegistry.RegisterString("恒星炮设计说明文本",
+                "1. When the star cannon fires, the rotation axes of all layers will overlap, and the north pole will point to the target wormhole, so please design the north pole of each layer as the center of the muzzle;\n"
+                + "2. When the star cannon fires, 12 random  nodes on the 1st layer will emit a laser to the muzzle. For aesthetic reasons, please try to make the first layer only contain up to 12 nodes, and try to make them symmetrical to each other",
+                "1.恒星炮开火时所有层级的旋转轴将重叠，并且让北极指向目标开火，因此设计时请以各层的北极点为炮口中心；\n2.恒星炮开火时，第1层的随机12个节点将发射出激光指向炮口，为美观考虑，请尽量使得第1层只包含最多12个节点，并尽量使其相互对称。");
         }
 
         /// <summary>

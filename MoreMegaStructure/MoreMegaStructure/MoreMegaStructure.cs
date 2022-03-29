@@ -480,6 +480,11 @@ namespace MoreMegaStructure
                 set2StarCannonButtonTextTrans = set2StarCannonButtonObj.transform.Find("Text");
                 set2StarCannonButton = set2StarCannonButtonObj.GetComponent<Button>();
                 set2StarCannonButton.interactable = true;
+                set2StarCannonButtonObj.GetComponent<UIButton>().tips.tipTitle = "恒星炮设计说明题目".Translate();
+                set2StarCannonButtonObj.GetComponent<UIButton>().tips.tipText = "恒星炮设计说明文本".Translate();
+                set2StarCannonButtonObj.GetComponent<UIButton>().tips.delay = 0.1f;
+                set2StarCannonButtonObj.GetComponent<UIButton>().tips.width = 500;
+                set2StarCannonButtonObj.GetComponent<UIButton>().tips.offset = new Vector2(250, 100);
 
                 set2DysonButton.onClick.RemoveAllListeners();
                 set2DysonButton.onClick.AddListener(() => { SetMegaStructure(0); });//按下按钮，设置巨构类型
