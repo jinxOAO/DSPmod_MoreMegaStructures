@@ -32,6 +32,7 @@ namespace MoreMegaStructure
         public static bool CompatibilityPatchUnlocked = false;
         public static bool GenesisCompatibility = false;
         public static bool isBattleActive = false;
+        public static int megaNum = 7; //巨构类型的数量
 
         public static bool developerMode = true; // 发布前修改！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
 
@@ -229,6 +230,9 @@ namespace MoreMegaStructure
 
             Harmony.CreateAndPatchAll(typeof(MoreMegaStructure));
             Harmony.CreateAndPatchAll(typeof(StarCannon));
+            Harmony.CreateAndPatchAll(typeof(RendererSphere));
+            Harmony.CreateAndPatchAll(typeof(EffectRenderer));
+
 
             LDBTool.EditDataAction += MMSProtos.ChangeReceiverRelatedStringProto;
 
@@ -483,8 +487,8 @@ namespace MoreMegaStructure
                 set2StarCannonButtonObj.GetComponent<UIButton>().tips.tipTitle = "恒星炮设计说明题目".Translate();
                 set2StarCannonButtonObj.GetComponent<UIButton>().tips.tipText = "恒星炮设计说明文本".Translate();
                 set2StarCannonButtonObj.GetComponent<UIButton>().tips.delay = 0.1f;
-                set2StarCannonButtonObj.GetComponent<UIButton>().tips.width = 500;
-                set2StarCannonButtonObj.GetComponent<UIButton>().tips.offset = new Vector2(250, 100);
+                set2StarCannonButtonObj.GetComponent<UIButton>().tips.width = 520;
+                set2StarCannonButtonObj.GetComponent<UIButton>().tips.offset = new Vector2(260, 100);
 
                 set2DysonButton.onClick.RemoveAllListeners();
                 set2DysonButton.onClick.AddListener(() => { SetMegaStructure(0); });//按下按钮，设置巨构类型
@@ -1168,7 +1172,8 @@ namespace MoreMegaStructure
                 {
                     StarMegaStructureType[i] = r.ReadInt32();
                 }
-
+                RendererSphere.InitAll();
+                EffectRenderer.InitAll();
             }
             catch (Exception)
             {
@@ -1197,7 +1202,8 @@ namespace MoreMegaStructure
             if (isBattleActive)
             {
             }
-            // Initialize here. This method will only be called if there is no saved data.
+            RendererSphere.InitAll();
+            EffectRenderer.InitAll();
         }
 
         public static string Capacity2Str(long capacityPerSecond)

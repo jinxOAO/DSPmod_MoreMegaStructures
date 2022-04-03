@@ -644,17 +644,17 @@ namespace MoreMegaStructure
 
             ItemProto dropletItem = ProtoRegistry.RegisterItem(9511, "水滴gm", "水滴描述gm", "Assets/MegaStructureTab/drop1", 707 + pagePlus, 1, EItemType.Product,
                 ProtoRegistry.GetDefaultIconDesc(Color.white, Color.white));
-            dropletItem.DescFields = new int[] { 50, 51, 54, 55, 1 };
+            dropletItem.DescFields = new int[] { 50, 51, 56, 54, 55, 1 };
 
             ProtoRegistry.RegisterRecipe(565, ERecipeType.Assemble, 240, new int[] { 9480, 9484 }, new int[] { 2, 2 }, new int[] { 9503 }, new int[] { 1 }, "力场发生器描述", 1916, 201 + pagePlus, "Assets/MegaStructureTab/forceGen");
-            ProtoRegistry.RegisterRecipe(566, ERecipeType.Assemble, 120, new int[] { 1014, 1126, 1124, 1118, 1120 }, new int[] { 1, 1, 1, 1, 1 }, new int[] { 9504 }, new int[] { 1 }, "复合态晶体描述", 1919, 202 + pagePlus, "Assets/MegaStructureTab/compoCrystal");
+            ProtoRegistry.RegisterRecipe(566, ERecipeType.Particle, 120, new int[] { 1014, 1126, 1124, 1118, 1120 }, new int[] { 1, 1, 1, 1, 1 }, new int[] { 9504 }, new int[] { 1 }, "复合态晶体描述", 1919, 202 + pagePlus, "Assets/MegaStructureTab/compoCrystal");
             ProtoRegistry.RegisterRecipe(567, ERecipeType.Assemble, 360, new int[] { 1305, 1205 }, new int[] { 1, 2 }, new int[] { 9505 }, new int[] { 1 }, "电磁力抑制器描述", 1919, 203 + pagePlus, "Assets/MegaStructureTab/elemaginhibitor2");
             RecipeProto gluonGenRecipe = ProtoRegistry.RegisterRecipe(568, ERecipeType.Assemble, 360, new int[] { 9483, 1402, 1122 }, new int[] { 1, 1, 2 }, new int[] { 9506 }, new int[] { 1 }, "胶子发生器描述", 1919, 204 + pagePlus, "Assets/MegaStructureTab/gluonGen");
             RecipeProto strIntOverloaderRecipe = ProtoRegistry.RegisterRecipe(569, ERecipeType.Assemble, 600, new int[] { 9506, 9486 }, new int[] { 2, 2 }, new int[] { 9507 }, new int[] { 1 }, "强力过载装置描述", 1919, 205 + pagePlus, "Assets/MegaStructureTab/strIntOverloader");
             ProtoRegistry.RegisterRecipe(570, ERecipeType.Assemble, 180, new int[] { 1125, 9481 }, new int[] { 3, 2 }, new int[] { 9508 }, new int[] { 1 }, "导流框架描述", 1918, 206 + pagePlus, "Assets/MegaStructureTab/starcannonframe");
             ProtoRegistry.RegisterRecipe(571, ERecipeType.Assemble, 480, new int[] { 1209, 9508, 9484 }, new int[] { 3, 2, 1 }, new int[] { 9509 }, new int[] { 1 }, "恒星炮组件描述", 1918, 207 + pagePlus, "Assets/MegaStructureTab/starcannoncompo");
             ProtoRegistry.RegisterRecipe(572, ERecipeType.Assemble, 360, new int[] { 9509, 1802, 1305 }, new int[] { 2, 2, 2 }, new int[] { 9510 }, new int[] { 1 }, "恒星炮运载火箭描述", 1918, 306 + pagePlus, "Assets/MegaStructureTab/rocketStarcannon");
-            RecipeProto dropRecipe = ProtoRegistry.RegisterRecipe(573, ERecipeType.Assemble, 3600, new int[] { 9505, 9507, 9504 }, new int[] { 20, 20, 50 }, new int[] { 9511 }, new int[] { 1 }, "水滴描述", 1919, 707 + pagePlus, "Assets/MegaStructureTab/drop1");
+            RecipeProto dropRecipe = ProtoRegistry.RegisterRecipe(573, ERecipeType.Particle, 36000, new int[] { 9505, 9507, 9504 }, new int[] { 20, 20, 50 }, new int[] { 9511 }, new int[] { 1 }, "水滴描述", 1919, 707 + pagePlus, "Assets/MegaStructureTab/drop1");
             gluonGenRecipe.Handcraft = false;
             strIntOverloaderRecipe.Handcraft = false;
             dropRecipe.Handcraft = false;
@@ -1997,14 +1997,15 @@ namespace MoreMegaStructure
             ProtoRegistry.RegisterString("恒星炮运载火箭", "Star cannon carrier rocket", "恒星炮运载火箭");
             ProtoRegistry.RegisterString("恒星炮运载火箭描述", "The delivery vehicle for the components of the Star cannon.", "恒星炮相关组件的运载工具。"); 
             ProtoRegistry.RegisterString("水滴gm", "Droplet", "水滴");
-            ProtoRegistry.RegisterString("水滴描述gm", "If the battle is in the current galaxy, the droplets will leave the mecha and hit the enemy's key structures with its extremely hard surface. Since precise control of the propulsion and steering of the droplets requires powerful remote computing power, and the launch of droplets and manipulation require the remote supply of mecha energy, there is an upper limit to the number of droplets that the mecha can control at one time. Do not take droplet as an ultimate weapon,, it's only a temporary supplement to a galaxy lacking in firepower.", 
-                "如果战斗发生在当前星系，水滴将从机甲中离开，并使用极其坚硬的表面撞击敌人的关键结构。由于精确地控制水滴的推进和转向需要强大的远端运算能力，且发射水滴和操控均需要机甲能量的远程供给，机甲一次性能够操控的水滴数量是有上限的。不要把水滴作为一个终极武器，它只能为火力空缺的星系提供临时的补充。");
+            ProtoRegistry.RegisterString("水滴描述gm", "If the battle is in the current galaxy, the droplets will leave the mecha and hit the enemy's key structures with its extremely hard surface. Since precise control of the propulsion and steering of the droplets requires powerful remote computing power, and the launch of droplets and manipulation require the remote supply of mecha energy, there is an upper limit to the number of droplets that the mecha can control at one time.", 
+                "如果战斗发生在当前星系，水滴将从机甲中离开，并使用极其坚硬的表面撞击敌人的关键结构。由于精确地控制水滴的推进和转向需要强大的远端运算能力，且发射水滴和操控均需要机甲能量的远程供给，机甲一次性能够操控的水滴数量是有上限的。");
 
             ProtoRegistry.RegisterString("恒星炮设计说明题目", "Design Instructions", "恒星炮设计说明");
             ProtoRegistry.RegisterString("恒星炮设计说明文本",
                 "1. When the star cannon fires, the rotation axes of all layers will overlap, and the north pole will point to the target wormhole, so please design the north pole of each layer as the center of the muzzle;\n"
-                + "2. When the star cannon fires, 12 random  nodes on the 1st layer will emit a laser to the muzzle. For aesthetic reasons, please try to make the first layer only contain up to 12 nodes, and try to make them symmetrical to each other",
-                "1.恒星炮开火时所有层级的旋转轴将重叠，并且让北极指向目标开火，因此设计时请以各层的北极点为炮口中心；\n2.恒星炮开火时，第1层的随机12个节点将发射出激光指向炮口，为美观考虑，请尽量使得第1层只包含最多12个节点，并尽量使其相互对称。");
+                + "2. When the star cannon fires, 12 random  nodes on the 1st layer will emit a laser to the muzzle. For aesthetic reasons, please try to make the first layer only contain up to 12 nodes, and try to make them symmetrical to each other"
+                + "\n3. The construction of the star cannon needs to go through multiple stages. And at the same time, the star cannon can increase its damage, firing distance and charging speed several times. After reaching the final stage, continue to build shells will continuously increase the damage.",
+                "1.恒星炮开火时所有层级的旋转轴将重叠，并且让北极指向目标开火，因此设计时请以各层的北极点为炮口中心；\n2.恒星炮开火时，第1层的随机12个节点将发射出激光指向炮口，为美观考虑，请尽量使得第1层只包含12个（或更少的）节点，并使其相互对称。\n3.恒星炮建造需要经过多个阶段，随着建造阶段完成，恒星炮能数次提高伤害、开火距离和充能速度等属性。在达到最终阶段后，继续修建壳层可以不断提高伤害。");
         }
 
         /// <summary>
