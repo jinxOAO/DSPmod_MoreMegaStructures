@@ -508,7 +508,7 @@ namespace MoreMegaStructure
             }
             catch (Exception)
             {
-                Debug.LogWarning("ButtonInit ERROR");
+                //Debug.LogWarning("ButtonInit ERROR");
             }
         }
 
@@ -549,7 +549,7 @@ namespace MoreMegaStructure
             int idx = factory.planet.star.id - 1;
             if(idx<0 || idx > 999)
             {
-                Debug.LogWarning("GameTick_GammaPatch index out of range. Now return true.");
+                //Debug.LogWarning("GameTick_GammaPatch index out of range. Now return true.");
                 return true;
             }
             int megaType = StarMegaStructureType[idx];
@@ -594,6 +594,10 @@ namespace MoreMegaStructure
 
             if (StarMegaStructureType[idx] == 2) //如果是科学枢纽
             {
+                //HighStopwatch timetest = new HighStopwatch(); //
+                //timetest.Begin(); //
+                //double last = 0; //
+
                 GameHistoryData history = GameMain.history;
                 GameStatData statistics = GameMain.statistics;
 
@@ -618,7 +622,7 @@ namespace MoreMegaStructure
                     catch (Exception)
                     {
                         factoryProductionStat = null;
-                        Debug.LogWarning("factoryProductionStat didn't find.");
+                        //Debug.LogWarning("factoryProductionStat didn't find.");
                     }
                 }
                 int techHashedThisFrame = statistics.techHashedThisFrame;
@@ -671,7 +675,7 @@ namespace MoreMegaStructure
                 }
                 catch (Exception)
                 {
-                    Debug.LogWarning("No history techStates of 3407.");
+                    //Debug.LogWarning("No history techStates of 3407.");
                 }
 
                 try
@@ -697,7 +701,7 @@ namespace MoreMegaStructure
                 }
                 catch (Exception)
                 {
-                    Debug.LogWarning("Error on RefreshShipSpeedScale");
+                    //Debug.LogWarning("Error on RefreshShipSpeedScale");
                 }
             }
             
@@ -723,7 +727,7 @@ namespace MoreMegaStructure
 
             if (starIndex < 0 || starIndex > 999)
             {
-                Debug.LogWarning("SiloInternalUpdate Patch Error because starIndex out of range.");
+                //Debug.LogWarning("SiloInternalUpdate Patch Error because starIndex out of range.");
                 return;
             }
             int bulletIdExpected = 1503;
@@ -1009,7 +1013,7 @@ namespace MoreMegaStructure
                 }
                 else
                 {
-                    Debug.LogWarning("Can change type because of null refrence.");
+                    //Debug.LogWarning("Can change type because of null refrence.");
                 }
 
                 //各种不满足条件不能修改巨构类型的情况
@@ -1080,7 +1084,7 @@ namespace MoreMegaStructure
             }
             catch (Exception)
             {
-                Debug.LogWarning("Unable to edit the DysonUI's PowerGen Value.");
+                //Debug.LogWarning("Unable to edit the DysonUI's PowerGen Value.");
             }
         }
 
@@ -1172,7 +1176,7 @@ namespace MoreMegaStructure
                 {
                     StarMegaStructureType[i] = r.ReadInt32();
                 }
-                RendererSphere.InitAll();
+                //RendererSphere.InitAll();
                 EffectRenderer.InitAll();
             }
             catch (Exception)
@@ -1202,7 +1206,7 @@ namespace MoreMegaStructure
             if (isBattleActive)
             {
             }
-            RendererSphere.InitAll();
+            //RendererSphere.InitAll(); //创建新游戏会报错，因此改放在了其他地方
             EffectRenderer.InitAll();
         }
 

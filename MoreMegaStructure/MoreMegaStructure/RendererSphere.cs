@@ -12,7 +12,7 @@ namespace MoreMegaStructure
     {
         public static List<DysonSphere> rendererSpheres;
 
-        public static void InitAll()
+        public static void InitAll() //不能放在Start里加载，会报错
         {
             rendererSpheres = new List<DysonSphere>();
             for (int i = 0; i < GameMain.galaxy.starCount; i++)
@@ -22,6 +22,24 @@ namespace MoreMegaStructure
                 rendererSpheres[i].ResetNew();
                 rendererSpheres[i].swarm.bulletMaterial.SetColor("_Color0", new Color(1, 0, 0, 1)); //还有_Color1,2,3但是测试的时候没发现123有什么用
             }
+        }
+
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(GameMain), "Start")]
+        public static void GameStartPatch()
+        {
+            rendererSpheres = new List<DysonSphere>();
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(GameData), "GameTick")]
+        public static bool BeforeGameTick()
+        {
+            if (rendererSpheres.Count <= 0) 
+                InitAll();
+
+            return true;
         }
 
 
@@ -41,12 +59,15 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(GameData), "OnPostDraw")]
         public static void DrawPatch1(GameData __instance)
         {
+            if (rendererSpheres.Count <= 0) return;
             if (EffectRenderer.effectLevel <= 0) return;
             if (__instance.localStar != null && DysonSphere.renderPlace == ERenderPlace.Universe)
             {
                 int index = __instance.localStar.index;
                 if (rendererSpheres[index] != null)
                 {
+                    if (rendererSpheres[index].swarm == null)
+                        rendererSpheres[index].swarm = new DysonSwarm(rendererSpheres[index]);
                     rendererSpheres[index].DrawPost();
                 }                
             }
@@ -57,6 +78,7 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(StarmapCamera), "OnPostRender")]
         public static void DrawPatch2(StarmapCamera __instance)
         {
+            if (rendererSpheres.Count <= 0) return;
             if (EffectRenderer.effectLevel <= 0) return;
             if (__instance.uiStarmap.viewStarSystem != null && !UIStarmap.isChangingToMilkyWay)
             {
@@ -73,6 +95,7 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(UIDysonEditor), "DrawDysonSphereMapPost")]
         public static void DrawPatch3(UIDysonEditor __instance)
         {
+            if (rendererSpheres.Count <= 0) return;
             if (EffectRenderer.effectLevel <= 0) return;
             if (__instance.selection.viewDysonSphere != null)
             {
@@ -92,6 +115,7 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(UIDysonPanel), "DrawDysonSphereMapPost")]
         public static void DrawPatch4(UIDysonPanel __instance)
         {
+            if (rendererSpheres.Count <= 0) return;
             if (EffectRenderer.effectLevel <= 0) return;
             if (__instance.viewDysonSphere != null)
             {
