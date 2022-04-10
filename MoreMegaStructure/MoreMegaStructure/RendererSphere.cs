@@ -59,8 +59,8 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(GameData), "OnPostDraw")]
         public static void DrawPatch1(GameData __instance)
         {
-            if (rendererSpheres.Count <= 0) return;
             if (EffectRenderer.effectLevel <= 0) return;
+            if (rendererSpheres.Count <= 0) return;
             if (__instance.localStar != null && DysonSphere.renderPlace == ERenderPlace.Universe)
             {
                 int index = __instance.localStar.index;
@@ -78,8 +78,8 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(StarmapCamera), "OnPostRender")]
         public static void DrawPatch2(StarmapCamera __instance)
         {
-            if (rendererSpheres.Count <= 0) return;
             if (EffectRenderer.effectLevel <= 0) return;
+            if (rendererSpheres.Count <= 0) return;
             if (__instance.uiStarmap.viewStarSystem != null && !UIStarmap.isChangingToMilkyWay)
             {
                 DysonSphere dysonSphere = rendererSpheres[__instance.uiStarmap.viewStarSystem.index];
@@ -95,8 +95,8 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(UIDysonEditor), "DrawDysonSphereMapPost")]
         public static void DrawPatch3(UIDysonEditor __instance)
         {
-            if (rendererSpheres.Count <= 0) return;
             if (EffectRenderer.effectLevel <= 0) return;
+            if (rendererSpheres.Count <= 0) return;
             if (__instance.selection.viewDysonSphere != null)
             {
                 if (DysonSphere.renderPlace == ERenderPlace.Dysonmap)
@@ -115,8 +115,8 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(UIDysonPanel), "DrawDysonSphereMapPost")]
         public static void DrawPatch4(UIDysonPanel __instance)
         {
-            if (rendererSpheres.Count <= 0) return;
             if (EffectRenderer.effectLevel <= 0) return;
+            if (rendererSpheres.Count <= 0) return;
             if (__instance.viewDysonSphere != null)
             {
                 if (DysonSphere.renderPlace == ERenderPlace.Dysonmap)

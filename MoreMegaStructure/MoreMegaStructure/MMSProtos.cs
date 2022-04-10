@@ -647,14 +647,15 @@ namespace MoreMegaStructure
             dropletItem.DescFields = new int[] { 50, 51, 56, 54, 55, 1 };
 
             ProtoRegistry.RegisterRecipe(565, ERecipeType.Assemble, 240, new int[] { 9480, 9484 }, new int[] { 2, 2 }, new int[] { 9503 }, new int[] { 1 }, "力场发生器描述", 1916, 201 + pagePlus, "Assets/MegaStructureTab/forceGen");
-            ProtoRegistry.RegisterRecipe(566, ERecipeType.Particle, 120, new int[] { 1014, 1126, 1124, 1118, 1120 }, new int[] { 1, 1, 1, 1, 1 }, new int[] { 9504 }, new int[] { 1 }, "复合态晶体描述", 1919, 202 + pagePlus, "Assets/MegaStructureTab/compoCrystal");
+            RecipeProto SIMRecipe = ProtoRegistry.RegisterRecipe(566, ERecipeType.Particle, 120, new int[] { 1014, 1126, 1124, 1118, 1120 }, new int[] { 1, 1, 1, 1, 1 }, new int[] { 9504 }, new int[] { 1 }, "复合态晶体描述", 1919, 202 + pagePlus, "Assets/MegaStructureTab/compoCrystal");
             ProtoRegistry.RegisterRecipe(567, ERecipeType.Assemble, 360, new int[] { 1305, 1205 }, new int[] { 1, 2 }, new int[] { 9505 }, new int[] { 1 }, "电磁力抑制器描述", 1919, 203 + pagePlus, "Assets/MegaStructureTab/elemaginhibitor2");
             RecipeProto gluonGenRecipe = ProtoRegistry.RegisterRecipe(568, ERecipeType.Assemble, 360, new int[] { 9483, 1402, 1122 }, new int[] { 1, 1, 2 }, new int[] { 9506 }, new int[] { 1 }, "胶子发生器描述", 1919, 204 + pagePlus, "Assets/MegaStructureTab/gluonGen");
             RecipeProto strIntOverloaderRecipe = ProtoRegistry.RegisterRecipe(569, ERecipeType.Assemble, 600, new int[] { 9506, 9486 }, new int[] { 2, 2 }, new int[] { 9507 }, new int[] { 1 }, "强力过载装置描述", 1919, 205 + pagePlus, "Assets/MegaStructureTab/strIntOverloader");
             ProtoRegistry.RegisterRecipe(570, ERecipeType.Assemble, 180, new int[] { 1125, 9481 }, new int[] { 3, 2 }, new int[] { 9508 }, new int[] { 1 }, "导流框架描述", 1918, 206 + pagePlus, "Assets/MegaStructureTab/starcannonframe");
             ProtoRegistry.RegisterRecipe(571, ERecipeType.Assemble, 480, new int[] { 1209, 9508, 9484 }, new int[] { 3, 2, 1 }, new int[] { 9509 }, new int[] { 1 }, "恒星炮组件描述", 1918, 207 + pagePlus, "Assets/MegaStructureTab/starcannoncompo");
             ProtoRegistry.RegisterRecipe(572, ERecipeType.Assemble, 360, new int[] { 9509, 1802, 1305 }, new int[] { 2, 2, 2 }, new int[] { 9510 }, new int[] { 1 }, "恒星炮运载火箭描述", 1918, 306 + pagePlus, "Assets/MegaStructureTab/rocketStarcannon");
-            RecipeProto dropRecipe = ProtoRegistry.RegisterRecipe(573, ERecipeType.Particle, 36000, new int[] { 9505, 9507, 9504 }, new int[] { 20, 20, 50 }, new int[] { 9511 }, new int[] { 1 }, "水滴描述", 1919, 707 + pagePlus, "Assets/MegaStructureTab/drop1");
+            RecipeProto dropRecipe = ProtoRegistry.RegisterRecipe(573, ERecipeType.Assemble, 36000, new int[] { 9505, 9507, 9504 }, new int[] { 20, 20, 50 }, new int[] { 9511 }, new int[] { 1 }, "水滴描述", 1919, 707 + pagePlus, "Assets/MegaStructureTab/drop1");
+            SIMRecipe.Handcraft = false;
             gluonGenRecipe.Handcraft = false;
             strIntOverloaderRecipe.Handcraft = false;
             dropRecipe.Handcraft = false;
@@ -1993,7 +1994,7 @@ namespace MoreMegaStructure
             ProtoRegistry.RegisterString("导流框架", "Flow guid frame", "导流框架");
             ProtoRegistry.RegisterString("导流框架描述", "Storing, directing the energy of stars in a specific direction, creating a very high power output.", "将恒星的能量存储并引导、集中至特定方向，创造极高功率的能量输出。"); 
             ProtoRegistry.RegisterString("恒星炮组件", "Star cannon component", "恒星炮组件");
-            ProtoRegistry.RegisterString("恒星炮组件描述", "The star cannon can store the energy of the star and guide it to the front of the muzzle through the frame. The concentrated energy pulse will be released at the target site, and will continuously destabilize the wormhole, eventually closing the high-dimensional channel.", "恒星炮能够储存恒星的能量，并通过框架引导至炮口前方，汇聚的能量脉冲将在目标地点释放，并不断破坏虫洞的稳定性，最终关闭高维通道。");
+            ProtoRegistry.RegisterString("恒星炮组件描述", "The star cannon can store the energy of the star and guide it to the front of the muzzle through the frame. Nicoll-Dyson beam will continuously destabilize the wormhole, eventually closing the high-dimensional channel.", "恒星炮能够储存恒星的能量，并通过框架引导至炮口前方。尼科尔-戴森光束可以持续破坏虫洞的稳定性，最终关闭高维通道。");
             ProtoRegistry.RegisterString("恒星炮运载火箭", "Star cannon carrier rocket", "恒星炮运载火箭");
             ProtoRegistry.RegisterString("恒星炮运载火箭描述", "The delivery vehicle for the components of the Star cannon.", "恒星炮相关组件的运载工具。"); 
             ProtoRegistry.RegisterString("水滴gm", "Droplet", "水滴");
@@ -2005,7 +2006,7 @@ namespace MoreMegaStructure
                 "1. When the star cannon fires, the rotation axes of all layers will overlap, and the north pole will point to the target wormhole, so please design the north pole of each layer as the center of the muzzle;\n"
                 + "2. When the star cannon fires, 12 random  nodes on the 1st layer will emit a laser to the muzzle. For aesthetic reasons, please try to make the first layer only contain up to 12 nodes, and try to make them symmetrical to each other"
                 + "\n3. The construction of the star cannon needs to go through multiple stages. And at the same time, the star cannon can increase its damage, firing distance and charging speed several times. After reaching the final stage, continue to build shells will continuously increase the damage.",
-                "1.恒星炮开火时所有层级的旋转轴将重叠，并且让北极指向目标开火，因此设计时请以各层的北极点为炮口中心；\n2.恒星炮开火时，第1层的随机12个节点将发射出激光指向炮口，为美观考虑，请尽量使得第1层只包含12个（或更少的）节点，并使其相互对称。\n3.恒星炮建造需要经过多个阶段，随着建造阶段完成，恒星炮能数次提高伤害、开火距离和充能速度等属性。在达到最终阶段后，继续修建壳层可以不断提高伤害。");
+                "1.恒星炮开火时所有层级的旋转轴将重叠，并且让北极指向目标开火，因此设计时请以各层的北极点为炮口中心；\n2.恒星炮开火时，第1层的随机12个节点将发射出激光指向炮口，为美观考虑，请尽量使得第1层只包含12个（或更少的）节点，并使其相互对称。\n3.恒星炮建造需要经过多个阶段，随着各建造阶段完成，恒星炮能数次提高伤害、开火距离和充能速度等属性。在达到最终阶段后，继续修建壳层可以不断提高伤害。");
         }
 
         /// <summary>
