@@ -21,6 +21,7 @@ namespace MoreMegaStructure
                 rendererSpheres[i].Init(GameMain.data, GameMain.galaxy.stars[i]);
                 rendererSpheres[i].ResetNew();
                 rendererSpheres[i].swarm.bulletMaterial.SetColor("_Color0", new Color(1, 0, 0, 1)); //还有_Color1,2,3但是测试的时候没发现123有什么用
+                rendererSpheres[i].layerCount = -1;
             }
         }
 
@@ -36,7 +37,7 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(GameData), "GameTick")]
         public static bool BeforeGameTick()
         {
-            if (rendererSpheres.Count <= 0) 
+            if (rendererSpheres.Count <= 0 && EffectRenderer.effectLevel > 0) // 第二个条件可能导致游戏中更改effectLevel时报错，后续启用时记得更改！
                 InitAll();
 
             return true;
