@@ -14,12 +14,12 @@ namespace MoreMegaStructure
     public class StarCannon
     {
 
-		public static List<long> energyPerTickRequiredByLevel = new List<long> { 0, 100000000, 500000000, 1000000000, 2000000000, 3000000000, 3000000000 };
+		public static List<long> energyPerTickRequiredByLevel = new List<long> { 0, 100000000, 500000000, 2000000000, 4000000000, 9000000000, 9000000000 };
 		public static List<int> basicDamagePerTickByLevel = new List<int> { 0, 500, 1000, 1500, 2000, 700 }; //五级前，伤害是固定的，五级后，伤害是基础伤害+bonus
-		public static float bonusDpsPerMW = 0.6f; //5级后，每1MW的能量提供这么多的秒伤。每tick提供的tick伤害也是这个比值
-		public static List<int> maxAimCountByLevel = new List<int> { 0, 2, 3, 5, 10, 9999 }; //连续瞄准次数上限
+		public static float bonusDpsPerMW = 0.2f; //5级后，每1MW的能量提供这么多的秒伤。每tick提供的tick伤害也是这个比值
+		public static List<int> maxAimCountByLevel = new List<int> { 0, 3, 5, 8, 15, 9999 }; //连续瞄准次数上限
 		public static List<int> chargeTickByLevel = new List<int> { 0, 270000, 162000, 72000, 36000, 18000 }; //充能时间，tick
-		public static List<int> fireRangeByLevel = new List<int> { 0, 5, 10, 20, 9999, 9999 }; //射程，以光年计
+		public static List<int> fireRangeByLevel = new List<int> { 0, 15, 20, 25, 9999, 9999 }; //射程，以光年计
 
         public static int[] GetStarCannonProperties(DysonSphere sphere)
         {

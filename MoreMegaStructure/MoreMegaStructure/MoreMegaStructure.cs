@@ -34,7 +34,7 @@ namespace MoreMegaStructure
         public static bool isBattleActive = false;
         public static int megaNum = 7; //巨构类型的数量
 
-        public static bool developerMode = true; // 发布前修改！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
+        public static bool developerMode = false; // 发布前修改！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
 
         //private static Sprite iconAntiInject;
         public static List<int> RelatedGammas;
@@ -434,6 +434,11 @@ namespace MoreMegaStructure
                 set2MatDecomButtonTextTrans = set2MatDecomButtonObj.transform.Find("Text");
                 set2MatDecomButton = set2MatDecomButtonObj.GetComponent<Button>();
                 set2MatDecomButton.interactable = true;
+                set2MatDecomButtonObj.GetComponent<UIButton>().tips.tipTitle = "功能说明题目".Translate();
+                set2MatDecomButtonObj.GetComponent<UIButton>().tips.tipText = "物质解压器功能文本".Translate();
+                set2MatDecomButtonObj.GetComponent<UIButton>().tips.delay = 0.1f;
+                set2MatDecomButtonObj.GetComponent<UIButton>().tips.width = 280;
+                set2MatDecomButtonObj.GetComponent<UIButton>().tips.offset = new Vector2(140, 50);
 
                 set2SciNexusButtonObj = Instantiate(addNewLayerButton);
                 set2SciNexusButtonObj.SetActive(true);
@@ -444,6 +449,11 @@ namespace MoreMegaStructure
                 set2SciNexusButtonTextTrans = set2SciNexusButtonObj.transform.Find("Text");
                 set2SciNexusButton = set2SciNexusButtonObj.GetComponent<Button>();
                 set2SciNexusButton.interactable = true;
+                set2SciNexusButtonObj.GetComponent<UIButton>().tips.tipTitle = "功能说明题目".Translate();
+                set2SciNexusButtonObj.GetComponent<UIButton>().tips.tipText = "科学枢纽功能文本".Translate();
+                set2SciNexusButtonObj.GetComponent<UIButton>().tips.delay = 0.1f;
+                set2SciNexusButtonObj.GetComponent<UIButton>().tips.width = 260;
+                set2SciNexusButtonObj.GetComponent<UIButton>().tips.offset = new Vector2(130, 50);
 
                 set2WarpFieldGenButtonObj = Instantiate(addNewLayerButton);
                 set2WarpFieldGenButtonObj.SetActive(true);
@@ -454,6 +464,11 @@ namespace MoreMegaStructure
                 set2WarpFieldGenButtonTextTrans = set2WarpFieldGenButtonObj.transform.Find("Text");
                 set2WarpFieldGenButton = set2WarpFieldGenButtonObj.GetComponent<Button>();
                 set2WarpFieldGenButton.interactable = true;
+                set2WarpFieldGenButtonObj.GetComponent<UIButton>().tips.tipTitle = "功能说明题目".Translate();
+                set2WarpFieldGenButtonObj.GetComponent<UIButton>().tips.tipText = "折跃场广播阵列功能文本".Translate();
+                set2WarpFieldGenButtonObj.GetComponent<UIButton>().tips.delay = 0.1f;
+                set2WarpFieldGenButtonObj.GetComponent<UIButton>().tips.width = 260;
+                set2WarpFieldGenButtonObj.GetComponent<UIButton>().tips.offset = new Vector2(130, 50);
 
                 set2MegaAssemButtonObj = Instantiate(addNewLayerButton);
                 set2MegaAssemButtonObj.SetActive(true);
@@ -464,6 +479,11 @@ namespace MoreMegaStructure
                 set2MegaAssemButtonTextTrans = set2MegaAssemButtonObj.transform.Find("Text");
                 set2MegaAssemButton = set2MegaAssemButtonObj.GetComponent<Button>();
                 set2MegaAssemButton.interactable = true;
+                set2MegaAssemButtonObj.GetComponent<UIButton>().tips.tipTitle = "功能说明题目".Translate();
+                set2MegaAssemButtonObj.GetComponent<UIButton>().tips.tipText = "星际组装厂功能文本".Translate();
+                set2MegaAssemButtonObj.GetComponent<UIButton>().tips.delay = 0.1f;
+                set2MegaAssemButtonObj.GetComponent<UIButton>().tips.width = 260;
+                set2MegaAssemButtonObj.GetComponent<UIButton>().tips.offset = new Vector2(130, 50);
 
                 set2CrystalMinerButtonObj = Instantiate(addNewLayerButton);
                 set2CrystalMinerButtonObj.SetActive(true);
@@ -474,6 +494,11 @@ namespace MoreMegaStructure
                 set2CrystalMinerButtonTextTrans = set2CrystalMinerButtonObj.transform.Find("Text");
                 set2CrystalMinerButton = set2CrystalMinerButtonObj.GetComponent<Button>();
                 set2CrystalMinerButton.interactable = true;
+                set2CrystalMinerButtonObj.GetComponent<UIButton>().tips.tipTitle = "功能说明题目".Translate();
+                set2CrystalMinerButtonObj.GetComponent<UIButton>().tips.tipText = "晶体重构器功能文本".Translate();
+                set2CrystalMinerButtonObj.GetComponent<UIButton>().tips.delay = 0.1f;
+                set2CrystalMinerButtonObj.GetComponent<UIButton>().tips.width = 260;
+                set2CrystalMinerButtonObj.GetComponent<UIButton>().tips.offset = new Vector2(130, 50);
 
                 set2StarCannonButtonObj = Instantiate(addNewLayerButton);
                 set2StarCannonButtonObj.SetActive(isBattleActive);
@@ -753,7 +778,7 @@ namespace MoreMegaStructure
                     bulletIdExpected = 9492;
                     break;
                 case 6:
-                    bulletIdExpected = 9501;
+                    bulletIdExpected = 9510;
                     break;
                 default:
                     break;

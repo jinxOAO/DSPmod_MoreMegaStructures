@@ -2007,6 +2007,12 @@ namespace MoreMegaStructure
                 + "2. When the star cannon fires, 12 random  nodes on the 1st layer will emit a laser to the muzzle. For aesthetic reasons, please try to make the first layer only contain up to 12 nodes, and try to make them symmetrical to each other"
                 + "\n3. The construction of the star cannon needs to go through multiple stages. And at the same time, the star cannon can increase its damage, firing distance and charging speed several times. After reaching the final stage, continue to build shells will continuously increase the damage.",
                 "1.恒星炮开火时所有层级的旋转轴将重叠，并且让北极指向目标开火，因此设计时请以各层的北极点为炮口中心；\n2.恒星炮开火时，第1层的随机12个节点将发射出激光指向炮口，为美观考虑，请尽量使得第1层只包含12个（或更少的）节点，并使其相互对称。\n3.恒星炮建造需要经过多个阶段，随着各建造阶段完成，恒星炮能数次提高伤害、开火距离和充能速度等属性。在达到最终阶段后，继续修建壳层可以不断提高伤害。");
+            ProtoRegistry.RegisterString("功能说明题目","Function","功能");
+            ProtoRegistry.RegisterString("物质解压器功能文本", "Produce unipolar magnet and some basic resources such as iron ingot, which can be received by corresponding receivers.", "产出单极磁石和一些基础资源（例如铁块），可被对应的物质重构器接收。");
+            ProtoRegistry.RegisterString("科学枢纽功能文本", "Upload hash points for research without requiring any matrix.", "无需矩阵即可上传hash点数进行研究。");
+            ProtoRegistry.RegisterString("折跃场广播阵列功能文本", "Increase the warp speed of logistics vessels.", "提高物流运输船的曲速速度。");
+            ProtoRegistry.RegisterString("星际组装厂功能文本", "Produce Multi-functional integrated components.", "生产多功能集成组件。");
+            ProtoRegistry.RegisterString("晶体重构器功能文本", "Produce Casimir crystals and optical grating crystals, which can be received by corresponding receivers.", "产出卡西米尔晶体和光栅石，可被对应的接收器接收。");
         }
 
         /// <summary>
