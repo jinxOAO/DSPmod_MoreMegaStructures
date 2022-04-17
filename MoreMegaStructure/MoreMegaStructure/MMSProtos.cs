@@ -647,14 +647,14 @@ namespace MoreMegaStructure
             dropletItem.DescFields = new int[] { 50, 51, 56, 54, 55, 1 };
 
             ProtoRegistry.RegisterRecipe(565, ERecipeType.Assemble, 240, new int[] { 9480, 9484 }, new int[] { 2, 2 }, new int[] { 9503 }, new int[] { 1 }, "力场发生器描述", 1916, 201 + pagePlus, "Assets/MegaStructureTab/forceGen");
-            RecipeProto SIMRecipe = ProtoRegistry.RegisterRecipe(566, ERecipeType.Particle, 120, new int[] { 1014, 1126, 1124, 1118, 1120 }, new int[] { 1, 1, 1, 1, 1 }, new int[] { 9504 }, new int[] { 1 }, "复合态晶体描述", 1919, 202 + pagePlus, "Assets/MegaStructureTab/compoCrystal");
+            RecipeProto SIMRecipe = ProtoRegistry.RegisterRecipe(566, ERecipeType.Particle, 600, new int[] { 1014, 1126, 1124, 1118, 1120 }, new int[] { 1, 1, 1, 1, 1 }, new int[] { 9504 }, new int[] { 1 }, "复合态晶体描述", 1919, 202 + pagePlus, "Assets/MegaStructureTab/compoCrystal");
             ProtoRegistry.RegisterRecipe(567, ERecipeType.Assemble, 360, new int[] { 1305, 1205 }, new int[] { 1, 2 }, new int[] { 9505 }, new int[] { 1 }, "电磁力抑制器描述", 1919, 203 + pagePlus, "Assets/MegaStructureTab/elemaginhibitor2");
             RecipeProto gluonGenRecipe = ProtoRegistry.RegisterRecipe(568, ERecipeType.Assemble, 360, new int[] { 9483, 1402, 1122 }, new int[] { 1, 1, 2 }, new int[] { 9506 }, new int[] { 1 }, "胶子发生器描述", 1919, 204 + pagePlus, "Assets/MegaStructureTab/gluonGen");
-            RecipeProto strIntOverloaderRecipe = ProtoRegistry.RegisterRecipe(569, ERecipeType.Assemble, 600, new int[] { 9506, 9486 }, new int[] { 2, 2 }, new int[] { 9507 }, new int[] { 1 }, "强力过载装置描述", 1919, 205 + pagePlus, "Assets/MegaStructureTab/strIntOverloader");
+            RecipeProto strIntOverloaderRecipe = ProtoRegistry.RegisterRecipe(569, ERecipeType.Assemble, 1200, new int[] { 9506, 9486 }, new int[] { 2, 2 }, new int[] { 9507 }, new int[] { 1 }, "强力过载装置描述", 1919, 205 + pagePlus, "Assets/MegaStructureTab/strIntOverloader");
             ProtoRegistry.RegisterRecipe(570, ERecipeType.Assemble, 180, new int[] { 1125, 9481 }, new int[] { 3, 2 }, new int[] { 9508 }, new int[] { 1 }, "导流框架描述", 1918, 206 + pagePlus, "Assets/MegaStructureTab/starcannonframe");
             ProtoRegistry.RegisterRecipe(571, ERecipeType.Assemble, 480, new int[] { 1209, 9508, 9484 }, new int[] { 3, 2, 1 }, new int[] { 9509 }, new int[] { 1 }, "恒星炮组件描述", 1918, 207 + pagePlus, "Assets/MegaStructureTab/starcannoncompo");
             ProtoRegistry.RegisterRecipe(572, ERecipeType.Assemble, 360, new int[] { 9509, 1802, 1305 }, new int[] { 2, 2, 2 }, new int[] { 9510 }, new int[] { 1 }, "恒星炮运载火箭描述", 1918, 306 + pagePlus, "Assets/MegaStructureTab/rocketStarcannon");
-            RecipeProto dropRecipe = ProtoRegistry.RegisterRecipe(573, ERecipeType.Assemble, 36000, new int[] { 9505, 9507, 9504 }, new int[] { 20, 20, 50 }, new int[] { 9511 }, new int[] { 1 }, "水滴描述", 1919, 707 + pagePlus, "Assets/MegaStructureTab/drop1");
+            RecipeProto dropRecipe = ProtoRegistry.RegisterRecipe(573, ERecipeType.Assemble, 3600, new int[] { 9505, 9507, 9504 }, new int[] { 20, 20, 100 }, new int[] { 9511 }, new int[] { 1 }, "水滴描述", 1919, 707 + pagePlus, "Assets/MegaStructureTab/drop1");
             SIMRecipe.Handcraft = false;
             gluonGenRecipe.Handcraft = false;
             strIntOverloaderRecipe.Handcraft = false;

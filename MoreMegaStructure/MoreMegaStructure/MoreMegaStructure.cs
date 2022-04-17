@@ -1328,6 +1328,7 @@ namespace MoreMegaStructure
         void Awake()
         {
             MoreMegaStructure.isBattleActive = true;
+            MoreMegaStructure.HashGenDivisor = 40000000L * 3; //Battle的削弱
         }
     }
 
