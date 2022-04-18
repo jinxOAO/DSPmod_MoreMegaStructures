@@ -859,8 +859,8 @@ namespace MoreMegaStructure
         {
             try
             {
+                if (star == null) return;
                 curStar = star;
-
                 int idx = star.id - 1;
                 idx = idx < 0 ? 0 : (idx > 999 ? 999 : idx);
 
@@ -1327,8 +1327,18 @@ namespace MoreMegaStructure
     {
         void Awake()
         {
-            MoreMegaStructure.isBattleActive = true;
-            MoreMegaStructure.HashGenDivisor = 40000000L * 3; //Battle的削弱
+            try
+            {
+                if (DSP_Battle.Configs.versionCode >= 30220410)
+                {
+                    MoreMegaStructure.isBattleActive = true;
+                    MoreMegaStructure.HashGenDivisor = 40000000L * 3; //Battle的削弱
+                }
+            }
+            catch (Exception)
+            {
+
+            }
         }
     }
 

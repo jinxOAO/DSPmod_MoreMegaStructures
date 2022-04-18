@@ -56,6 +56,11 @@
       <HintPath>..\..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\DSPModSave.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="DSP_Battle, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\dependencies\DSP_Battle.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="LDBTool">
       <HintPath>..\..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\LDBTool.dll</HintPath>
       <Private>False</Private>
