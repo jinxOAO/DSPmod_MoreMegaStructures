@@ -223,6 +223,7 @@ namespace MoreMegaStructure
             itemIACompoRecipe.TimeSpend = 480;
             itemIACompoRecipe.GridIndex = 108 + pagePlus + linePlus;
             itemIACompoRecipe.preTech = LDB.techs.Select(1303);
+            if (MoreMegaStructure.isBattleActive) itemIACompoRecipe.preTech = LDB.techs.Select(1922);
             Traverse.Create(itemIACompoRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconIACompo);
             ProtoRegistry.RegisterItem(9487, "星际组装厂组件".Translate(), "星际组装厂组件描述".Translate(), "Assets/MegaStructureTab/iacomponent", 108 + pagePlus + linePlus, 200,
                 EItemType.Component, ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.7f,0.2f,0.7f)));
@@ -245,6 +246,7 @@ namespace MoreMegaStructure
             rocketMDRecipe.TimeSpend = 480;
             rocketMDRecipe.GridIndex = 201 + pagePlus;
             rocketMDRecipe.preTech = LDB.techs.Select(1522); //垂直发射井科技
+            if (MoreMegaStructure.isBattleActive) rocketMDRecipe.preTech = LDB.techs.Select(1920);
             Traverse.Create(rocketMDRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconRocketMattD);
             ProtoRegistry.RegisterItem(9488, "物质解压器运载火箭".Translate(), "物质解压器运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketMatter", 201 + pagePlus, 20,
                 EItemType.Product, ProtoRegistry.GetDefaultIconDesc(new Color(1f, 0.9f, 0.9f), new Color(0.7f, 0.2f, 0.2f)));
@@ -263,6 +265,7 @@ namespace MoreMegaStructure
             rocketSNRecipe.TimeSpend = 480;
             rocketSNRecipe.GridIndex = 202 + pagePlus;
             rocketSNRecipe.preTech = LDB.techs.Select(1522); //垂直发射井科技
+            if (MoreMegaStructure.isBattleActive) rocketSNRecipe.preTech = LDB.techs.Select(1924);
             Traverse.Create(rocketSNRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconRocketScieN);
             ProtoRegistry.RegisterItem(9489, "科学枢纽运载火箭".Translate(), "科学枢纽运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketScience", 202 + pagePlus, 20,
                 EItemType.Product, ProtoRegistry.GetDefaultIconDesc(new Color(1f, 1f, 0.9f), new Color(0.7f, 0.7f, 0.2f)));
@@ -281,6 +284,7 @@ namespace MoreMegaStructure
             rocketWBARecipe.TimeSpend = 480;
             rocketWBARecipe.GridIndex = 203 + pagePlus;
             rocketWBARecipe.preTech = LDB.techs.Select(1522); //垂直发射井科技
+            if (MoreMegaStructure.isBattleActive) rocketWBARecipe.preTech = LDB.techs.Select(1921);
             Traverse.Create(rocketWBARecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconRocketWarpG);
             ProtoRegistry.RegisterItem(9490, "谐振发射器运载火箭".Translate(), "谐振发射器运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketWarp", 203 + pagePlus, 20,
                 EItemType.Product, ProtoRegistry.GetDefaultIconDesc(new Color(0.9f, 1f, 0.9f), new Color(0.2f, 0.7f, 0.2f)));
@@ -299,6 +303,7 @@ namespace MoreMegaStructure
             rocketIARecipe.TimeSpend = 480;
             rocketIARecipe.GridIndex = 204 + pagePlus;
             rocketIARecipe.preTech = LDB.techs.Select(1522); //垂直发射井科技
+            if (MoreMegaStructure.isBattleActive) rocketIARecipe.preTech = LDB.techs.Select(1922);
             Traverse.Create(rocketIARecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconRocketMegaA);
             ProtoRegistry.RegisterItem(9491, "星际组装厂运载火箭".Translate(), "星际组装厂运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketAssembly", 204 + pagePlus, 20,
                 EItemType.Product, ProtoRegistry.GetDefaultIconDesc(new Color(0.9f, 0.9f, 1f), new Color(0.1f, 0.5f, 0.7f)));
@@ -317,6 +322,7 @@ namespace MoreMegaStructure
             rocketCRRecipe.TimeSpend = 480;
             rocketCRRecipe.GridIndex = 205 + pagePlus;
             rocketCRRecipe.preTech = LDB.techs.Select(1522); //垂直发射井科技
+            if (MoreMegaStructure.isBattleActive) rocketCRRecipe.preTech = LDB.techs.Select(1923);
             Traverse.Create(rocketCRRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconRocketCrysM);
             ProtoRegistry.RegisterItem(9492, "晶体重构器运载火箭".Translate(), "晶体重构器运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketCrystal", 205 + pagePlus, 20,
                 EItemType.Product, ProtoRegistry.GetDefaultIconDesc(new Color(1f, 0.9f, 1f), new Color(0.7f, 0.2f, 0.7f)));
@@ -1967,6 +1973,7 @@ namespace MoreMegaStructure
             ProtoRegistry.RegisterString("阶段", "stage", "阶段");
             ProtoRegistry.RegisterString("连续开火次数", "Maximum fire times per charging", "连续开火次数");
             ProtoRegistry.RegisterString("最大射程", "Maximum fire range", "最大射程");
+            ProtoRegistry.RegisterString("伤害削减", "Damage reduction", "伤害削减");
             ProtoRegistry.RegisterString("当前能量水平", "Current capacity", "当前能量水平");
             ProtoRegistry.RegisterString("下一阶段所需能量水平", "Next stage required capacity", "下一阶段所需能量水平");
             ProtoRegistry.RegisterString("冷却及充能时间", "Cooldown & charge time", "冷却及充能时间");

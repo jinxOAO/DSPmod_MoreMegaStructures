@@ -19,7 +19,8 @@ namespace MoreMegaStructure
 		public static float bonusDpsPerMW = 0.2f; //5级后，每1MW的能量提供这么多的秒伤。每tick提供的tick伤害也是这个比值
 		public static List<int> maxAimCountByLevel = new List<int> { 0, 3, 5, 8, 15, 9999 }; //连续瞄准次数上限
 		public static List<int> chargeTickByLevel = new List<int> { 0, 270000, 162000, 72000, 36000, 18000 }; //充能时间，tick
-		public static List<int> fireRangeByLevel = new List<int> { 0, 15, 20, 25, 9999, 9999 }; //射程，以光年计
+		public static List<int> fireRangeByLevel = new List<int> { 0, 9999, 9999, 9999, 9999, 9999 }; //射程，以光年计
+		public static List<int> damageReducePerLy = new List<int> { 3, 3, 2, 1, 0, 0 }; //每光年伤害衰减的百分比
 
         public static int[] GetStarCannonProperties(DysonSphere sphere)
         {
@@ -41,7 +42,7 @@ namespace MoreMegaStructure
             {
 				damagePerTick += (int)(cannonEnergy * 1.0 / 1000000.0 * bonusDpsPerMW);
             }
-			return new int[] { level, damagePerTick, maxAimCountByLevel[level], chargeTickByLevel[level], fireRangeByLevel[level] };
+			return new int[] { level, damagePerTick, maxAimCountByLevel[level], chargeTickByLevel[level], fireRangeByLevel[level], damageReducePerLy[level] };
         }
 
 
@@ -101,7 +102,7 @@ namespace MoreMegaStructure
             {
 				int[] curData = GetStarCannonProperties(MoreMegaStructure.curDysonSphere);
 				__instance.sailCntText.text = curData[2] < 9000 ? curData[2].ToString() : "无限制gm".Translate();
-				__instance.nodeCntText.text = curData[4] < 9000 ? curData[4].ToString() + " ly" : "无限制gm".Translate();
+				__instance.nodeCntText.text = "-" + curData[5].ToString() + "% / ly";
             }
         }
 

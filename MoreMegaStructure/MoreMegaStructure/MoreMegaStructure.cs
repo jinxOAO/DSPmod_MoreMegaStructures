@@ -894,7 +894,7 @@ namespace MoreMegaStructure
                 if(curDysonSphere != null && StarMegaStructureType[curStar.index] == 6)
                 {
                     SpSailAmountText.text = "连续开火次数".Translate();
-                    SpNodeAmountText.text = "最大射程".Translate();
+                    SpNodeAmountText.text = "伤害削减".Translate();
                     SpConsumePowText.text = "当前能量水平".Translate();
                     SpSwarmPowGenText.text = "下一阶段所需能量水平".Translate();
                     SpShellPowGenText.text = "冷却及充能时间".Translate();
