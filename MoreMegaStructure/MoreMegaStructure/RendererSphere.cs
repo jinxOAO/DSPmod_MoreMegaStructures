@@ -113,16 +113,16 @@ namespace MoreMegaStructure
 
 
         [HarmonyPostfix]
-        [HarmonyPatch(typeof(UIDysonPanel), "DrawDysonSphereMapPost")]
-        public static void DrawPatch4(UIDysonPanel __instance)
+        [HarmonyPatch(typeof(UIDysonEditor), "DrawDysonSphereMapPost")]
+        public static void DrawPatch4(UIDysonEditor __instance)
         {
             if (EffectRenderer.effectLevel <= 0) return;
             if (rendererSpheres.Count <= 0) return;
-            if (__instance.viewDysonSphere != null)
+            if (__instance.selection?.viewDysonSphere != null)
             {
                 if (DysonSphere.renderPlace == ERenderPlace.Dysonmap)
                 {
-                    int index = __instance.viewDysonSphere.starData.index;
+                    int index = __instance.selection.viewDysonSphere.starData.index;
                     if (rendererSpheres[index] != null)
                     {
                         rendererSpheres[index].DrawPost();
