@@ -28,7 +28,8 @@ namespace MoreMegaStructure
         /// <summary>
         /// mod版本会进行存档
         /// </summary>
-        public static int modVersion = 100;
+        public static int modVersion = 101;
+
         public static bool CompatibilityPatchUnlocked = false;
         public static bool GenesisCompatibility = false;
         public static bool isBattleActive = false;
@@ -47,12 +48,15 @@ namespace MoreMegaStructure
         public static int HashBonusPerLevel = 1;
         public static long WarpAccDivisor = 10000000L; //计算曲速倍率加成时，每帧巨构能量先除以这个数。如果是10^6，代表每60MW提供100%曲速。此值越大，每MW提供的加速效果越少。
         public static int WarpAccMax = 5000; //巨构提供的最大曲速倍数
+        public static long multifunctionComponentHeat = 4500000000; //接收多功能组件的比例数值
         //public static Color defaultType = new Color(0.566f, 0.915f, 1f, 0.07f); //原本是按钮的颜色，后来因为UIButton的鼠标移入移出事件我不会改，那个会扰乱按钮颜色的设定，所以不再用按钮颜色，改用文字颜色
         //public static Color currentType = new Color(0.95f, 0.68f, 0.5f, 0.15f);
         //public static Color disableType = new Color(0.4f, 0.4f, 0.4f, 0.85f); 
         public static Color normalTextColor = new Color(1f, 1f, 1f, 1f);
         public static Color currentTextColor = new Color(1f, 0.75f, 0.1f, 1f);
         public static Color disableTextColor = new Color(0.75f, 0.75f, 0.75f, 1f);
+
+        public static bool isRemoteReceiveingGear = false;
 
         public static ConfigEntry<bool> LowResolutionMode;
         public static bool resolutionLower1080 = false;
@@ -135,6 +139,9 @@ namespace MoreMegaStructure
         public static GameObject set2CrystalMinerButtonObj;
         public static GameObject set2StarCannonButtonObj;
         public static GameObject DysonEditorPowerDescLabel4BarObj;
+        public static GameObject selectAutoReceiveGearLimitObj = null;
+        public static GameObject selectAutoReceiveGearLimitLabelObj;
+        public static GameObject selectAutoReceiveGearLimitComboBoxObj;
         public static Button set2DysonButton;
         public static Button set2MatDecomButton;
         public static Button set2SciNexusButton;
@@ -149,6 +156,7 @@ namespace MoreMegaStructure
         public static Transform set2MegaAssemButtonTextTrans;
         public static Transform set2CrystalMinerButtonTextTrans;
         public static Transform set2StarCannonButtonTextTrans;
+        public static UIComboBox selectAutoReceiveGearLimitComboBox;
 
         public static Text SetMegaStructureLabelText;
         public static Text SetMegaStructureWarningText;
@@ -164,6 +172,8 @@ namespace MoreMegaStructure
         /// 下面的数据为游戏运行时的关键数据，且会进行存档
         /// </summary>
         public static int[] StarMegaStructureType = new int[1000]; //用于存储每个恒星所构建的巨构建筑类型，默认为0则为戴森球
+        public static int maxAutoReceiveGear = 1000;
+        public static long autoReceiveGearProgress = 0;
 
         public void Awake()
         {
@@ -261,6 +271,7 @@ namespace MoreMegaStructure
         {
             GetVanillaUITexts();
             InitMegaSetUI();
+            LateInitOtherUI();
             if(isBattleActive)
             {
                 Harmony.CreateAndPatchAll(typeof(StarCannon));
@@ -380,14 +391,14 @@ namespace MoreMegaStructure
         {
             try
             {
-                //低分辨率
-                int biasX = 0;
-                int biasY = 0;
+                //由于游戏改版，原有位置即使在高分辨率下也被占用了。所以更改位置
+                int biasX = 300;
+                int biasY = 780;
                 resolutionLower1080 = DSPGame.globalOption.resolution.height < 1080 ? true : false;
                 if (LowResolutionMode.Value || resolutionLower1080)
                 {
                     biasX = 300;
-                    biasY = 800;
+                    biasY = 780; //原来是800
                 }
 
                 //主要标签提示文字等
@@ -537,6 +548,55 @@ namespace MoreMegaStructure
             }
         }
 
+        public static void LateInitOtherUI()
+        {
+            if (selectAutoReceiveGearLimitObj != null) return;
+            selectAutoReceiveGearLimitObj = new GameObject();
+            selectAutoReceiveGearLimitObj.name = "gear-max-num";
+            selectAutoReceiveGearLimitObj.transform.SetParent(GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Mecha Window").transform);
+            selectAutoReceiveGearLimitObj.transform.localScale = new Vector3(1, 1, 1);
+            selectAutoReceiveGearLimitObj.transform.localPosition = new Vector3(-120, 190, 0);
+            selectAutoReceiveGearLimitObj.SetActive(true);
+
+            selectAutoReceiveGearLimitLabelObj = GameObject.Instantiate(GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Statistics Window/performance-bg/cpu-panel/Scroll View/Viewport/Content/label"), selectAutoReceiveGearLimitObj.transform);
+            Text oriNarrowText = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Mecha Window/information/line (1)/label").GetComponent<Text>();
+            selectAutoReceiveGearLimitLabelObj.name = "label";
+            selectAutoReceiveGearLimitLabelObj.SetActive(true);
+            selectAutoReceiveGearLimitLabelObj.transform.localPosition = new Vector3(0, 0, 0);
+            selectAutoReceiveGearLimitLabelObj.GetComponent<Text>().font = oriNarrowText.font;
+            selectAutoReceiveGearLimitLabelObj.GetComponent<Text>().fontSize = 14;
+            selectAutoReceiveGearLimitLabelObj.GetComponent<Text>().text = "远程折跃多功能组件限制".Translate();
+
+            selectAutoReceiveGearLimitComboBoxObj = GameObject.Instantiate(GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Statistics Window/dyson-bg/top/TimeComboBox"), selectAutoReceiveGearLimitObj.transform);
+            selectAutoReceiveGearLimitComboBoxObj.name = "combo-box";
+            selectAutoReceiveGearLimitComboBoxObj.SetActive(true);
+            selectAutoReceiveGearLimitComboBoxObj.transform.localPosition = new Vector3(120, -20, 0);
+            selectAutoReceiveGearLimitComboBoxObj.transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
+
+            selectAutoReceiveGearLimitComboBox = selectAutoReceiveGearLimitComboBoxObj.GetComponent<UIComboBox>();
+            selectAutoReceiveGearLimitComboBox.onItemIndexChange.RemoveAllListeners();
+            selectAutoReceiveGearLimitComboBox.Items = new List<string> { "远程接收关闭gm".Translate(), "1000", "2000", "组件无限制".Translate() };
+            selectAutoReceiveGearLimitComboBox.itemIndex = 1;
+            selectAutoReceiveGearLimitComboBox.text = selectAutoReceiveGearLimitComboBox.Items[selectAutoReceiveGearLimitComboBox.itemIndex];
+            selectAutoReceiveGearLimitComboBox.onItemIndexChange.AddListener(() => OnGearLimitChange());
+            selectAutoReceiveGearLimitComboBox.enabled = true;
+        }
+
+        public static void RefreshUIWhenLoad()
+        {
+            if (selectAutoReceiveGearLimitComboBox != null && selectAutoReceiveGearLimitLabelObj != null)
+            {
+                selectAutoReceiveGearLimitLabelObj.GetComponent<Text>().text = "远程折跃多功能组件限制".Translate();
+                selectAutoReceiveGearLimitComboBox.Items = new List<string> { "远程接收关闭gm".Translate(), "1000", "2000", "组件无限制".Translate() };
+                selectAutoReceiveGearLimitComboBox.text = selectAutoReceiveGearLimitComboBox.Items[selectAutoReceiveGearLimitComboBox.itemIndex];
+            }
+        }
+
+        public static void OnGearLimitChange()
+        {
+            int index = selectAutoReceiveGearLimitComboBox.itemIndex;
+            maxAutoReceiveGear = index * 1000;
+        }
 
         /// <summary>
         /// 下面的patch用于：让其他巨构建筑只计算壳面的“发电量”，不计算漂浮的“戴森云/太阳帆”的“发电量”
@@ -587,11 +647,11 @@ namespace MoreMegaStructure
             {
                 return true;
             }
-            else if(megaType == 4 && protoID==9499)//星际组装厂
+            else if (megaType == 4 && protoID == 9499 && !isRemoteReceiveingGear)//星际组装厂
             {
                 return true;
             }
-            else if(megaType == 5 && (protoID == 9498 || protoID == 9502))//晶体重构器
+            else if (megaType == 5 && (protoID == 9498 || protoID == 9502))//晶体重构器
             {
                 return true;
             }
@@ -600,11 +660,21 @@ namespace MoreMegaStructure
         }
 
 
-
+        /// <summary>
+        /// 游戏每帧判断一下玩家背包里的多功能组件是否低于目标，如果低于则开启自动接收
+        /// </summary>
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(GameData), "GameTick")]
+        public static void GameTickPostPatch()
+        {
+            isRemoteReceiveingGear = false;
+            if ((GameMain.mainPlayer.package.GetItemCount(9500) < maxAutoReceiveGear || maxAutoReceiveGear >= 3000))
+                isRemoteReceiveingGear = true;
+        }
 
 
         /// <summary>
-        /// 折跃场广播阵列巨构 以及 科学枢纽 的效果，将在戴森球本身的gametick里完成，而不需要接收器
+        /// 折跃场广播阵列巨构 以及 科学枢纽 的效果，将在戴森球本身的gametick里完成，而不需要接收器。新增的多功能组件的远程折跃到背包功能也在此进行。
         /// </summary>
         /// <param name="__instance"></param>
         [HarmonyPostfix]
@@ -729,7 +799,23 @@ namespace MoreMegaStructure
                     //Debug.LogWarning("Error on RefreshShipSpeedScale");
                 }
             }
-            
+            else if (StarMegaStructureType[idx] == 4 && isRemoteReceiveingGear) //如果是星际组装厂，且正在原程折跃接收多功能组件
+            {
+                autoReceiveGearProgress += __instance.energyGenCurrentTick;
+                int productCnt = (int)(autoReceiveGearProgress / (multifunctionComponentHeat * 10));
+                autoReceiveGearProgress = autoReceiveGearProgress % (multifunctionComponentHeat * 10);
+                if(productCnt>0)
+                {
+                    try
+                    {
+                        GameMain.mainPlayer.TryAddItemToPackage(9500, productCnt, 0, true);
+                        UIItemup.Up(9500, productCnt);
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+            }
 
         }
 
@@ -938,21 +1024,29 @@ namespace MoreMegaStructure
                 int curtype = StarMegaStructureType[idx];
                 RightDysonTitle.text = "巨构建筑".Translate() + " " + star.displayName;
 
-                if (star.type != EStarType.BlackHole)
+                if (star.type != EStarType.BlackHole || (isBattleActive && !GameMain.history.TechUnlocked(1920)))
                 {
                     set2MatDecomButtonTextTrans.GetComponent<Text>().color = disableTextColor;
                 }
-                if (star.type != EStarType.NeutronStar && star.type != EStarType.WhiteDwarf)
+                if ((star.type != EStarType.NeutronStar && star.type != EStarType.WhiteDwarf) || (isBattleActive && !GameMain.history.TechUnlocked(1923)))
                 {
                     set2CrystalMinerButtonTextTrans.GetComponent<Text>().color = disableTextColor;
                 }
+                if (isBattleActive && !GameMain.history.TechUnlocked(1924))
+                {
+                    set2SciNexusButtonTextTrans.GetComponent<Text>().color = disableTextColor;
+                }
+                if (isBattleActive && !GameMain.history.TechUnlocked(1922))
+                {
+                    set2MegaAssemButtonTextTrans.GetComponent<Text>().color = disableTextColor;
+                }
                 WarpBuiltStarIndex = CheckWarpArrayBuilt();
                 CannonBuiltStarIndex = CheckStarCannonBuilt();
-                if (WarpBuiltStarIndex >= 0)
+                if (WarpBuiltStarIndex >= 0 || (isBattleActive && !GameMain.history.TechUnlocked(1921)))
                 {
                     set2WarpFieldGenButtonTextTrans.GetComponent<Text>().color = disableTextColor;
                 }
-                if (CannonBuiltStarIndex >= 0)
+                if (CannonBuiltStarIndex >= 0 || (isBattleActive && !GameMain.history.TechUnlocked(1918)))
                 {
                     set2StarCannonButtonTextTrans.GetComponent<Text>().color = disableTextColor;
                 }
@@ -1027,18 +1121,14 @@ namespace MoreMegaStructure
                     return;
                 }
 
-                //根据是否有现存框架，是否允许改变巨构类型
-                if (curDysonSphere != null)
+                //战斗mod需要解锁科技才可以改变巨构类型
+                if (isBattleActive)
                 {
-                    if (curDysonSphere.totalNodeCount > 0 && !developerMode) //如果有框架，则不允许修改巨构类型，在后续的UI刷新时对应修改按钮状态和文本
+                    if ((type == 1 && !GameMain.history.TechUnlocked(1920)) || (type == 2 && !GameMain.history.TechUnlocked(1924)) || (type == 3 && !GameMain.history.TechUnlocked(1921)) || (type == 4 && !GameMain.history.TechUnlocked(1922)) || (type == 5 && !GameMain.history.TechUnlocked(1923)) || (type == 6 && !GameMain.history.TechUnlocked(1918)))
                     {
-                        UIRealtimeTip.Popup("警告先拆除".Translate());
+                        UIRealtimeTip.Popup("警告巨构科技未解锁".Translate());
                         return;
                     }
-                }
-                else
-                {
-                    //Debug.LogWarning("Can change type because of null refrence.");
                 }
 
                 //各种不满足条件不能修改巨构类型的情况
@@ -1067,6 +1157,20 @@ namespace MoreMegaStructure
                     //SetMegaStructureWarningText.text = "警告最多一个".Translate() + " " + systemName;
                     UIRealtimeTip.Popup("警告最多一个恒星炮".Translate() + " " + systemName);
                     return;
+                }
+
+                //根据是否有现存框架，是否允许改变巨构类型
+                if (curDysonSphere != null)
+                {
+                    if (curDysonSphere.totalNodeCount > 0 && !developerMode) //如果有框架，则不允许修改巨构类型，在后续的UI刷新时对应修改按钮状态和文本
+                    {
+                        UIRealtimeTip.Popup("警告先拆除".Translate());
+                        return;
+                    }
+                }
+                else
+                {
+                    //Debug.LogWarning("Can change type because of null refrence.");
                 }
 
                 //条件满足
@@ -1201,7 +1305,20 @@ namespace MoreMegaStructure
                 {
                     StarMegaStructureType[i] = r.ReadInt32();
                 }
-                //RendererSphere.InitAll();
+
+                if(savedModVersion>=101)
+                {
+                    maxAutoReceiveGear = r.ReadInt32();
+                    autoReceiveGearProgress = r.ReadInt64();
+                }
+                else
+                {
+                    maxAutoReceiveGear = 1000;
+                    autoReceiveGearProgress = 0;
+                }
+                selectAutoReceiveGearLimitComboBox.itemIndex = maxAutoReceiveGear / 1000;
+
+                RefreshUIWhenLoad();
                 EffectRenderer.InitAll();
             }
             catch (Exception)
@@ -1220,7 +1337,8 @@ namespace MoreMegaStructure
             {
                 w.Write(StarMegaStructureType[i]);
             }
-            
+            w.Write(maxAutoReceiveGear);
+            w.Write(autoReceiveGearProgress);
         }
         public void IntoOtherSave()
         {
@@ -1228,10 +1346,14 @@ namespace MoreMegaStructure
             {
                 StarMegaStructureType[i] = 0;
             }
+            maxAutoReceiveGear = 1000;
+            autoReceiveGearProgress = 0;
+            selectAutoReceiveGearLimitComboBox.itemIndex = maxAutoReceiveGear / 1000;
             if (isBattleActive)
             {
             }
-            //RendererSphere.InitAll(); //创建新游戏会报错，因此改放在了其他地方
+
+            RefreshUIWhenLoad();
             EffectRenderer.InitAll();
         }
 

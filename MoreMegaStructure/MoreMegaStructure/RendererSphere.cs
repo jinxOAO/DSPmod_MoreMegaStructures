@@ -98,26 +98,6 @@ namespace MoreMegaStructure
         {
             if (EffectRenderer.effectLevel <= 0) return;
             if (rendererSpheres.Count <= 0) return;
-            if (__instance.selection.viewDysonSphere != null)
-            {
-                if (DysonSphere.renderPlace == ERenderPlace.Dysonmap)
-                {
-                    int index = __instance.selection.viewDysonSphere.starData.index;
-                    if (rendererSpheres[index] != null)
-                    {
-                        rendererSpheres[index].DrawPost();
-                    }                    
-                }
-            }
-        }
-
-
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(UIDysonEditor), "DrawDysonSphereMapPost")]
-        public static void DrawPatch4(UIDysonEditor __instance)
-        {
-            if (EffectRenderer.effectLevel <= 0) return;
-            if (rendererSpheres.Count <= 0) return;
             if (__instance.selection?.viewDysonSphere != null)
             {
                 if (DysonSphere.renderPlace == ERenderPlace.Dysonmap)
@@ -130,5 +110,25 @@ namespace MoreMegaStructure
                 }
             }
         }
+
+
+        //[HarmonyPostfix]
+        //[HarmonyPatch(typeof(UIDysonEditor), "DrawDysonSphereMapPost")]
+        //public static void DrawPatch4(UIDysonEditor __instance)
+        //{
+        //    if (EffectRenderer.effectLevel <= 0) return;
+        //    if (rendererSpheres.Count <= 0) return;
+        //    if (__instance.selection?.viewDysonSphere != null)
+        //    {
+        //        if (DysonSphere.renderPlace == ERenderPlace.Dysonmap)
+        //        {
+        //            int index = __instance.selection.viewDysonSphere.starData.index;
+        //            if (rendererSpheres[index] != null)
+        //            {
+        //                rendererSpheres[index].DrawPost();
+        //            }                    
+        //        }
+        //    }
+        //}
     }
 }

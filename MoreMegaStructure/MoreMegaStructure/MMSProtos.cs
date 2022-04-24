@@ -14,7 +14,6 @@ namespace MoreMegaStructure
     [CommonAPISubmoduleDependency(nameof(ProtoRegistry))]
     class MMSProtos
     {
-
         public static void RefreshInitAll()
         {
             ItemProto.InitFluids();
@@ -1009,7 +1008,7 @@ namespace MoreMegaStructure
             ReceiverIC.GridIndex = 309 + pagePlus;
             ReceiverIC.HeatValue = 0L;
             ReceiverIC.prefabDesc = oriItem3.prefabDesc.Copy();
-            ReceiverIC.prefabDesc.powerProductHeat = 4500000000;
+            ReceiverIC.prefabDesc.powerProductHeat = MoreMegaStructure.multifunctionComponentHeat;
             ReceiverIC.prefabDesc.powerProductId = 9500;
             ReceiverIC.handcraft = ReceiverICRecipe;
             ReceiverIC.handcrafts = new List<RecipeProto> { ReceiverICRecipe };
@@ -1983,6 +1982,8 @@ namespace MoreMegaStructure
             ProtoRegistry.RegisterString("请求功率gm", "Requested power", "最终阶段");
             ProtoRegistry.RegisterString("无限制gm", "Infinite", "无限制");
 
+            ProtoRegistry.RegisterString("警告巨构科技未解锁", "You must unlock the corresponding technology first", "你必须先解锁对应巨构的科技");
+
             ProtoRegistry.RegisterString("力场发生器", "Force field generator", "力场发生器");
             ProtoRegistry.RegisterString("力场发生器描述", "With the help of the gravity generator, the force field generator can multiply the gravitational force in a fixed resonance field and give it a highly controllable directivity. If the energy supply is sufficient, the force field generator is able to deflects or even reverses the direction of the force field, making it possible to encode the resonant frequency of the force field.", 
                 "借助引力发生装置，力场发生器可以将引力在固定的谐振场域成倍放大，并赋予其高度可控的指向性。如果能量供应足够，力场发生器快速偏折甚至掉转力场方向，这使得对力场谐振频率进行编码成为可能。");
@@ -2020,6 +2021,13 @@ namespace MoreMegaStructure
             ProtoRegistry.RegisterString("折跃场广播阵列功能文本", "Increase the warp speed of logistics vessels.", "提高物流运输船的曲速速度。");
             ProtoRegistry.RegisterString("星际组装厂功能文本", "Produce Multi-functional integrated components.", "生产多功能集成组件。");
             ProtoRegistry.RegisterString("晶体重构器功能文本", "Produce Casimir crystals and optical grating crystals, which can be received by corresponding receivers.", "产出卡西米尔晶体和光栅石，可被对应的接收器接收。");
+
+            ProtoRegistry.RegisterString("远程折跃多功能组件限制", "Remote-Teleport Multifunction Component Upper Limit", "远程输送多功能组件限制");
+            ProtoRegistry.RegisterString("远程接收关闭gm", "Off", "关闭");
+            ProtoRegistry.RegisterString("上限1000", "Max 1000", "上限1000");
+            ProtoRegistry.RegisterString("上限2000", "Max 2000", "上限2000");
+            ProtoRegistry.RegisterString("组件无限制", "No limit", "无限制");
+
         }
 
         /// <summary>
@@ -2030,21 +2038,43 @@ namespace MoreMegaStructure
         {
             if (proto is StringProto) //光子生成
             {
-                if (proto.ID == 1264)
+                //if(((StringProto)proto).Name == "直接发电") //1263
+                //{
+                //    Debug.Log($"直接发电！！！！！！！！！！！！！！！ id = {proto.ID}");
+                //}
+                //else if (((StringProto)proto).Name == "直接发电提示") //1264
+                //{
+                //    Debug.Log($"直接发电提示！！！！！！！！！！！！！！！ id = {proto.ID}");
+                //}
+                if (((StringProto)proto).Name == "光子生成")
                 {
                     var item = proto as StringProto;
                     item.ZHCN = "物质合成";
                     item.ENUS = "Substance generation";
                     item.FRFR = "Substance generation";
                 }
-
-                else if (proto.ID == 1265 || proto.ID == 1369)
+                else if (((StringProto)proto).Name == "光子生成描述")
                 {
                     var item = proto as StringProto;
                     item.ZHCN = "在物质合成模式下，接收站将允许接收巨构建筑的输出，并将其转换为对应物质。";
                     item.ENUS = "In Substance generation mode, the receiver will receive product delivered by the megastructure and convert it into the corresponding item.";
                     item.FRFR = "In Substance generation mode, the receiver will receive product delivered by the megastructure and convert it into the corresponding item.";
                 }
+                //if (proto.ID == 1265)
+                //{
+                //    var item = proto as StringProto;
+                //    item.ZHCN = "物质合成";
+                //    item.ENUS = "Substance generation";
+                //    item.FRFR = "Substance generation";
+                //}
+
+                //else if (proto.ID == 1371)
+                //{
+                //    var item = proto as StringProto;
+                //    item.ZHCN = "在物质合成模式下，接收站将允许接收巨构建筑的输出，并将其转换为对应物质。";
+                //    item.ENUS = "In Substance generation mode, the receiver will receive product delivered by the megastructure and convert it into the corresponding item.";
+                //    item.FRFR = "In Substance generation mode, the receiver will receive product delivered by the megastructure and convert it into the corresponding item.";
+                //}
 
                 else if (proto.ID == 1187)
                 {
