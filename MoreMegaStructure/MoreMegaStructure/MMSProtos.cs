@@ -2019,7 +2019,7 @@ namespace MoreMegaStructure
             ProtoRegistry.RegisterString("物质解压器功能文本", "Produce unipolar magnet and some basic resources such as iron ingot, which can be received by corresponding receivers.", "产出单极磁石和一些基础资源（例如铁块），可被对应的物质重构器接收。");
             ProtoRegistry.RegisterString("科学枢纽功能文本", "Upload hash points for research without requiring any matrix.", "无需矩阵即可上传hash点数进行研究。");
             ProtoRegistry.RegisterString("折跃场广播阵列功能文本", "Increase the warp speed of logistics vessels.", "提高物流运输船的曲速速度。");
-            ProtoRegistry.RegisterString("星际组装厂功能文本", "Produce Multi-functional integrated components.", "生产多功能集成组件。");
+            ProtoRegistry.RegisterString("星际组装厂功能文本", "Produce Multi-functional integrated components. Components can be directly transmitted to the mecha (but only at 10% efficiency), and after the number of components in the mecha reaches the set upper limit (or when the remote transmission is turned off), it can also be received by the receiver (100% efficiency). You can set this function in the mecha panel.", "生产多功能集成组件。组件可以直接远程传输到机甲中（但只有10%效率），机甲中的组件数达到设定的上限后（或关闭远程传输功能后）还可以由接收器接收（100%效率）。你可以在机甲面板中设置此功能。");
             ProtoRegistry.RegisterString("晶体重构器功能文本", "Produce Casimir crystals and optical grating crystals, which can be received by corresponding receivers.", "产出卡西米尔晶体和光栅石，可被对应的接收器接收。");
 
             ProtoRegistry.RegisterString("远程折跃多功能组件限制", "Remote-Teleport Multifunction Component Upper Limit", "远程输送多功能组件限制");

@@ -167,6 +167,7 @@ namespace MoreMegaStructure
         public static DysonSphere curDysonSphere; //戴森球编辑界面正在浏览的戴森球
         public static int WarpBuiltStarIndex; //折跃场已经在该地址的恒星上建造过了
         public static int CannonBuiltStarIndex; //恒星炮已经在该地址的恒星上建造过了
+        public static long hashGenByAllSN = 0; //每帧计算，所有科学枢纽生成的hash总和，用于提供元数据
 
         /// <summary>
         /// 下面的数据为游戏运行时的关键数据，且会进行存档
@@ -665,11 +666,40 @@ namespace MoreMegaStructure
         /// </summary>
         [HarmonyPostfix]
         [HarmonyPatch(typeof(GameData), "GameTick")]
-        public static void GameTickPostPatch()
+        public static void GameTickPostPatch(long time)
         {
             isRemoteReceiveingGear = false;
             if ((GameMain.mainPlayer.package.GetItemCount(9500) < maxAutoReceiveGear || maxAutoReceiveGear >= 3000))
                 isRemoteReceiveingGear = true;
+
+            if (true)
+            {
+                hashGenByAllSN *= 60;
+                int propertyGen = (int)(Math.Pow(hashGenByAllSN, 0.65));
+                
+                PropertyLogic p = GameMain.gameScenario?.propertyLogic;
+                if (p != null)
+                {
+                    long clusterSeedKey = p.gameData.GetClusterSeedKey();
+                    ClusterPropertyData clusterData = p.propertySystem.GetClusterData(clusterSeedKey);
+                    ClusterPropertyData propertyData = p.gameData.history.propertyData;
+                    foreach (int num in PropertySystem.productIds)
+                    {
+                        int itemProduction = propertyData.GetItemProduction(num);
+                        int itemProduction2 = clusterData.GetItemProduction(num);
+
+                        if (propertyGen > itemProduction)
+                        {
+                            propertyData.SetItemProduction(num, propertyGen);
+                        }
+                        if (propertyGen > itemProduction2)
+                        {
+                            clusterData.SetItemProduction(num, propertyGen);
+                        }
+                    }
+                }
+            }
+            hashGenByAllSN = 0;
         }
 
 
@@ -730,24 +760,9 @@ namespace MoreMegaStructure
 
                 int researchTechId = num;
                 long HashP = (__instance.energyGenCurrentTick - __instance.energyReqCurrentTick) * (HashBasicSpeedScale + HashBonusPerLevel * history.techSpeed) / HashGenDivisor;
-                //long baseHashP = (__instance.energyGenCurrentTick - __instance.energyReqCurrentTick) / HashGenDivisor;
-                //long HashP = baseHashP * (HashBasicSpeedScale + HashBonusPerLevel * history.techSpeed);//默认情况下每tick增加这么多的研究哈希值
-
-                //HashP = (HashP < ts.hashNeeded - ts.hashUploaded) ? HashP : (ts.hashNeeded - ts.hashUploaded - 1);//但每次增加的值不会达到最终需求点数，总会差一点。
-
-                //下面的if其实没必要。阻止锅盖直接完成科技的全部哈希值，而是剩下最后一点。如果完成全部的hash会出现各种错误。因此最后一点hash交由游戏本身的研究所或者机甲研究完成科技的解锁。
-                //if (ts.hashUploaded < ts.hashNeeded - HashP)
-                //{
-                //    ts.hashUploaded += HashP;
-                //    universeMatrixPointUploaded += (long)ts.uPointPerHash * HashP;
-                //    techHashedThisFrame += (int)HashP;
-                //}
-
                 history.AddTechHash(HashP);
+                hashGenByAllSN += HashP;
 
-                //history.techStates[researchTechId] = ts;
-                //statistics.techHashedThisFrame = techHashedThisFrame;
-                //history.universeMatrixPointUploaded = universeMatrixPointUploaded;
                 //如果找到了工厂，就记录数据面板研究点数
                 if (factoryProductionStat != null)
                 {
@@ -1100,8 +1115,6 @@ namespace MoreMegaStructure
             {
 
             }
-            
-
 
         }
 
@@ -1318,6 +1331,8 @@ namespace MoreMegaStructure
                 }
                 selectAutoReceiveGearLimitComboBox.itemIndex = maxAutoReceiveGear / 1000;
 
+                hashGenByAllSN = 0;
+
                 RefreshUIWhenLoad();
                 EffectRenderer.InitAll();
             }
@@ -1352,6 +1367,8 @@ namespace MoreMegaStructure
             if (isBattleActive)
             {
             }
+
+            hashGenByAllSN = 0;
 
             RefreshUIWhenLoad();
             EffectRenderer.InitAll();
