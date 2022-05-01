@@ -99,9 +99,14 @@
       <HintPath>..\..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\DSPGAME_Data\Managed\UnityEngine.UIElementsModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>..\..\..\..\..\Steam\steamapps\common\Dyson Sphere Program\DSPGAME_Data\Managed\UnityEngine.UIModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EffectRenderer.cs" />
+    <Compile Include="MegaButtonGroupBehaviour.cs" />
     <Compile Include="MMSProtos.cs" />
     <Compile Include="MoreMegaStructure.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

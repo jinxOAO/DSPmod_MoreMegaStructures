@@ -28,7 +28,7 @@ namespace MoreMegaStructure
                 return new int[] { -1, -1, -1, -1, -1, -1 };
 
 			long cannonEnergy = sphere.energyGenCurrentTick - sphere.energyReqCurrentTick;
-
+			if (cannonEnergy < 0) cannonEnergy = 0;
 			int level = 0;
             for (int i = 0; i < 6; i++)
             {

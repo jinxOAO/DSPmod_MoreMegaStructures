@@ -703,6 +703,7 @@ namespace MoreMegaStructure
             ReceiverIronRecipe.TimeSpend = 480;
             Traverse.Create(ReceiverIronRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverIron);
             ReceiverIronRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技
+            if (MoreMegaStructure.isBattleActive) ReceiverIronRecipe.preTech = LDB.techs.Select(1920);
             ReceiverIron.ID = 9493;
             ReceiverIron.Name = "铁金属重构装置";
             ReceiverIron.name = "铁金属重构装置".Translate();
@@ -740,6 +741,7 @@ namespace MoreMegaStructure
             ReceiverCopperRecipe.TimeSpend = 480;
             Traverse.Create(ReceiverCopperRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverCopper);
             ReceiverCopperRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技
+            if (MoreMegaStructure.isBattleActive) ReceiverCopperRecipe.preTech = LDB.techs.Select(1920); 
             ReceiverCopper.ID = 9494;
             ReceiverCopper.Name = "铜金属重构装置";
             ReceiverCopper.name = "铜金属重构装置".Translate();
@@ -777,6 +779,7 @@ namespace MoreMegaStructure
             ReceiverSiliconRecipe.TimeSpend = 480;
             Traverse.Create(ReceiverSiliconRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverSilicon);
             ReceiverSiliconRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技
+            if (MoreMegaStructure.isBattleActive) ReceiverSiliconRecipe.preTech = LDB.techs.Select(1920);
             ReceiverSilicon.ID = 9495;
             ReceiverSilicon.Name = "高纯硅重构装置";
             ReceiverSilicon.name = "高纯硅重构装置".Translate();
@@ -813,7 +816,8 @@ namespace MoreMegaStructure
             ReceiverTitaniumRecipe.GridIndex = 304 + pagePlus;
             ReceiverTitaniumRecipe.TimeSpend = 480;
             Traverse.Create(ReceiverTitaniumRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverTitanium);
-            ReceiverTitaniumRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技
+            ReceiverTitaniumRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技 
+            if (MoreMegaStructure.isBattleActive) ReceiverTitaniumRecipe.preTech = LDB.techs.Select(1920);
             ReceiverTitanium.ID = 9496;
             ReceiverTitanium.Name = "钛金属重构装置";
             ReceiverTitanium.name = "钛金属重构装置".Translate();
@@ -851,6 +855,7 @@ namespace MoreMegaStructure
             ReceiverMagoreRecipe.TimeSpend = 480;
             Traverse.Create(ReceiverMagoreRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverMagore);
             ReceiverMagoreRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技
+            if (MoreMegaStructure.isBattleActive) ReceiverMagoreRecipe.preTech = LDB.techs.Select(1920);
             ReceiverMagore.ID = 9497;
             ReceiverMagore.Name = "单极磁石重构装置";
             ReceiverMagore.name = "单极磁石重构装置".Translate();
@@ -887,7 +892,8 @@ namespace MoreMegaStructure
             ReceiverCoalRecipe.GridIndex = 306 + pagePlus;
             ReceiverCoalRecipe.TimeSpend = 480;
             Traverse.Create(ReceiverCoalRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverCoal);
-            ReceiverCoalRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技
+            ReceiverCoalRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技 
+            if (MoreMegaStructure.isBattleActive) ReceiverCoalRecipe.preTech = LDB.techs.Select(1920); 
             ReceiverCoal.ID = 9501;
             ReceiverCoal.Name = "石墨提炼装置";
             ReceiverCoal.name = "石墨提炼装置".Translate();
@@ -924,7 +930,8 @@ namespace MoreMegaStructure
             ReceiverCasimirRecipe.GridIndex = 307 + pagePlus;
             ReceiverCasimirRecipe.TimeSpend = 480;
             Traverse.Create(ReceiverCasimirRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverCasimir);
-            ReceiverCasimirRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技
+            ReceiverCasimirRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技 
+            if (MoreMegaStructure.isBattleActive) ReceiverCasimirRecipe.preTech = LDB.techs.Select(1923);
             ReceiverCasimir.ID = 9498;
             ReceiverCasimir.Name = "晶体接收器";
             ReceiverCasimir.name = "晶体接收器".Translate();
@@ -961,7 +968,8 @@ namespace MoreMegaStructure
             ReceiverGratingRecipe.GridIndex = 308 + pagePlus;
             ReceiverGratingRecipe.TimeSpend = 480;
             Traverse.Create(ReceiverGratingRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverGrating);
-            ReceiverGratingRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技
+            ReceiverGratingRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技 
+            if (MoreMegaStructure.isBattleActive) ReceiverGratingRecipe.preTech = LDB.techs.Select(1923);
             ReceiverGrating.ID = 9502;
             ReceiverGrating.Name = "光栅晶体接收器";
             ReceiverGrating.name = "光栅晶体接收器".Translate();
@@ -999,7 +1007,8 @@ namespace MoreMegaStructure
             ReceiverICRecipe.GridIndex = 309 + pagePlus;
             ReceiverICRecipe.TimeSpend = 480;
             Traverse.Create(ReceiverICRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverIC);
-            ReceiverICRecipe.preTech = LDB.techs.Select(1141); //射线接收站科技
+            ReceiverICRecipe.preTech = LDB.techs.Select(1141); //射线接收站科技 
+            if (MoreMegaStructure.isBattleActive) ReceiverICRecipe.preTech = LDB.techs.Select(1922);
             ReceiverIC.ID = 9499;
             ReceiverIC.Name = "组件集成装置";
             ReceiverIC.name = "组件集成装置".Translate();
@@ -2028,6 +2037,8 @@ namespace MoreMegaStructure
             ProtoRegistry.RegisterString("上限2000", "Max 2000", "上限2000");
             ProtoRegistry.RegisterString("组件无限制", "No limit", "无限制");
 
+            ProtoRegistry.RegisterString("鼠标触碰左侧黄条以规划巨构", "Touch the left bar to plan the megastructure", "鼠标触碰左侧线条以规划巨构"); 
+
         }
 
         /// <summary>
@@ -2038,14 +2049,6 @@ namespace MoreMegaStructure
         {
             if (proto is StringProto) //光子生成
             {
-                //if(((StringProto)proto).Name == "直接发电") //1263
-                //{
-                //    Debug.Log($"直接发电！！！！！！！！！！！！！！！ id = {proto.ID}");
-                //}
-                //else if (((StringProto)proto).Name == "直接发电提示") //1264
-                //{
-                //    Debug.Log($"直接发电提示！！！！！！！！！！！！！！！ id = {proto.ID}");
-                //}
                 if (((StringProto)proto).Name == "光子生成")
                 {
                     var item = proto as StringProto;
@@ -2060,23 +2063,21 @@ namespace MoreMegaStructure
                     item.ENUS = "In Substance generation mode, the receiver will receive product delivered by the megastructure and convert it into the corresponding item.";
                     item.FRFR = "In Substance generation mode, the receiver will receive product delivered by the megastructure and convert it into the corresponding item.";
                 }
-                //if (proto.ID == 1265)
-                //{
-                //    var item = proto as StringProto;
-                //    item.ZHCN = "物质合成";
-                //    item.ENUS = "Substance generation";
-                //    item.FRFR = "Substance generation";
-                //}
-
-                //else if (proto.ID == 1371)
-                //{
-                //    var item = proto as StringProto;
-                //    item.ZHCN = "在物质合成模式下，接收站将允许接收巨构建筑的输出，并将其转换为对应物质。";
-                //    item.ENUS = "In Substance generation mode, the receiver will receive product delivered by the megastructure and convert it into the corresponding item.";
-                //    item.FRFR = "In Substance generation mode, the receiver will receive product delivered by the megastructure and convert it into the corresponding item.";
-                //}
-
-                else if (proto.ID == 1187)
+                if (((StringProto)proto).Name == "戴森球统计页签")
+                {
+                    var item = proto as StringProto;
+                    item.ZHCN = "巨构建筑";
+                    item.ENUS = "Megastructure";
+                    item.FRFR = "Megastructure";
+                }
+                else if (((StringProto)proto).Name == "戴森球类")
+                {
+                    var item = proto as StringProto;
+                    item.ZHCN = "巨构建筑 (8)";
+                    item.ENUS = "Megastructure (8)";
+                    item.FRFR = "Megastructure (8)";
+                }
+                else if (((StringProto)proto).Name == "戴森球面板提示")
                 {
                     var item = proto as StringProto;
                     item.ZHCN = "打开巨构建筑面板，制定巨构建筑的建造规划。";
@@ -2084,63 +2085,52 @@ namespace MoreMegaStructure
                     item.FRFR = "Turn on the Megastructure editor, and make a build plan.";
                 }
 
-                else if (proto.ID == 1186) //左下角戴森球编辑器按钮
+                else if (((StringProto)proto).Name == "戴森球面板") //左下角戴森球编辑器按钮
                 {
                     var item = proto as StringProto;
                     item.ZHCN = "巨构建筑 (Y)";
                     item.ENUS = "Megastructure (Y)";
                     item.FRFR = "Megastructure (Y)";
                 }
-
-                else if (proto.ID == 1167) //戴森球计划 (8)   这是建造栏的标签
-                {
-                    var item = proto as StringProto;
-                    item.ZHCN = "巨构建筑 (8)";
-                    item.ENUS = "Megastructure (8)";
-                    item.FRFR = "Megastructure (8)";
-                }
-
-                else if (proto.ID == 1416) //统计面板
-                {
-                    var item = proto as StringProto;
-                    item.ZHCN = "巨构建筑";
-                    item.ENUS = "Megastructure";
-                    item.FRFR = "Megastructure";
-                }
-
-                else if (proto.ID == 7346) //修建时的tooltip
+                //else if (proto.ID == 7346) //修建时的tooltip
+                else if(((StringProto)proto).Name == "修建节点标题")
                 {
                     var item = proto as StringProto;
                     item.ZHCN = "巨构节点";
                     item.ENUS = "Megastructure Node";
                     item.FRFR = "Megastructure Node";
                 }
-
-                else if (proto.ID == 7347) //修建时的tooltip
+                //else if (proto.ID == 7347) //修建时的tooltip
+                else if (((StringProto)proto).Name == "修建节点描述")
                 {
                     var item = proto as StringProto;
                     item.ZHCN = "规划修建巨构建筑节点，点击该按钮可以选择节点的样式。";
                     item.ENUS = "Plan and build the Megastructure Node, click this button to choose the node style.";
                     item.FRFR = "Plan and build the Megastructure Node, click this button to choose the node style.";
                 }
-
-                else if (proto.ID == 7348) //修建时的tooltip
+                //else if (proto.ID == 7348) //修建时的tooltip
+                else if (((StringProto)proto).Name == "修建壳面标题")
                 {
                     var item = proto as StringProto;
                     item.ZHCN = "巨构壳面";
                     item.ENUS = "Megastructure Shell";
                     item.FRFR = "Megastructure Shell";
                 }
-
-                else if (proto.ID == 7349) //修建时的tooltip
+                //else if (proto.ID == 7349) //修建时的tooltip
+                else if (((StringProto)proto).Name == "修建壳面描述")
                 {
                     var item = proto as StringProto;
                     item.ZHCN = "若要规划一个巨构壳面，需要将相应的壳面用节点和框架规划成一个闭合的多边形。\n点击该按钮可以选择巨构壳面的样式进行修建规划。";
                     item.ENUS = "In order to Plan a Megastructure Shell, it is necessary to plan the corresponding shell as a closed polygon with nodes and frames.\nClick this button to choose the Megastructure Shell style.";
                     item.FRFR = item.ENUS;
                 }
-
-                else if (proto.ID == 394) //规划完在球上点击时的显示，由于太长把英文的Megastructure改成了Structure
+                else if (((StringProto)proto).Name == "经纬线框架描述" || ((StringProto)proto).Name == "测地线框架描述")
+                {
+                    var item = proto as StringProto;
+                    item.ENUS = item.ENUS.Replace("Dyson","Megastructure");
+                    item.FRFR = item.ENUS;
+                }
+                else if (((StringProto)proto).Name == "戴森球节点号") //规划完在球上点击时的显示，由于太长把英文的Megastructure改成了Structure
                 {
                     var item = proto as StringProto;
                     item.ZHCN = "巨构节点 # {0}-{1}";
@@ -2148,7 +2138,7 @@ namespace MoreMegaStructure
                     item.FRFR = item.ENUS;
                 }
 
-                else if (proto.ID == 772) //
+                else if (((StringProto)proto).Name == "戴森球框架号") //
                 {
                     var item = proto as StringProto;
                     item.ZHCN = "巨构框架 # {0}-{1}";
@@ -2156,7 +2146,7 @@ namespace MoreMegaStructure
                     item.FRFR = item.ENUS;
                 }
 
-                else if (proto.ID == 773) //
+                else if (((StringProto)proto).Name == "戴森球壳面号") //
                 {
                     var item = proto as StringProto;
                     item.ZHCN = "巨构壳面 # {0}-{1}";

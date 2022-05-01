@@ -131,6 +131,7 @@ namespace MoreMegaStructure
         public static Text ShPowGenText;
         public static Text ReceiverUIButton2Text;//接收器UI的模式2按钮的文本
 
+        public static GameObject setMegaGroupObj;
         public static GameObject set2DysonButtonObj;
         public static GameObject set2MatDecomButtonObj;
         public static GameObject set2SciNexusButtonObj;
@@ -138,6 +139,7 @@ namespace MoreMegaStructure
         public static GameObject set2MegaAssemButtonObj;
         public static GameObject set2CrystalMinerButtonObj;
         public static GameObject set2StarCannonButtonObj;
+        public static GameObject LeftMegaBuildWarning;
         public static GameObject DysonEditorPowerDescLabel4BarObj;
         public static GameObject selectAutoReceiveGearLimitObj = null;
         public static GameObject selectAutoReceiveGearLimitLabelObj;
@@ -168,6 +170,8 @@ namespace MoreMegaStructure
         public static int WarpBuiltStarIndex; //折跃场已经在该地址的恒星上建造过了
         public static int CannonBuiltStarIndex; //恒星炮已经在该地址的恒星上建造过了
         public static long hashGenByAllSN = 0; //每帧计算，所有科学枢纽生成的hash总和，用于提供元数据
+        public static int resolutionY = 1080;
+        //public static bool inLogged = false;
 
         /// <summary>
         /// 下面的数据为游戏运行时的关键数据，且会进行存档
@@ -280,6 +284,16 @@ namespace MoreMegaStructure
         }
         public void Update()
         {
+            Vector3 mouseUIPos = Input.mousePosition;
+            if(mouseUIPos.x <= MegaButtonGroupBehaviour.currentX + 280 && mouseUIPos.y <= 270)
+            {
+                MegaButtonGroupBehaviour.ShowSetMegaGroup();
+            }
+            else
+            {
+                MegaButtonGroupBehaviour.HideSetMegaGroup();
+            }
+            MegaButtonGroupBehaviour.SetMegaGroupMove();
         }
 
         public static void GetVanillaUITexts()
@@ -393,36 +407,69 @@ namespace MoreMegaStructure
             try
             {
                 //由于游戏改版，原有位置即使在高分辨率下也被占用了。所以更改位置
-                int biasX = 300;
-                int biasY = 780;
-                resolutionLower1080 = DSPGame.globalOption.resolution.height < 1080 ? true : false;
-                if (LowResolutionMode.Value || resolutionLower1080)
-                {
-                    biasX = 300;
-                    biasY = 780; //原来是800
-                }
+                //int biasX = 0;
+                //int biasY = 0; // 原来是0, 0
+                //resolutionLower1080 = DSPGame.globalOption.resolution.height < 1080 ? true : false;
+                //if (LowResolutionMode.Value || resolutionLower1080)
+                //{
+                //    biasX = 300;
+                //    biasY = 780; //原来是800
+                //}
+                //resolutionY = DSPGame.globalOption.resolution.height;
+                //biasY = (int)(-800.0 * resolutionY / 1080) + 800;
+                //if (resolutionY > 1090) biasY = -30;
+                float ParentUIHeight = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Dyson Sphere Editor/Dyson Editor Control Panel").GetComponent<RectTransform>().rect.height;
+                int groupPosY = (int)(270 - ParentUIHeight);
+                int warnTxtPosY = Math.Min((int)(-940 * ParentUIHeight / 1080), -835);
 
                 //主要标签提示文字等
                 GameObject DysonUILeft = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Dyson Sphere Editor/Dyson Editor Control Panel/hierarchy"); //戴森球编辑器UI的左边 作为Parent
+                setMegaGroupObj = new GameObject("mega-buttons");
+                setMegaGroupObj.transform.SetParent(DysonUILeft.transform);
+                /*
+                setMegaGroupObj = GameObject.Instantiate(GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Dyson Sphere Editor/Dyson Editor Control Panel/inspector/sphere-group/sail-stat/bar-group/bar-blue"), DysonUILeft.transform);
+                setMegaGroupObj.GetComponent<Image>().color = new Color(0, 0, 0, 1);
+                setMegaGroupObj.GetComponent<Image>().fillAmount = 1;
+                setMegaGroupObj.AddComponent<Button>();
+                */
+                setMegaGroupObj.transform.localPosition = new Vector3(0, groupPosY, 0);
+                setMegaGroupObj.transform.localScale = new Vector3(1, 1, 1);
+                //setMegaGroupObj.AddComponent<RectTransform>();
+                //setMegaGroupObj.GetComponent<RectTransform>().sizeDelta = new Vector2(200, 500);
+                //setMegaGroupObj.AddComponent<MegaButtonBehaviour>();
+
 
                 GameObject LeftShellLabel2 = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Dyson Sphere Editor/Dyson Editor Control Panel/hierarchy/layers/title-text");
+                LeftMegaBuildWarning = Instantiate(LeftShellLabel2);
+                LeftMegaBuildWarning.name = "settype-warning";
+                LeftMegaBuildWarning.transform.SetParent(DysonUILeft.transform, false);
+                LeftMegaBuildWarning.transform.localPosition = new Vector3(5, warnTxtPosY, 0);
+                SetMegaStructureWarningText = LeftMegaBuildWarning.GetComponent<Text>();
+                SetMegaStructureWarningText.GetComponent<RectTransform>().sizeDelta = new Vector2(270, 100); //大小
+                SetMegaStructureWarningText.text = "鼠标触碰左侧黄条以规划巨构".Translate();
+                SetMegaStructureWarningText.alignment = TextAnchor.MiddleCenter;
+                SetMegaStructureWarningText.fontSize = 16;
+                SetMegaStructureWarningText.color = new Color(1f, 1f, 0.57f, 1f);
+                LeftMegaBuildWarning.SetActive(false);
+
+                GameObject rightBarObj = GameObject.Instantiate(GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Dyson Sphere Editor/Dyson Editor Control Panel/inspector/sphere-group/sail-stat/bar-group/bar-orange"), setMegaGroupObj.transform);
+                rightBarObj.name = "right-bar";
+                rightBarObj.transform.localPosition = new Vector3(270, 0, 0);
+                rightBarObj.transform.localScale = new Vector3(1, 1, 1);
+                rightBarObj.GetComponent<RectTransform>().pivot = new Vector2(0, 1);
+                rightBarObj.GetComponent<RectTransform>().anchorMin = new Vector2(0, 0);
+                rightBarObj.GetComponent<RectTransform>().anchorMax = new Vector2(0, 0);
+                rightBarObj.GetComponent<Image>().fillAmount = 1;
+                rightBarObj.GetComponent<RectTransform>().sizeDelta = new Vector2(8, 243);
+
                 GameObject LeftMegaStructrueTypeLabel = Instantiate(LeftShellLabel2);
                 LeftMegaStructrueTypeLabel.name = "title3";
-                LeftMegaStructrueTypeLabel.transform.SetParent(DysonUILeft.transform, false);
-                LeftMegaStructrueTypeLabel.transform.localPosition = new Vector3(22 + biasX, -800 + biasY, 0);
+                LeftMegaStructrueTypeLabel.transform.SetParent(setMegaGroupObj.transform, false);
+                LeftMegaStructrueTypeLabel.transform.localPosition = new Vector3(22, 0, 0);
                 SetMegaStructureLabelText = LeftMegaStructrueTypeLabel.GetComponent<Text>();
                 SetMegaStructureLabelText.text = "规划巨构建筑类型";
 
-                GameObject LeftMegaBuildWarning = Instantiate(LeftShellLabel2);
-                LeftMegaBuildWarning.name = "settype-warning";
-                LeftMegaBuildWarning.transform.SetParent(DysonUILeft.transform, false);
-                LeftMegaBuildWarning.transform.localPosition = new Vector3(20 + biasX, -1025 + biasY, 0);
-                SetMegaStructureWarningText = LeftMegaBuildWarning.GetComponent<Text>();
-                SetMegaStructureWarningText.GetComponent<RectTransform>().sizeDelta = new Vector2(250, 50); //按钮大小
-                SetMegaStructureWarningText.text = "警告文本";
-                SetMegaStructureWarningText.fontSize = 14;
-                SetMegaStructureWarningText.color = new Color(0.9f, 0.1f, 0.1f, 0.8f);
-                LeftMegaBuildWarning.SetActive(false); //不再需要警告文本，而使用鼠标右边弹出警告的方式
+                
 
                 //按钮
                 GameObject addNewLayerButton = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Dyson Sphere Editor/Dyson Editor Control Panel/hierarchy/layers/buttons-group/buttons/add-button");
@@ -430,8 +477,8 @@ namespace MoreMegaStructure
                 set2DysonButtonObj = Instantiate(addNewLayerButton);
                 set2DysonButtonObj.SetActive(true);
                 set2DysonButtonObj.name = "set-mega-0"; //名字
-                set2DysonButtonObj.transform.SetParent(DysonUILeft.transform, false);
-                set2DysonButtonObj.transform.localPosition = new Vector3(30 + biasX, -835 + biasY, 0); //位置
+                set2DysonButtonObj.transform.SetParent(setMegaGroupObj.transform, false);
+                set2DysonButtonObj.transform.localPosition = new Vector3(30, -35, 0); //位置
                 set2DysonButtonObj.GetComponent<RectTransform>().sizeDelta = new Vector2(220, 28); //按钮大小
                 set2DysonButtonTextTrans = set2DysonButtonObj.transform.Find("Text");
                 set2DysonButton = set2DysonButtonObj.GetComponent<Button>();
@@ -440,90 +487,90 @@ namespace MoreMegaStructure
                 set2MatDecomButtonObj = Instantiate(addNewLayerButton);
                 set2MatDecomButtonObj.SetActive(true);
                 set2MatDecomButtonObj.name = "set-mega-1"; //名字
-                set2MatDecomButtonObj.transform.SetParent(DysonUILeft.transform, false);
-                set2MatDecomButtonObj.transform.localPosition = new Vector3(30 + biasX, -865 + biasY, 0); //位置
+                set2MatDecomButtonObj.transform.SetParent(setMegaGroupObj.transform, false);
+                set2MatDecomButtonObj.transform.localPosition = new Vector3(30, -65, 0); //位置
                 set2MatDecomButtonObj.GetComponent<RectTransform>().sizeDelta = new Vector2(220, 28); //按钮大小
                 set2MatDecomButtonTextTrans = set2MatDecomButtonObj.transform.Find("Text");
                 set2MatDecomButton = set2MatDecomButtonObj.GetComponent<Button>();
                 set2MatDecomButton.interactable = true;
                 set2MatDecomButtonObj.GetComponent<UIButton>().tips.tipTitle = "功能说明题目".Translate();
                 set2MatDecomButtonObj.GetComponent<UIButton>().tips.tipText = "物质解压器功能文本".Translate();
-                set2MatDecomButtonObj.GetComponent<UIButton>().tips.delay = 0.1f;
+                set2MatDecomButtonObj.GetComponent<UIButton>().tips.delay = 0.3f;
                 set2MatDecomButtonObj.GetComponent<UIButton>().tips.width = 280;
                 set2MatDecomButtonObj.GetComponent<UIButton>().tips.offset = new Vector2(140, 50);
 
                 set2SciNexusButtonObj = Instantiate(addNewLayerButton);
                 set2SciNexusButtonObj.SetActive(true);
                 set2SciNexusButtonObj.name = "set-mega-2"; //名字
-                set2SciNexusButtonObj.transform.SetParent(DysonUILeft.transform, false);
-                set2SciNexusButtonObj.transform.localPosition = new Vector3(30 + biasX, -895 + biasY, 0); //位置
+                set2SciNexusButtonObj.transform.SetParent(setMegaGroupObj.transform, false);
+                set2SciNexusButtonObj.transform.localPosition = new Vector3(30, -95, 0); //位置
                 set2SciNexusButtonObj.GetComponent<RectTransform>().sizeDelta = new Vector2(220, 28); //按钮大小
                 set2SciNexusButtonTextTrans = set2SciNexusButtonObj.transform.Find("Text");
                 set2SciNexusButton = set2SciNexusButtonObj.GetComponent<Button>();
                 set2SciNexusButton.interactable = true;
                 set2SciNexusButtonObj.GetComponent<UIButton>().tips.tipTitle = "功能说明题目".Translate();
                 set2SciNexusButtonObj.GetComponent<UIButton>().tips.tipText = "科学枢纽功能文本".Translate();
-                set2SciNexusButtonObj.GetComponent<UIButton>().tips.delay = 0.1f;
+                set2SciNexusButtonObj.GetComponent<UIButton>().tips.delay = 0.3f;
                 set2SciNexusButtonObj.GetComponent<UIButton>().tips.width = 260;
                 set2SciNexusButtonObj.GetComponent<UIButton>().tips.offset = new Vector2(130, 50);
 
                 set2WarpFieldGenButtonObj = Instantiate(addNewLayerButton);
                 set2WarpFieldGenButtonObj.SetActive(true);
                 set2WarpFieldGenButtonObj.name = "set-mega-3"; //名字
-                set2WarpFieldGenButtonObj.transform.SetParent(DysonUILeft.transform, false);
-                set2WarpFieldGenButtonObj.transform.localPosition = new Vector3(30 + biasX, -925 + biasY, 0); //位置
+                set2WarpFieldGenButtonObj.transform.SetParent(setMegaGroupObj.transform, false);
+                set2WarpFieldGenButtonObj.transform.localPosition = new Vector3(30, -125, 0); //位置
                 set2WarpFieldGenButtonObj.GetComponent<RectTransform>().sizeDelta = new Vector2(220, 28); //按钮大小
                 set2WarpFieldGenButtonTextTrans = set2WarpFieldGenButtonObj.transform.Find("Text");
                 set2WarpFieldGenButton = set2WarpFieldGenButtonObj.GetComponent<Button>();
                 set2WarpFieldGenButton.interactable = true;
                 set2WarpFieldGenButtonObj.GetComponent<UIButton>().tips.tipTitle = "功能说明题目".Translate();
                 set2WarpFieldGenButtonObj.GetComponent<UIButton>().tips.tipText = "折跃场广播阵列功能文本".Translate();
-                set2WarpFieldGenButtonObj.GetComponent<UIButton>().tips.delay = 0.1f;
+                set2WarpFieldGenButtonObj.GetComponent<UIButton>().tips.delay = 0.3f;
                 set2WarpFieldGenButtonObj.GetComponent<UIButton>().tips.width = 260;
                 set2WarpFieldGenButtonObj.GetComponent<UIButton>().tips.offset = new Vector2(130, 50);
 
                 set2MegaAssemButtonObj = Instantiate(addNewLayerButton);
                 set2MegaAssemButtonObj.SetActive(true);
                 set2MegaAssemButtonObj.name = "set-mega-4"; //名字
-                set2MegaAssemButtonObj.transform.SetParent(DysonUILeft.transform, false);
-                set2MegaAssemButtonObj.transform.localPosition = new Vector3(30 + biasX, -955 + biasY, 0); //位置
+                set2MegaAssemButtonObj.transform.SetParent(setMegaGroupObj.transform, false);
+                set2MegaAssemButtonObj.transform.localPosition = new Vector3(30, -155, 0); //位置
                 set2MegaAssemButtonObj.GetComponent<RectTransform>().sizeDelta = new Vector2(220, 28); //按钮大小
                 set2MegaAssemButtonTextTrans = set2MegaAssemButtonObj.transform.Find("Text");
                 set2MegaAssemButton = set2MegaAssemButtonObj.GetComponent<Button>();
                 set2MegaAssemButton.interactable = true;
                 set2MegaAssemButtonObj.GetComponent<UIButton>().tips.tipTitle = "功能说明题目".Translate();
                 set2MegaAssemButtonObj.GetComponent<UIButton>().tips.tipText = "星际组装厂功能文本".Translate();
-                set2MegaAssemButtonObj.GetComponent<UIButton>().tips.delay = 0.1f;
+                set2MegaAssemButtonObj.GetComponent<UIButton>().tips.delay = 0.3f;
                 set2MegaAssemButtonObj.GetComponent<UIButton>().tips.width = 260;
                 set2MegaAssemButtonObj.GetComponent<UIButton>().tips.offset = new Vector2(130, 50);
 
                 set2CrystalMinerButtonObj = Instantiate(addNewLayerButton);
                 set2CrystalMinerButtonObj.SetActive(true);
                 set2CrystalMinerButtonObj.name = "set-mega-5"; //名字
-                set2CrystalMinerButtonObj.transform.SetParent(DysonUILeft.transform, false);
-                set2CrystalMinerButtonObj.transform.localPosition = new Vector3(30 + biasX, -985 + biasY, 0); //位置
+                set2CrystalMinerButtonObj.transform.SetParent(setMegaGroupObj.transform, false);
+                set2CrystalMinerButtonObj.transform.localPosition = new Vector3(30, -185, 0); //位置
                 set2CrystalMinerButtonObj.GetComponent<RectTransform>().sizeDelta = new Vector2(220, 28); //按钮大小
                 set2CrystalMinerButtonTextTrans = set2CrystalMinerButtonObj.transform.Find("Text");
                 set2CrystalMinerButton = set2CrystalMinerButtonObj.GetComponent<Button>();
                 set2CrystalMinerButton.interactable = true;
                 set2CrystalMinerButtonObj.GetComponent<UIButton>().tips.tipTitle = "功能说明题目".Translate();
                 set2CrystalMinerButtonObj.GetComponent<UIButton>().tips.tipText = "晶体重构器功能文本".Translate();
-                set2CrystalMinerButtonObj.GetComponent<UIButton>().tips.delay = 0.1f;
+                set2CrystalMinerButtonObj.GetComponent<UIButton>().tips.delay = 0.3f;
                 set2CrystalMinerButtonObj.GetComponent<UIButton>().tips.width = 260;
                 set2CrystalMinerButtonObj.GetComponent<UIButton>().tips.offset = new Vector2(130, 50);
 
                 set2StarCannonButtonObj = Instantiate(addNewLayerButton);
                 set2StarCannonButtonObj.SetActive(isBattleActive);
                 set2StarCannonButtonObj.name = "set-mega-6"; //名字
-                set2StarCannonButtonObj.transform.SetParent(DysonUILeft.transform, false);
-                set2StarCannonButtonObj.transform.localPosition = new Vector3(30 + biasX, -1015 + biasY, 0); //位置
+                set2StarCannonButtonObj.transform.SetParent(setMegaGroupObj.transform, false);
+                set2StarCannonButtonObj.transform.localPosition = new Vector3(30, -215, 0); //位置
                 set2StarCannonButtonObj.GetComponent<RectTransform>().sizeDelta = new Vector2(220, 28); //按钮大小
                 set2StarCannonButtonTextTrans = set2StarCannonButtonObj.transform.Find("Text");
                 set2StarCannonButton = set2StarCannonButtonObj.GetComponent<Button>();
                 set2StarCannonButton.interactable = true;
                 set2StarCannonButtonObj.GetComponent<UIButton>().tips.tipTitle = "恒星炮设计说明题目".Translate();
                 set2StarCannonButtonObj.GetComponent<UIButton>().tips.tipText = "恒星炮设计说明文本".Translate();
-                set2StarCannonButtonObj.GetComponent<UIButton>().tips.delay = 0.1f;
+                set2StarCannonButtonObj.GetComponent<UIButton>().tips.delay = 0.3f;
                 set2StarCannonButtonObj.GetComponent<UIButton>().tips.width = 520;
                 set2StarCannonButtonObj.GetComponent<UIButton>().tips.offset = new Vector2(260, 100);
 
@@ -675,7 +722,7 @@ namespace MoreMegaStructure
             if (true)
             {
                 hashGenByAllSN *= 60;
-                int propertyGen = (int)(Math.Pow(hashGenByAllSN, 0.65));
+                int propertyGen = (int)(Math.Pow(hashGenByAllSN, 0.65) + 0.001 * hashGenByAllSN);
                 
                 PropertyLogic p = GameMain.gameScenario?.propertyLogic;
                 if (p != null)
@@ -824,7 +871,8 @@ namespace MoreMegaStructure
                     try
                     {
                         GameMain.mainPlayer.TryAddItemToPackage(9500, productCnt, 0, true);
-                        UIItemup.Up(9500, productCnt);
+                        if(!VFInput.inFullscreenGUI)
+                            Utils.UIItemUp(9500, productCnt, 240);
                     }
                     catch (Exception)
                     {
@@ -915,7 +963,7 @@ namespace MoreMegaStructure
             {
                 RefreshUILabels(__instance.gameData.localStar);
             }
-            
+            RefreshButtonPos();
         }
 
         [HarmonyPostfix]
@@ -934,6 +982,7 @@ namespace MoreMegaStructure
             {
                 RefreshUILabels(__instance.gameData.localStar);
             }
+            RefreshButtonPos();
         }
 
         [HarmonyPostfix]
@@ -952,9 +1001,18 @@ namespace MoreMegaStructure
             {
                 RefreshUILabels(__instance.gameData.localStar);
             }
-            
         }
 
+        public static void RefreshButtonPos()
+        {
+            float ParentUIHeight = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Dyson Sphere Editor/Dyson Editor Control Panel").GetComponent<RectTransform>().rect.height;
+            int groupPosY = (int)(270 - ParentUIHeight);
+            int warnTxtPosY = Math.Min((int)(-940 * ParentUIHeight / 1080), -835);
+            if (setMegaGroupObj != null)
+                setMegaGroupObj.transform.localPosition = new Vector3(MegaButtonGroupBehaviour.currentX, groupPosY, 0);
+            if (LeftMegaBuildWarning != null)
+                LeftMegaBuildWarning.transform.localPosition = new Vector3(5, warnTxtPosY, 0);
+        }
 
         public static void RefreshUILabels(StarData star)//改变UI中显示的文本，不能再叫戴森球了。另外改变新增的设置巨构建筑类型的按钮的状态
         {
@@ -1025,7 +1083,6 @@ namespace MoreMegaStructure
                 set2MegaAssemButtonTextTrans.GetComponent<Text>().text = "规划".Translate() + "星际组装厂".Translate();//生产多功能预制件
                 set2CrystalMinerButtonTextTrans.GetComponent<Text>().text = "规划".Translate() + "晶体重构器".Translate();
                 set2StarCannonButtonTextTrans.GetComponent<Text>().text = "规划".Translate() + "恒星炮".Translate();
-                SetMegaStructureWarningText.text = "";
 
                 set2DysonButtonTextTrans.GetComponent<Text>().color = normalTextColor;
                 set2MatDecomButtonTextTrans.GetComponent<Text>().color = normalTextColor;
@@ -1300,6 +1357,42 @@ namespace MoreMegaStructure
             ModelProto modelProto = LDB.models.Select((int)entity.modelIndex);
             modelProto.prefabDesc = __state;//还原
             return;
+        }
+
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(UITechNode), "UpdateLayoutDynamic")]
+        public static void UITechNode_UpdateLayoutDynamic(ref UITechNode __instance, bool forceUpdate = false, bool forceReset = false)
+        {
+            float num4
+                = Mathf.Max(__instance.unlockText.preferredWidth - 40f + __instance.unlockTextTrans.anchoredPosition.x,
+                            Math.Min(__instance.techProto.unlockRecipeArray.Length, 3) * 46) + __instance.baseWidth;
+            if (num4 < __instance.minWidth)
+            {
+                num4 = __instance.minWidth;
+            }
+
+            if (num4 > __instance.maxWidth) num4 = __instance.maxWidth;
+
+            if (__instance.focusState < 1f)
+            {
+                __instance.panelRect.sizeDelta
+                    = new Vector2(Mathf.Lerp(__instance.minWidth, num4, __instance.focusState),
+                                  __instance.panelRect.sizeDelta.y);
+            }
+            else
+            {
+                __instance.panelRect.sizeDelta
+                    = new Vector2(Mathf.Lerp(num4, __instance.maxWidth, __instance.focusState - 1f),
+                                  __instance.panelRect.sizeDelta.y);
+            }
+
+            __instance.titleText.rectTransform.sizeDelta = new Vector2(__instance.panelRect.sizeDelta.x
+                                                                       - ((GameMain.history
+                                                                                   .TechState(__instance.techProto.ID)
+                                                                                   .curLevel > 0)
+                                                                           ? 65
+                                                                           : 25), 24f);
         }
 
 
