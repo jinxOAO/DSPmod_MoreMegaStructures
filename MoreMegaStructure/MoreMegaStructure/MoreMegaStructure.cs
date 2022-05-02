@@ -15,16 +15,31 @@ using CommonAPI.Systems;
 using System.IO;
 using UnityEngine.UI;
 using crecheng.DSPModSave;
+using NebulaAPI;
 
 namespace MoreMegaStructure
 {
     [BepInDependency("me.xiaoye97.plugin.Dyson.LDBTool", BepInDependency.DependencyFlags.HardDependency)]
     [BepInDependency("dsp.common-api.CommonAPI", BepInDependency.DependencyFlags.HardDependency)]
     [BepInDependency(DSPModSavePlugin.MODGUID, BepInDependency.DependencyFlags.HardDependency)]
-    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.0")]
+    [BepInDependency(NebulaModAPI.API_GUID)]
+    [BepInPlugin(GUID, NAME, VERSION)]
     [CommonAPISubmoduleDependency(nameof(ProtoRegistry), nameof(TabSystem))]
-    public class MoreMegaStructure : BaseUnityPlugin, IModCanSave
+    public class MoreMegaStructure : BaseUnityPlugin, IModCanSave, IMultiplayerMod
     {
+        public const string GUID = "Gnimaerd.DSP.plugin.MoreMegaStructure";
+        public const string NAME = "MoreMegaStructure";
+        public const string VERSION = "1.0";
+
+        public string Version => VERSION;
+
+        public bool CheckVersion(string hostVersion, string clientVersion)
+        {
+            // You can do more complex version checking here
+            return hostVersion.Equals(clientVersion);
+        }
+
+
         /// <summary>
         /// mod版本会进行存档
         /// </summary>
@@ -39,7 +54,6 @@ namespace MoreMegaStructure
 
         //private static Sprite iconAntiInject;
         public static List<int> RelatedGammas;
-        public static string GUID = "Gnimaerd.DSP.plugin.MoreMegaStructure";
         public static string MODID_tab = "MegaStructures";
         public static int pagenum = 3;
         public static int battlePagenum = 3;
@@ -270,6 +284,8 @@ namespace MoreMegaStructure
                 AccessTools.StaticFieldRefAccess<ConfigFile>(typeof(LDBTool), "CustomStringENUS").Clear();
                 AccessTools.StaticFieldRefAccess<ConfigFile>(typeof(LDBTool), "CustomStringFRFR").Clear();
             }
+
+            NebulaModAPI.RegisterPackets(Assembly.GetExecutingAssembly());
         }
 
         public void Start()
@@ -443,14 +459,17 @@ namespace MoreMegaStructure
                 LeftMegaBuildWarning = Instantiate(LeftShellLabel2);
                 LeftMegaBuildWarning.name = "settype-warning";
                 LeftMegaBuildWarning.transform.SetParent(DysonUILeft.transform, false);
-                LeftMegaBuildWarning.transform.localPosition = new Vector3(5, warnTxtPosY, 0);
+                LeftMegaBuildWarning.transform.localPosition = new Vector3(280, warnTxtPosY, 0);
+                LeftMegaBuildWarning.GetComponent<RectTransform>().pivot = new Vector2(1, 1);
+                LeftMegaBuildWarning.GetComponent<RectTransform>().anchorMin = new Vector2(1, 1);
+                LeftMegaBuildWarning.GetComponent<RectTransform>().anchorMax = new Vector2(1, 1);
+                LeftMegaBuildWarning.SetActive(true);
                 SetMegaStructureWarningText = LeftMegaBuildWarning.GetComponent<Text>();
                 SetMegaStructureWarningText.GetComponent<RectTransform>().sizeDelta = new Vector2(270, 100); //大小
                 SetMegaStructureWarningText.text = "鼠标触碰左侧黄条以规划巨构".Translate();
                 SetMegaStructureWarningText.alignment = TextAnchor.MiddleCenter;
                 SetMegaStructureWarningText.fontSize = 16;
                 SetMegaStructureWarningText.color = new Color(1f, 1f, 0.57f, 1f);
-                LeftMegaBuildWarning.SetActive(false);
 
                 GameObject rightBarObj = GameObject.Instantiate(GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Dyson Sphere Editor/Dyson Editor Control Panel/inspector/sphere-group/sail-stat/bar-group/bar-orange"), setMegaGroupObj.transform);
                 rightBarObj.name = "right-bar";
@@ -1011,7 +1030,7 @@ namespace MoreMegaStructure
             if (setMegaGroupObj != null)
                 setMegaGroupObj.transform.localPosition = new Vector3(MegaButtonGroupBehaviour.currentX, groupPosY, 0);
             if (LeftMegaBuildWarning != null)
-                LeftMegaBuildWarning.transform.localPosition = new Vector3(5, warnTxtPosY, 0);
+                LeftMegaBuildWarning.transform.localPosition = new Vector3(280, warnTxtPosY, 0);
         }
 
         public static void RefreshUILabels(StarData star)//改变UI中显示的文本，不能再叫戴森球了。另外改变新增的设置巨构建筑类型的按钮的状态
@@ -1026,6 +1045,7 @@ namespace MoreMegaStructure
                 //Console.WriteLine($"Refreshing phase. ori_idx={star.id -1} and finding idx the name is {GameMain.galaxy.stars[idx].displayName}, while cur name is {star.displayName}");
 
                 SetMegaStructureLabelText.text = "规划巨构建筑类型".Translate();
+                SetMegaStructureWarningText.text = "鼠标触碰左侧黄条以规划巨构".Translate();
 
                 LeftDysonCloudTitle.text = "自由组件云".Translate();
                 LeftDysonCloudBluePrintText.text = "组件云蓝图".Translate();
@@ -1246,6 +1266,7 @@ namespace MoreMegaStructure
                 //条件满足
                 StarMegaStructureType[idx] = type;
                 RefreshUILabels(curStar);
+                DataSync.SetMegaType(idx, type);
             }
             catch (Exception)
             {
@@ -1436,6 +1457,16 @@ namespace MoreMegaStructure
             if(isBattleActive)
             {
             }
+            try
+            {
+                if (NebulaModAPI.MultiplayerSession.LocalPlayer.IsClient)
+                {
+                    DataSync.RequestAll();
+                    Debug.Log("Requesting megastructure data from host");
+                }
+            }
+            catch (Exception)
+            { }
         }
 
         public void Export(BinaryWriter w)
@@ -1465,6 +1496,16 @@ namespace MoreMegaStructure
 
             RefreshUIWhenLoad();
             EffectRenderer.InitAll();
+            try
+            {
+                if (NebulaModAPI.MultiplayerSession.LocalPlayer.IsClient)
+                {
+                    DataSync.RequestAll();
+                    Debug.Log("Requesting megastructure data from host");
+                }
+            }
+            catch (Exception)
+            { }
         }
 
         public static string Capacity2Str(long capacityPerSecond)
