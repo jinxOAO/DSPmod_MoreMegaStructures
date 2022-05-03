@@ -58,7 +58,7 @@ namespace MoreMegaStructure
 
         public static bool isRemoteReceiveingGear = false;
 
-        public static ConfigEntry<bool> LowResolutionMode;
+        public static ConfigEntry<bool> NoUIAnimation;
         public static bool resolutionLower1080 = false;
 
         public static ResourceData resources;
@@ -201,7 +201,7 @@ namespace MoreMegaStructure
                 pagenum = TabSystem.RegisterTab($"{MODID_tab}:{MODID_tab}Tab", new TabData("MegaStructures", "Assets/MegaStructureTab/megaStructureTabIcon"));
             }
             battlePagenum = pagenum; //深空来敌mod开启后将使用battlePagenum
-            LowResolutionMode = Config.Bind<bool>("config", "LowResolutionMode", false, "Trun this to true if your game resolution is lower than 1920*1080. 如果你的游戏分辨率低于1920*1080，建议设置此项为true。");
+            NoUIAnimation = Config.Bind<bool>("config", "NoUIAnimation", false, "Trun this to true if your want to show and hide buttons without animations. 如果你想让按钮的出现和隐藏没有动画立即完成，将此项设置为true。");
             //var ab = AssetBundle.LoadFromStream(Assembly.GetExecutingAssembly().GetManifestResourceStream("MoreMegaStructure.megastructureicons"));
             iconRocketMattD = Resources.Load<Sprite>("Assets/MegaStructureTab/rocketMatter");
             iconRocketScieN = Resources.Load<Sprite>("Assets/MegaStructureTab/rocketScience");
@@ -285,7 +285,8 @@ namespace MoreMegaStructure
         public void Update()
         {
             Vector3 mouseUIPos = Input.mousePosition;
-            if(mouseUIPos.x <= MegaButtonGroupBehaviour.currentX + 280 && mouseUIPos.y <= 270)
+            int deltaY = Math.Max(0, resolutionY - 1080);
+            if (mouseUIPos.x <= MegaButtonGroupBehaviour.currentX + 280 && mouseUIPos.y <= 270 + deltaY)
             {
                 MegaButtonGroupBehaviour.ShowSetMegaGroup();
             }
@@ -443,14 +444,17 @@ namespace MoreMegaStructure
                 LeftMegaBuildWarning = Instantiate(LeftShellLabel2);
                 LeftMegaBuildWarning.name = "settype-warning";
                 LeftMegaBuildWarning.transform.SetParent(DysonUILeft.transform, false);
-                LeftMegaBuildWarning.transform.localPosition = new Vector3(5, warnTxtPosY, 0);
+                LeftMegaBuildWarning.transform.localPosition = new Vector3(280, warnTxtPosY, 0);
+                LeftMegaBuildWarning.GetComponent<RectTransform>().pivot = new Vector2(1, 1);
+                LeftMegaBuildWarning.GetComponent<RectTransform>().anchorMin = new Vector2(1, 1);
+                LeftMegaBuildWarning.GetComponent<RectTransform>().anchorMax = new Vector2(1, 1);
+                LeftMegaBuildWarning.SetActive(true);
                 SetMegaStructureWarningText = LeftMegaBuildWarning.GetComponent<Text>();
                 SetMegaStructureWarningText.GetComponent<RectTransform>().sizeDelta = new Vector2(270, 100); //大小
                 SetMegaStructureWarningText.text = "鼠标触碰左侧黄条以规划巨构".Translate();
                 SetMegaStructureWarningText.alignment = TextAnchor.MiddleCenter;
                 SetMegaStructureWarningText.fontSize = 16;
                 SetMegaStructureWarningText.color = new Color(1f, 1f, 0.57f, 1f);
-                LeftMegaBuildWarning.SetActive(false);
 
                 GameObject rightBarObj = GameObject.Instantiate(GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Dyson Sphere Editor/Dyson Editor Control Panel/inspector/sphere-group/sail-stat/bar-group/bar-orange"), setMegaGroupObj.transform);
                 rightBarObj.name = "right-bar";
@@ -638,6 +642,11 @@ namespace MoreMegaStructure
                 selectAutoReceiveGearLimitComboBox.Items = new List<string> { "远程接收关闭gm".Translate(), "1000", "2000", "组件无限制".Translate() };
                 selectAutoReceiveGearLimitComboBox.text = selectAutoReceiveGearLimitComboBox.Items[selectAutoReceiveGearLimitComboBox.itemIndex];
             }
+        }
+
+        public static void InitResolutionWhenLoad()
+        {
+            resolutionY = DSPGame.globalOption.resolution.height;
         }
 
         public static void OnGearLimitChange()
@@ -1011,7 +1020,7 @@ namespace MoreMegaStructure
             if (setMegaGroupObj != null)
                 setMegaGroupObj.transform.localPosition = new Vector3(MegaButtonGroupBehaviour.currentX, groupPosY, 0);
             if (LeftMegaBuildWarning != null)
-                LeftMegaBuildWarning.transform.localPosition = new Vector3(5, warnTxtPosY, 0);
+                LeftMegaBuildWarning.transform.localPosition = new Vector3(280, warnTxtPosY, 0);
         }
 
         public static void RefreshUILabels(StarData star)//改变UI中显示的文本，不能再叫戴森球了。另外改变新增的设置巨构建筑类型的按钮的状态
@@ -1427,6 +1436,7 @@ namespace MoreMegaStructure
                 hashGenByAllSN = 0;
 
                 RefreshUIWhenLoad();
+                InitResolutionWhenLoad();
                 EffectRenderer.InitAll();
             }
             catch (Exception)
@@ -1464,6 +1474,7 @@ namespace MoreMegaStructure
             hashGenByAllSN = 0;
 
             RefreshUIWhenLoad();
+            InitResolutionWhenLoad();
             EffectRenderer.InitAll();
         }
 

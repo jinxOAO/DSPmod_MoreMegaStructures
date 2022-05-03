@@ -106,5 +106,6 @@ namespace MoreMegaStructure
             }
             _this.time = (flag ? 0f : 0.3f);
         }
+
     }
 }
