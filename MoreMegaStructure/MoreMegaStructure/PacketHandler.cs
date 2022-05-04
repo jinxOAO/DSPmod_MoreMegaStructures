@@ -88,11 +88,15 @@ namespace MoreMegaStructure
     {
         public static void SetMegaType(int starIndex, int type)
         {
+            if (!NebulaModAPI.IsMultiplayerActive) return;
+
             NebulaModAPI.MultiplayerSession.Network.SendPacket<MegastructurePacket>(new MegastructurePacket((starIndex + 1) * 100 + 1, type));
         }
 
         public static void RequestAll()
         {
+            if (!NebulaModAPI.IsMultiplayerActive) return;
+
             ILocalPlayer localPlayer = NebulaModAPI.MultiplayerSession.LocalPlayer;
             if(localPlayer.IsClient)
             {
@@ -102,11 +106,15 @@ namespace MoreMegaStructure
 
         public static void InitSendAllCountdown()
         {
+            if (!NebulaModAPI.IsMultiplayerActive) return;
+
             MoreMegaStructure.broadcastAllDataCountdown = 60 * MoreMegaStructure.WaitSecToSyncDataWhenClientJoin.Value + 10;
         }
 
         public static void SendAll()
         {
+            if (!NebulaModAPI.IsMultiplayerActive) return;
+
             ILocalPlayer localPlayer = NebulaModAPI.MultiplayerSession.LocalPlayer;
             if (localPlayer.IsHost)
             {
@@ -117,6 +125,8 @@ namespace MoreMegaStructure
 
         public static void RequestMegaType(int starIndex)
         {
+            if (!NebulaModAPI.IsMultiplayerActive) return;
+
             ILocalPlayer localPlayer = NebulaModAPI.MultiplayerSession.LocalPlayer;
             if (localPlayer.IsClient)
             {
