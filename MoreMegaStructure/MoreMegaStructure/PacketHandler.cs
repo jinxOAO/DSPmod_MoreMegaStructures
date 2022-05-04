@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace MoreMegaStructure
 {
@@ -98,6 +99,21 @@ namespace MoreMegaStructure
                 NebulaModAPI.MultiplayerSession.Network.SendPacket<MegastructurePacket>(new MegastructurePacket(101, -1));
             }
         }
+
+        public static void InitSendAllCountdown()
+        {
+            MoreMegaStructure.broadcastAllDataCountdown = 60 * MoreMegaStructure.WaitSecToSyncDataWhenClientJoin.Value + 10;
+        }
+
+        public static void SendAll()
+        {
+            ILocalPlayer localPlayer = NebulaModAPI.MultiplayerSession.LocalPlayer;
+            if (localPlayer.IsHost)
+            {
+                NebulaModAPI.MultiplayerSession.Network.SendPacket<MegastructurePacket>(new MegastructurePacket(101, -2));
+            }
+        }
+
 
         public static void RequestMegaType(int starIndex)
         {

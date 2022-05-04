@@ -19,13 +19,46 @@ using NebulaAPI;
 
 namespace MoreMegaStructure
 {
+
+    [BepInPlugin(GUID, NAME, VERSION)]
+    [BepInDependency(NebulaModAPI.API_GUID)]
+    public class YourMod : BaseUnityPlugin, IMultiplayerMod
+    {
+
+        public const string GUID = "Gnimaerd.DSP.plugin.MMSMultiPlayer";
+        public const string NAME = "MMSMultiPlayer";
+        public const string VERSION = "1.0.0";
+
+        public string Version => VERSION;
+
+        public bool CheckVersion(string hostVersion, string clientVersion)
+        {
+            return hostVersion.Equals(clientVersion);
+        }
+
+        void Awake()
+        {
+            NebulaModAPI.RegisterPackets(Assembly.GetExecutingAssembly());
+            MoreMegaStructure.isNebulaActive = true;
+        }
+
+        void Start()
+        {
+
+            NebulaModAPI.OnPlayerJoinedGame += playerData =>
+            {
+                DataSync.InitSendAllCountdown();
+            };
+        }
+    }
+
+
     [BepInDependency("me.xiaoye97.plugin.Dyson.LDBTool", BepInDependency.DependencyFlags.HardDependency)]
     [BepInDependency("dsp.common-api.CommonAPI", BepInDependency.DependencyFlags.HardDependency)]
     [BepInDependency(DSPModSavePlugin.MODGUID, BepInDependency.DependencyFlags.HardDependency)]
-    [BepInDependency(NebulaModAPI.API_GUID)]
     [BepInPlugin(GUID, NAME, VERSION)]
     [CommonAPISubmoduleDependency(nameof(ProtoRegistry), nameof(TabSystem))]
-    public class MoreMegaStructure : BaseUnityPlugin, IModCanSave, IMultiplayerMod
+    public class MoreMegaStructure : BaseUnityPlugin, IModCanSave
     {
         public const string GUID = "Gnimaerd.DSP.plugin.MoreMegaStructure";
         public const string NAME = "MoreMegaStructure";
@@ -48,7 +81,10 @@ namespace MoreMegaStructure
         public static bool CompatibilityPatchUnlocked = false;
         public static bool GenesisCompatibility = false;
         public static bool isBattleActive = false;
+        public static bool isNebulaActive = false;
         public static int megaNum = 7; //巨构类型的数量
+
+        public static int broadcastAllDataCountdown = 0;
 
         public static bool developerMode = false; // 发布前修改！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
 
@@ -73,6 +109,7 @@ namespace MoreMegaStructure
         public static bool isRemoteReceiveingGear = false;
 
         public static ConfigEntry<bool> LowResolutionMode;
+        public static ConfigEntry<int> WaitSecToSyncDataWhenClientJoin;
         public static bool resolutionLower1080 = false;
 
         public static ResourceData resources;
@@ -207,7 +244,6 @@ namespace MoreMegaStructure
                                                               //resources.ResolveVertaFolder(); // Call this to resolver verta folder. You don't need to call this if you are not using .verta files 
                     ProtoRegistry.AddResource(resources); // Add your ResourceData to global list of resources
                     pagenum = TabSystem.RegisterTab($"{MODID_tab}:{MODID_tab}Tab", new TabData("MegaStructures", "Assets/MegaStructureTab/megaStructureTabIcon"));
-
                 }
             }
             catch (Exception)
@@ -216,6 +252,7 @@ namespace MoreMegaStructure
             }
             battlePagenum = pagenum; //深空来敌mod开启后将使用battlePagenum
             LowResolutionMode = Config.Bind<bool>("config", "LowResolutionMode", false, "Trun this to true if your game resolution is lower than 1920*1080. 如果你的游戏分辨率低于1920*1080，建议设置此项为true。");
+            WaitSecToSyncDataWhenClientJoin = Config.Bind<int>("config", "WaitSecondsToSyncData", 30, "For archive that is very big in multiplayer mode, if a client need more than 30 seconds to load and join the game, the host need to increase this config and make it larger than loading time. 对于多人模式时很大的存档，如果客户端玩家进入游戏所需要的加载时间大于30秒，主机端需要把这个数值调高使其大于客户端玩家加载所需时间。");
             //var ab = AssetBundle.LoadFromStream(Assembly.GetExecutingAssembly().GetManifestResourceStream("MoreMegaStructure.megastructureicons"));
             iconRocketMattD = Resources.Load<Sprite>("Assets/MegaStructureTab/rocketMatter");
             iconRocketScieN = Resources.Load<Sprite>("Assets/MegaStructureTab/rocketScience");
@@ -301,7 +338,8 @@ namespace MoreMegaStructure
         public void Update()
         {
             Vector3 mouseUIPos = Input.mousePosition;
-            if(mouseUIPos.x <= MegaButtonGroupBehaviour.currentX + 280 && mouseUIPos.y <= 270)
+            int deltaY = Math.Max(0, resolutionY - 1080);
+            if (mouseUIPos.x <= MegaButtonGroupBehaviour.currentX + 280 && mouseUIPos.y <= 270 + deltaY)
             {
                 MegaButtonGroupBehaviour.ShowSetMegaGroup();
             }
@@ -659,6 +697,11 @@ namespace MoreMegaStructure
             }
         }
 
+        public static void InitResolutionWhenLoad()
+        {
+            resolutionY = DSPGame.globalOption.resolution.height;
+        }
+
         public static void OnGearLimitChange()
         {
             int index = selectAutoReceiveGearLimitComboBox.itemIndex;
@@ -766,6 +809,15 @@ namespace MoreMegaStructure
                 }
             }
             hashGenByAllSN = 0;
+
+            if(isNebulaActive) //在客户端加入游戏一些时间后（默认30s）向所有客户端发送巨构类型的信息
+            {
+                broadcastAllDataCountdown--;
+                if (broadcastAllDataCountdown == 10)
+                    DataSync.SendAll();
+                else if (broadcastAllDataCountdown <= 0)
+                    broadcastAllDataCountdown = 0;
+            }
         }
 
 
@@ -1266,7 +1318,10 @@ namespace MoreMegaStructure
                 //条件满足
                 StarMegaStructureType[idx] = type;
                 RefreshUILabels(curStar);
-                DataSync.SetMegaType(idx, type);
+                if (isNebulaActive)
+                {
+                    DataSync.SetMegaType(idx, type);
+                }
             }
             catch (Exception)
             {
@@ -1448,6 +1503,7 @@ namespace MoreMegaStructure
                 hashGenByAllSN = 0;
 
                 RefreshUIWhenLoad();
+                InitResolutionWhenLoad();
                 EffectRenderer.InitAll();
             }
             catch (Exception)
@@ -1457,16 +1513,6 @@ namespace MoreMegaStructure
             if(isBattleActive)
             {
             }
-            try
-            {
-                if (NebulaModAPI.MultiplayerSession.LocalPlayer.IsClient)
-                {
-                    DataSync.RequestAll();
-                    Debug.Log("Requesting megastructure data from host");
-                }
-            }
-            catch (Exception)
-            { }
         }
 
         public void Export(BinaryWriter w)
@@ -1495,17 +1541,8 @@ namespace MoreMegaStructure
             hashGenByAllSN = 0;
 
             RefreshUIWhenLoad();
+            InitResolutionWhenLoad();
             EffectRenderer.InitAll();
-            try
-            {
-                if (NebulaModAPI.MultiplayerSession.LocalPlayer.IsClient)
-                {
-                    DataSync.RequestAll();
-                    Debug.Log("Requesting megastructure data from host");
-                }
-            }
-            catch (Exception)
-            { }
         }
 
         public static string Capacity2Str(long capacityPerSecond)
