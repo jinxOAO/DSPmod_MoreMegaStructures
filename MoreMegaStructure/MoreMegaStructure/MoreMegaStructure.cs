@@ -22,7 +22,6 @@ namespace MoreMegaStructure
     [BepInDependency("me.xiaoye97.plugin.Dyson.LDBTool", BepInDependency.DependencyFlags.HardDependency)]
     [BepInDependency("dsp.common-api.CommonAPI", BepInDependency.DependencyFlags.HardDependency)]
     [BepInDependency(DSPModSavePlugin.MODGUID, BepInDependency.DependencyFlags.HardDependency)]
-    [BepInDependency(NebulaModAPI.API_GUID)]
     [BepInPlugin(GUID, NAME, VERSION)]
     [CommonAPISubmoduleDependency(nameof(ProtoRegistry), nameof(TabSystem))]
     public class MoreMegaStructure : BaseUnityPlugin, IModCanSave
@@ -282,6 +281,8 @@ namespace MoreMegaStructure
                 AccessTools.StaticFieldRefAccess<ConfigFile>(typeof(LDBTool), "CustomStringENUS").Clear();
                 AccessTools.StaticFieldRefAccess<ConfigFile>(typeof(LDBTool), "CustomStringFRFR").Clear();
             }
+
+            NebulaModAPI.RegisterPackets(Assembly.GetExecutingAssembly());
         }
 
         public void Start()
@@ -687,12 +688,7 @@ namespace MoreMegaStructure
             }
             else //对于多人模式，只有主机计算，因为客户端每秒才同步一次，每帧都减会导致巨构产量持续减少甚至到负数
             {
-                if (NebulaModAPI.IsMultiplayerActive)
-                {
-                    if(NebulaModAPI.MultiplayerSession.LocalPlayer.IsHost)
-                        __instance.energyGenCurrentTick -= __instance.swarm.energyGenCurrentTick;
-                }
-                else
+                if(NebulaModAPI.MultiplayerSession.LocalPlayer.IsHost)
                 {
                     __instance.energyGenCurrentTick -= __instance.swarm.energyGenCurrentTick;
                 }
@@ -1651,15 +1647,11 @@ namespace MoreMegaStructure
 
         void Start()
         {
+
             NebulaModAPI.OnPlayerJoinedGame += playerData =>
             {
                 DataSync.InitSendAllCountdown();
             };
-            //NebulaModAPI.OnStarLoadRequest += param =>
-            //{
-            //    Debug.Log("requesting all mms data");
-            //    DataSync.RequestAll();
-            //};
         }
     }
 
