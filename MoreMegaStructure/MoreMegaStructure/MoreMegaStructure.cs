@@ -28,7 +28,7 @@ namespace MoreMegaStructure
         /// <summary>
         /// mod版本会进行存档
         /// </summary>
-        public static int modVersion = 101;
+        public static int modVersion = 103;
 
         public static bool CompatibilityPatchUnlocked = false;
         public static bool GenesisCompatibility = false;
@@ -221,7 +221,7 @@ namespace MoreMegaStructure
             iconTunnExciter = Resources.Load<Sprite>("Assets/MegaStructureTab/tunnelingexciter2");
             iconQuickAssembly = Resources.Load<Sprite>("Assets/MegaStructureTab/Rassembly");
             iconQuickBelt = Resources.Load<Sprite>("Assets/MegaStructureTab/Rbelt");
-            iconQuickChemical = Resources.Load<Sprite>("Assets/MegaStructureTab/Rchemical");
+            iconQuickChemical = Resources.Load<Sprite>("Assets/MegaStructureTab/Rchemical2");
             iconQuickCollider = Resources.Load<Sprite>("Assets/MegaStructureTab/Rcollider");
             iconQuickLab = Resources.Load<Sprite>("Assets/MegaStructureTab/Rlab");
             iconQuickPLog = Resources.Load<Sprite>("Assets/MegaStructureTab/Rlogistic");
@@ -1121,6 +1121,7 @@ namespace MoreMegaStructure
             {
                 RefreshUILabels(__instance.gameData.localStar);
             }
+            try { SetMegaStructureWarningText.text = "鼠标触碰左侧黄条以规划巨构".Translate(); } catch (Exception) { }
             RefreshButtonPos();
         }
 
@@ -1140,6 +1141,7 @@ namespace MoreMegaStructure
             {
                 RefreshUILabels(__instance.gameData.localStar);
             }
+            try { SetMegaStructureWarningText.text = "鼠标触碰左侧黄条以规划巨构".Translate(); } catch (Exception){ }
             RefreshButtonPos();
         }
 
@@ -1147,6 +1149,7 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(UIDysonEditor), "OnSelectionChange")]
         public static void SetTextOnSelectionChange(UIDysonEditor __instance)
         {
+            try { SetMegaStructureWarningText.text = "鼠标触碰左侧黄条以规划巨构".Translate(); } catch (Exception) { }
             if (__instance.selection.viewDysonSphere != null)
             {
                 curDysonSphere = __instance.selection.viewDysonSphere;

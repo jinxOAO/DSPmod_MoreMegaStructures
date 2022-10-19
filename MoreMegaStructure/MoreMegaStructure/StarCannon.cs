@@ -62,6 +62,11 @@ namespace MoreMegaStructure
 			DysonSphere sphere = MoreMegaStructure.curDysonSphere;
 			int curDPS = curDatas[1] * 60;
 			long curEnergyPerSec = (sphere.energyGenCurrentTick - sphere.energyReqCurrentTick) * 60L;
+			if (curEnergyPerSec < 0)
+			{
+				curEnergyPerSec = 0;
+				MoreMegaStructure.SpConsumePowText.text = "请拆除接收站".Translate();
+			}
 			long nextLevelEnergyRequire = energyPerTickRequiredByLevel[curDatas[0]+1] * 60L;
 			int chargingTimeNeed = curDatas[3] / 3600; //以分钟计
 			
