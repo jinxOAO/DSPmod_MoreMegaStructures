@@ -180,6 +180,8 @@ namespace MoreMegaStructure
         public static int maxAutoReceiveGear = 1000;
         public static long autoReceiveGearProgress = 0;
 
+        public static int pilerLvl = 1;
+
         public void Awake()
         {
             try
@@ -295,6 +297,14 @@ namespace MoreMegaStructure
                 MegaButtonGroupBehaviour.HideSetMegaGroup();
             }
             MegaButtonGroupBehaviour.SetMegaGroupMove();
+            try
+            {
+                pilerLvl = GameMain.history.stationPilerLevel;
+            }
+            catch (Exception)
+            {
+                pilerLvl = 1;
+            }
         }
 
         public static void GetVanillaUITexts()
@@ -675,7 +685,7 @@ namespace MoreMegaStructure
 
 
         /// <summary>
-        /// 接收器每帧函数的patch，用于设定各种新接收器的行为。待完善。
+        /// 接收器每帧函数的patch，用于设定各种新接收器的行为。同时，让物品输出自动叠加（针对物质解压器接收速度过快），叠加数量取决于当前物流站自动叠加的科技等级。
         /// </summary>
         /// <param name="__instance"></param>
         /// <param name="useIon"></param>
@@ -689,30 +699,169 @@ namespace MoreMegaStructure
         public static bool GameTick_GammaPatch(ref PowerGeneratorComponent __instance, bool useIon, bool useCata, PlanetFactory factory, int[] productRegister, int[] consumeRegister)
         {
             int idx = factory.planet.star.id - 1;
+            bool postWork = false;
             if(idx<0 || idx > 999)
             {
                 //Debug.LogWarning("GameTick_GammaPatch index out of range. Now return true.");
-                return true;
+                postWork = true;
             }
             int megaType = StarMegaStructureType[idx];
             int protoID = factory.entityPool[__instance.entityId].protoId;//接收器的建筑的原型ID
-            if(megaType == 0 && protoID == 2208)
+            if (megaType == 0 && protoID == 2208)
             {
-                return true;
+                postWork = true;
             }
-            else if (megaType == 1 && ((protoID >= 9493 && protoID<=9497) || protoID == 9501))//物质解压器
+            else if (megaType == 1 && ((protoID >= 9493 && protoID <= 9497) || protoID == 9501))//物质解压器
             {
-                return true;
+                postWork = true;
             }
             else if (megaType == 4 && protoID == 9499 && !isRemoteReceiveingGear)//星际组装厂
             {
-                return true;
+                postWork = true;
             }
             else if (megaType == 5 && (protoID == 9498 || protoID == 9502))//晶体重构器
             {
-                return true;
+                postWork = true;
             }
-            //其他情况不允许接收器输出物质
+
+            //其他情况不允许接收器生成或输出物质
+            if (postWork)
+            {
+                if (__instance.catalystPoint > 0)
+                {
+                    int num = __instance.catalystPoint / 3600;
+                    if (useCata)
+                    {
+                        int num2 = __instance.catalystIncPoint / __instance.catalystPoint;
+                        __instance.catalystPoint--;
+                        __instance.catalystIncPoint -= num2;
+                        if (__instance.catalystIncPoint < 0 || __instance.catalystPoint <= 0)
+                        {
+                            __instance.catalystIncPoint = 0;
+                        }
+                    }
+                    int num3 = __instance.catalystPoint / 3600;
+                    int[] obj = consumeRegister;
+                    lock (obj)
+                    {
+                        consumeRegister[__instance.catalystId] += num - num3;
+                    }
+                }
+                if (__instance.productId > 0 && __instance.productCount < 20f)
+                {
+                    int num4 = (int)__instance.productCount;
+                    __instance.productCount += (float)((double)__instance.capacityCurrentTick / (double)__instance.productHeat);
+                    int num5 = (int)__instance.productCount;
+                    int[] obj = productRegister;
+                    lock (obj)
+                    {
+                        productRegister[__instance.productId] += num5 - num4;
+                    }
+                    if (__instance.productCount > 20f)
+                    {
+                        __instance.productCount = 20f;
+                    }
+                }
+                __instance.warmup += __instance.warmupSpeed;
+                __instance.warmup = ((__instance.warmup > 1f) ? 1f : ((__instance.warmup < 0f) ? 0f : __instance.warmup));
+                bool flag2 = __instance.productId > 0 && __instance.productCount >= (float)pilerLvl;
+                bool flag3 = useIon && (float)__instance.catalystPoint < 72000f;
+                if (flag2 || flag3)
+                {
+                    bool flag4;
+                    int num6;
+                    int num7;
+                    factory.ReadObjectConn(__instance.entityId, 0, out flag4, out num6, out num7);
+                    bool flag5;
+                    int num8;
+                    int num9;
+                    factory.ReadObjectConn(__instance.entityId, 1, out flag5, out num8, out num9);
+                    bool flag6;
+                    bool flag7;
+                    if (num6 <= 0)
+                    {
+                        flag6 = false;
+                        flag7 = false;
+                        num6 = 0;
+                    }
+                    else
+                    {
+                        flag6 = flag4;
+                        flag7 = !flag4;
+                    }
+                    bool flag8;
+                    bool flag9;
+                    if (num8 <= 0)
+                    {
+                        flag8 = false;
+                        flag9 = false;
+                        num8 = 0;
+                    }
+                    else
+                    {
+                        flag8 = flag5;
+                        flag9 = !flag5;
+                    }
+                    byte b = 0;
+                    if (flag2)
+                    {
+                        if (flag6 && flag8)
+                        {
+                            if (__instance.fuelHeat == 0L)
+                            {
+                                if (factory.InsertInto(num6, 0, __instance.productId, (byte)pilerLvl, 0, out b) == pilerLvl)
+                                {
+                                    __instance.productCount -= pilerLvl;
+                                    __instance.fuelHeat = 1L;
+                                }
+                                else if (factory.InsertInto(num8, 0, __instance.productId, (byte)pilerLvl, 0, out b) == pilerLvl)
+                                {
+                                    __instance.productCount -= pilerLvl;
+                                    __instance.fuelHeat = 0L;
+                                }
+                            }
+                            else if (factory.InsertInto(num8, 0, __instance.productId, (byte)pilerLvl, 0, out b) == pilerLvl)
+                            {
+                                __instance.productCount -= pilerLvl;
+                                __instance.fuelHeat = 0L;
+                            }
+                            else if (factory.InsertInto(num6, 0, __instance.productId, (byte)pilerLvl, 0, out b) == pilerLvl)
+                            {
+                                __instance.productCount -= pilerLvl;
+                                __instance.fuelHeat = 1L;
+                            }
+                        }
+                        else if (flag6)
+                        {
+                            if (factory.InsertInto(num6, 0, __instance.productId, (byte)pilerLvl, 0, out b) == pilerLvl)
+                            {
+                                __instance.productCount -= pilerLvl;
+                                __instance.fuelHeat = 1L;
+                            }
+                        }
+                        else if (flag8 && factory.InsertInto(num8, 0, __instance.productId, (byte)pilerLvl, 0, out b) == pilerLvl)
+                        {
+                            __instance.productCount -= pilerLvl;
+                            __instance.fuelHeat = 0L;
+                        }
+                    }
+                    if (flag3)
+                    {
+                        byte b2;
+                        byte b3;
+                        if (flag7 && factory.PickFrom(num6, 0, __instance.catalystId, null, out b2, out b3) == __instance.catalystId)
+                        {
+                            __instance.catalystPoint += 3600 * (int)b2;
+                            __instance.catalystIncPoint += 3600 * (int)b3;
+                        }
+                        if (flag9 && factory.PickFrom(num8, 0, __instance.catalystId, null, out b2, out b3) == __instance.catalystId)
+                        {
+                            __instance.catalystPoint += 3600 * (int)b2;
+                            __instance.catalystIncPoint += 3600 * (int)b3;
+                        }
+                    }
+                }
+            }
             return false;
         }
 
@@ -1403,6 +1552,7 @@ namespace MoreMegaStructure
                                                                            ? 65
                                                                            : 25), 24f);
         }
+
 
 
         /// <summary>
