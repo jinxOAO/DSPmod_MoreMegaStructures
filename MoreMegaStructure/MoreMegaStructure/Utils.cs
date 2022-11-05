@@ -26,6 +26,12 @@ namespace MoreMegaStructure
             Debug.Log(str + num.ToString());
         }
 
+        public static void Log(string text)
+        {
+            Debug.Log(text);
+        }
+
+
         public static void UIItemUp(int itemId, int upCount, float forceWidth = 300)
         {
             if (GameMain.mainPlayer == null)
