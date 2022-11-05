@@ -21,7 +21,7 @@ namespace MoreMegaStructure
     [BepInDependency("me.xiaoye97.plugin.Dyson.LDBTool", BepInDependency.DependencyFlags.HardDependency)]
     [BepInDependency("dsp.common-api.CommonAPI", BepInDependency.DependencyFlags.HardDependency)]
     [BepInDependency(DSPModSavePlugin.MODGUID, BepInDependency.DependencyFlags.HardDependency)]
-    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.0")]
+    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.1")]
     [CommonAPISubmoduleDependency(nameof(ProtoRegistry), nameof(TabSystem))]
     public class MoreMegaStructure : BaseUnityPlugin, IModCanSave
     {
@@ -35,7 +35,7 @@ namespace MoreMegaStructure
         public static bool isBattleActive = false;
         public static int megaNum = 7; //巨构类型的数量
 
-        public static bool developerMode = true; // 发布前修改！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
+        public static bool developerMode = false; // 发布前修改！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
 
         //private static Sprite iconAntiInject;
         public static List<int> RelatedGammas;
@@ -1023,6 +1023,7 @@ namespace MoreMegaStructure
             else if (StarMegaStructureType[idx] == 4) //如果是星际组装厂，且正在原程折跃接收多功能组件
             {
                 StarAssembly.InternalUpdate(__instance);
+                StarAssembly.TryUseRocketInStorageToBuildIA(__instance);
                 /*
                 autoReceiveGearProgress += __instance.energyGenCurrentTick;
                 int productCnt = (int)(autoReceiveGearProgress / (multifunctionComponentHeat * 10));
@@ -1446,7 +1447,7 @@ namespace MoreMegaStructure
                 }
                 else if (StarMegaStructureType[curDysonSphere.starData.id - 1] == 4)//如果是星际组装厂
                 {
-                    long DysonEnergy = curDysonSphere.energyGenCurrentTick - curDysonSphere.energyReqCurrentTick;
+                    long DysonEnergy = (curDysonSphere.energyGenCurrentTick - curDysonSphere.energyReqCurrentTick) * 60;
                     RightMaxPowGenValueText.text = Capacity2Str(DysonEnergy) + "W";
                 }
                 else if (StarMegaStructureType[curDysonSphere.starData.id - 1] == 6)//如果是恒星炮

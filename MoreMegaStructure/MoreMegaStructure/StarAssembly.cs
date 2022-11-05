@@ -46,7 +46,7 @@ namespace MoreMegaStructure
 
         // 以下是固定参数
         public static int tickEnergyForFullSpeed = 20000; // 每相当于1.0倍速的产量需要的tick能量
-        public static double matrixSpeedRatio = 0.01; // 用星际组装厂生产矩阵的速度修正倍率，这是为了不让该巨构部分替代科学枢纽
+        public static int matrixTimeSpendRatio = 100; // 用星际组装厂生产矩阵的速度修正倍率，这是为了不让该巨构部分替代科学枢纽
 
         public static void InitAll()
         {
@@ -79,7 +79,7 @@ namespace MoreMegaStructure
                     products[starIndex] = new List<List<int>>();
                     itemCounts[starIndex] = new List<List<int>>();
                     productCounts[starIndex] = new List<List<int>>();
-                    timeSpend[starIndex] = new List<int> { 0, 0, 0, 0, 0 };
+                    timeSpend[starIndex] = new List<int> { 1, 1, 1, 1, 1 };
                     productStorage[starIndex] = new Dictionary<int, int>();
                     productStorage[starIndex][9500] = 0;
                     for (int s = 0; s < 5; s++)
@@ -109,6 +109,8 @@ namespace MoreMegaStructure
                                     productStorage[starIndex].Add(recipe.Results[j], 0);
                             }
                             timeSpend[starIndex][i] = Math.Max(1, recipe.TimeSpend);
+                            if (recipe.Results[0] >= 6001 && recipe.Results[0] <= 6006)
+                                timeSpend[starIndex][i] *= matrixTimeSpendRatio;
                         }
                     }
                 }
@@ -124,7 +126,7 @@ namespace MoreMegaStructure
             products[starIndex] = new List<List<int>>();
             itemCounts[starIndex] = new List<List<int>>();
             productCounts[starIndex] = new List<List<int>>();
-            timeSpend[starIndex] = new List<int> { 0, 0, 0, 0, 0 };
+            timeSpend[starIndex] = new List<int> { 1, 1, 1, 1, 1 };
             productStorage[starIndex] = new Dictionary<int, int>();
             productStorage[starIndex][9500] = 0;
             for (int s = 0; s < 5; s++)
@@ -154,6 +156,8 @@ namespace MoreMegaStructure
                             productStorage[starIndex].Add(recipe.Results[j], 0);
                     }
                     timeSpend[starIndex][i] = Math.Max(1, recipe.TimeSpend);
+                    if (recipe.Results[0] >= 6001 && recipe.Results[0] <= 6006)
+                        timeSpend[starIndex][i] *= matrixTimeSpendRatio;
                 }
             }
         }
@@ -210,7 +214,7 @@ namespace MoreMegaStructure
                     sliders.Add(slider);
 
                     GameObject weightTxtObj = GameObject.Instantiate(GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Assembler Window/produce/circle-back/cnt-text"), sliderObj.transform);
-                    weightTxtObj.transform.localPosition = new Vector3(200, -12, 0);
+                    weightTxtObj.transform.localPosition = new Vector3(150, -12, 0);
                     weightTxts.Add(weightTxtObj.GetComponent<Text>());
                     weightTxtObj.GetComponent<Text>().fontSize = 16;
                     weightTxtObj.GetComponent<Text>().text = "";
@@ -252,6 +256,26 @@ namespace MoreMegaStructure
         {
             int starIndex = __instance.starData.index;
             long energy = __instance.energyGenCurrentTick - __instance.energyReqCurrentTick;
+            int[] productRegister = null;
+            int[] consumeRegister = null;
+            for (int i = 0; i < GameMain.galaxy.stars[starIndex].planetCount; i++)
+            {
+                PlanetData planet = GameMain.galaxy.stars[starIndex].planets[i];
+                if (planet != null)
+                {
+                    PlanetFactory factory = planet.factory;
+                    if (factory != null)
+                    {
+                        if (GameMain.statistics.production.factoryStatPool.Length > factory.index)
+                        {
+                            FactoryProductionStat factoryProductionStat = GameMain.statistics.production.factoryStatPool[factory.index];
+                            productRegister = factoryProductionStat.productRegister;
+                            consumeRegister = factoryProductionStat.consumeRegister;
+                            break;
+                        }
+                    }
+                }
+            }
 
             // 生产进度计算
             for (int i = 1; i < 5; i++)
@@ -278,7 +302,12 @@ namespace MoreMegaStructure
                         {
                             int gotInc = 0;
 
-                            int gotItem = TakeItemForFactory(starIndex, items[starIndex][i][j], minSatisfied * itemCounts[starIndex][i][j], out gotInc);
+                            int gotItem = TakeItemForFactory(starIndex, items[starIndex][i][j], minSatisfied * itemCounts[starIndex][i][j], itemCounts[starIndex][i][j], out gotInc);
+                            int[] obj = consumeRegister;
+                            lock (obj)
+                            {
+                                consumeRegister[items[starIndex][i][j]] += gotItem;
+                            }
                             if (gotItem >= itemCounts[starIndex][i][j])
                             {
                                 minSatisfied = Math.Min(minSatisfied, gotItem / itemCounts[starIndex][i][j]);
@@ -298,6 +327,11 @@ namespace MoreMegaStructure
                             {
                                 productStorage[starIndex][products[starIndex][i][j]] += minSatisfied * productCounts[starIndex][i][j];
                                 if (productStorage[starIndex][products[starIndex][i][j]] > 10000) productStorage[starIndex][products[starIndex][i][j]] = 10000;
+                                int[] obj = productRegister;
+                                lock (obj)
+                                {
+                                    productRegister[products[starIndex][i][j]] += minSatisfied * productCounts[starIndex][i][j];
+                                }
                             }
                             // 增产效果
                             incProgress[starIndex][i] += minSatisfied * Cargo.incTableMilli[minInc];
@@ -308,6 +342,11 @@ namespace MoreMegaStructure
                                 {
                                     productStorage[starIndex][products[starIndex][i][j]] += bonusProduct * productCounts[starIndex][i][j];
                                     if (productStorage[starIndex][products[starIndex][i][j]] > 10000) productStorage[starIndex][products[starIndex][i][j]] = 10000;
+                                    int[] obj = productRegister;
+                                    lock (obj)
+                                    {
+                                        productRegister[products[starIndex][i][j]] += minSatisfied * productCounts[starIndex][i][j];
+                                    }
                                 }
                                 incProgress[starIndex][i] -= (int)incProgress[starIndex][i];
                             }
@@ -327,6 +366,12 @@ namespace MoreMegaStructure
                     productStorage[starIndex][9500] = Math.Min(productStorage[starIndex][9500] + (int)progress[starIndex][0], 10000);
                 else
                     productStorage[starIndex][9500] = Math.Min((int)progress[starIndex][0], 10000);
+
+                int[] obj = productRegister;
+                lock (obj)
+                {
+                    productRegister[9500] += (int)progress[starIndex][0];
+                }
 
                 progress[starIndex][0] -= (int)progress[starIndex][0];
             }
@@ -351,12 +396,21 @@ namespace MoreMegaStructure
             
         }
 
-        public static int TakeItemForFactory(int starIndex, int itemId, int itemCount, out int inc)
+        /// <summary>
+        /// 试图从巨构储藏空间和地表的交换塔里面取原材料
+        /// </summary>
+        /// <param name="starIndex"></param>
+        /// <param name="itemId"></param>
+        /// <param name="itemCount"></param>
+        /// <param name="minCount"></param> 指单个配方一次产出需要的量，如果已有的少于这个就不取了，否则可能出现一直取但又不生产的情况
+        /// <param name="inc"></param>
+        /// <returns></returns>
+        public static int TakeItemForFactory(int starIndex, int itemId, int itemCount, int minCount, out int inc)
         {
             int result = 0;
             inc = 0;
             // 先从productStorage里面拿，从此处拿的视为最高默认增产等级
-            if (productStorage[starIndex].ContainsKey(itemId))
+            if (productStorage[starIndex].ContainsKey(itemId) && productStorage[starIndex][itemId] >= minCount)
             {
                 result = Math.Min(itemCount, productStorage[starIndex][itemId]);
                 productStorage[starIndex][itemId] -= result;
@@ -382,7 +436,7 @@ namespace MoreMegaStructure
 
                                 for (int k = 0; k < 5; k++)
                                 {
-                                    if (stationComponent.storage[k].itemId == itemId && stationComponent.storage[k].count>0)
+                                    if (stationComponent.storage[k].itemId == itemId && stationComponent.storage[k].count >= minCount)
                                     {
                                         int oriInc = stationComponent.storage[k].inc / stationComponent.storage[k].count;
                                         int need = itemCount - result;
@@ -501,7 +555,9 @@ namespace MoreMegaStructure
             {
                 if (recipeIds[starIndex][i] > 0)
                 {
-                    produceSpeedTxts[i].text = "理论最大速度".Translate() + " 999/min"; // 需要修改！！
+                    double PPM = (GameMain.data.dysonSpheres[starIndex].energyGenCurrentTick - GameMain.data.dysonSpheres[starIndex].energyReqCurrentTick) * weights[starIndex][i] / tickEnergyForFullSpeed / timeSpend[starIndex][i] * 3600;
+                    string value = PPM > 10 ? PPM.ToString("N0") : (PPM > 1 ? PPM.ToString("N1") : PPM.ToString("N2"));
+                    produceSpeedTxts[i].text = "理论最大速度".Translate() + " " +  value + "/min";
                     weightTxts[i].text = "能量分配".Translate() + " " + ((int)(weights[starIndex][i] * 100)).ToString() + "%";
                 }
                 else
@@ -509,7 +565,9 @@ namespace MoreMegaStructure
                     produceSpeedTxts[i].text = "";
                 }
             }
-            produceSpeedTxts[0].text = "理论最大速度".Translate() + " 75/min"; // 需要修改！！
+            double PPM2 = (GameMain.data.dysonSpheres[starIndex].energyGenCurrentTick - GameMain.data.dysonSpheres[starIndex].energyReqCurrentTick) * weights[starIndex][0] / MoreMegaStructure.multifunctionComponentHeat * 3600;
+            string value2 = PPM2 > 10 ? PPM2.ToString("N0") : (PPM2 > 1 ? PPM2.ToString("N1") : PPM2.ToString("N2"));
+            produceSpeedTxts[0].text = "理论最大速度".Translate() + " " + value2 + "/min";
             weightTxts[0].text = "剩余能量".Translate() + " " + ((int)(weights[starIndex][0] * 100)).ToString() + "%";
         }
 
@@ -531,7 +589,15 @@ namespace MoreMegaStructure
                 UIRealtimeTip.Popup("警告巨构不支持恒星系数量大于100个".Translate());
                 return;
             }
-            Utils.Log("starIndex = " + starIndex + " and curSlot = " + currentRecipeSlot);
+            int recipeId = recipe.ID;
+            for (int s = 1; s < 5; s++)
+            {
+                if (recipeIds[starIndex][s] == recipeId)
+                {
+                    UIRealtimeTip.Popup("警告选择了重复的配方".Translate());
+                    return;
+                }
+            }
             recipeIds[starIndex][currentRecipeSlot] = recipe.ID;
             progress[starIndex][currentRecipeSlot] = 0;
             if (!items.ContainsKey(starIndex))
@@ -540,7 +606,7 @@ namespace MoreMegaStructure
                 products[starIndex] = new List<List<int>>();
                 itemCounts[starIndex] = new List<List<int>>();
                 productCounts[starIndex] = new List<List<int>>();
-                timeSpend[starIndex] = new List<int> { 0, 0, 0, 0, 0 };
+                timeSpend[starIndex] = new List<int> { 1, 1, 1, 1, 1 };
                 productStorage[starIndex] = new Dictionary<int, int>();
                 productStorage[starIndex][9500] = 0;
                 for (int s = 0; s < 5; s++)
@@ -569,6 +635,8 @@ namespace MoreMegaStructure
                     productStorage[starIndex].Add(recipe.Results[j], 0);
             }
             timeSpend[starIndex][i] = Math.Max(1, recipe.TimeSpend);
+            if (recipe.Results[0] >= 6001 && recipe.Results[0] <= 6006)
+                timeSpend[starIndex][i] *= matrixTimeSpendRatio;
 
             RefreshUI();
         }
@@ -616,6 +684,64 @@ namespace MoreMegaStructure
 
             RefreshProduceSpeedText();
             lockSliderListener = false;
+        }
+
+
+        public static void TryUseRocketInStorageToBuildIA(DysonSphere __instance)
+        {
+            if (productStorage[__instance.starData.index].ContainsKey(9491))
+            {
+                if (productStorage[__instance.starData.index][9491] > 0)
+                {
+                    productStorage[__instance.starData.index][9491] = AutoBuildInterstellarAssembly(__instance.starData.index, productStorage[__instance.starData.index][9491]);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 使用星际组装厂内部存储的组装厂火箭直接建造节点
+        /// </summary>
+        /// <param name="starIndex"></param>
+        /// <param name="amount"></param>
+        public static int AutoBuildInterstellarAssembly(int starIndex = -1, int amount = 1)
+        {
+            if (starIndex < 0)
+            {
+                return amount;
+            }
+            if (starIndex >= 0 && starIndex < GameMain.data.dysonSpheres.Length)
+            {
+                DysonSphere sphere = GameMain.data.dysonSpheres[starIndex];
+                if (sphere != null)
+                {
+                    for (int i = 0; i < sphere.layersIdBased.Length; i++)
+                    {
+                        DysonSphereLayer dysonSphereLayer = sphere.layersIdBased[i];
+                        if (dysonSphereLayer != null)
+                        {
+                            int num = dysonSphereLayer.nodePool.Length;
+                            for (int j = 0; j < num; j++)
+                            {
+                                DysonNode dysonNode = dysonSphereLayer.nodePool[j];
+                                if (dysonNode != null)
+                                {
+                                    for (int k = 0; k < Math.Min(6, amount); k++)
+                                    {
+                                        if (dysonNode.spReqOrder > 0)
+                                        {
+                                            sphere.OrderConstructSp(dysonNode);
+                                            sphere.ConstructSp(dysonNode);
+                                            amount -= 1;
+                                        }
+                                    }
+                                }
+                                if (amount <= 0) return amount;
+                            }
+                        }
+                    }
+                }
+            }
+            return amount;
         }
 
         public static void Import(BinaryReader r)
