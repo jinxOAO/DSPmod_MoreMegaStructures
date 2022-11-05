@@ -28,14 +28,14 @@ namespace MoreMegaStructure
         /// <summary>
         /// mod版本会进行存档
         /// </summary>
-        public static int modVersion = 103;
+        public static int modVersion = 110;
 
         public static bool CompatibilityPatchUnlocked = false;
         public static bool GenesisCompatibility = false;
         public static bool isBattleActive = false;
         public static int megaNum = 7; //巨构类型的数量
 
-        public static bool developerMode = false; // 发布前修改！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
+        public static bool developerMode = true; // 发布前修改！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
 
         //private static Sprite iconAntiInject;
         public static List<int> RelatedGammas;
@@ -279,6 +279,7 @@ namespace MoreMegaStructure
             GetVanillaUITexts();
             InitMegaSetUI();
             LateInitOtherUI();
+            StarAssembly.InitAll();
             if(isBattleActive)
             {
                 Harmony.CreateAndPatchAll(typeof(StarCannon));
@@ -717,7 +718,7 @@ namespace MoreMegaStructure
             }
             else if (megaType == 4 && protoID == 9499 && !isRemoteReceiveingGear)//星际组装厂
             {
-                postWork = true;
+                postWork = false; // 不再允许用射线接受器接收组件
             }
             else if (megaType == 5 && (protoID == 9498 || protoID == 9502))//晶体重构器
             {
@@ -1019,8 +1020,10 @@ namespace MoreMegaStructure
                     //Debug.LogWarning("Error on RefreshShipSpeedScale");
                 }
             }
-            else if (StarMegaStructureType[idx] == 4 && isRemoteReceiveingGear) //如果是星际组装厂，且正在原程折跃接收多功能组件
+            else if (StarMegaStructureType[idx] == 4) //如果是星际组装厂，且正在原程折跃接收多功能组件
             {
+                StarAssembly.InternalUpdate(__instance);
+                /*
                 autoReceiveGearProgress += __instance.energyGenCurrentTick;
                 int productCnt = (int)(autoReceiveGearProgress / (multifunctionComponentHeat * 10));
                 autoReceiveGearProgress = autoReceiveGearProgress % (multifunctionComponentHeat * 10);
@@ -1036,6 +1039,7 @@ namespace MoreMegaStructure
                     {
                     }
                 }
+                */
             }
 
         }
@@ -1183,6 +1187,8 @@ namespace MoreMegaStructure
                 curStar = star;
                 int idx = star.id - 1;
                 idx = idx < 0 ? 0 : (idx > 999 ? 999 : idx);
+
+                StarAssembly.RefreshUI();
 
                 //Console.WriteLine($"Refreshing phase. ori_idx={star.id -1} and finding idx the name is {GameMain.galaxy.stars[idx].displayName}, while cur name is {star.displayName}");
 
@@ -1407,6 +1413,8 @@ namespace MoreMegaStructure
                 //条件满足
                 StarMegaStructureType[idx] = type;
                 RefreshUILabels(curStar);
+                if (type == 4)
+                    StarAssembly.ResetInGameDataByStarIndex(idx);
             }
             catch (Exception)
             {
@@ -1435,6 +1443,11 @@ namespace MoreMegaStructure
                     long DysonEnergy = (curDysonSphere.energyGenCurrentTick - curDysonSphere.energyReqCurrentTick) / WarpAccDivisor;
                     DysonEnergy = DysonEnergy > WarpAccMax ? WarpAccMax : DysonEnergy;
                     RightMaxPowGenValueText.text = Capacity2SpeedAcc((int)DysonEnergy) + "ly/s";
+                }
+                else if (StarMegaStructureType[curDysonSphere.starData.id - 1] == 4)//如果是星际组装厂
+                {
+                    long DysonEnergy = curDysonSphere.energyGenCurrentTick - curDysonSphere.energyReqCurrentTick;
+                    RightMaxPowGenValueText.text = Capacity2Str(DysonEnergy) + "W";
                 }
                 else if (StarMegaStructureType[curDysonSphere.starData.id - 1] == 6)//如果是恒星炮
                 {
@@ -1591,6 +1604,17 @@ namespace MoreMegaStructure
                 RefreshUIWhenLoad();
                 InitResolutionWhenLoad();
                 EffectRenderer.InitAll();
+
+                if (savedModVersion >= 110)
+                {
+                    StarAssembly.Import(r);
+                    StarAssembly.InitInGameData();
+                }
+                else
+                {
+                    StarAssembly.ResetAndInitArchiveData();
+                    StarAssembly.InitInGameData();
+                }
             }
             catch (Exception)
             {
@@ -1610,6 +1634,8 @@ namespace MoreMegaStructure
             }
             w.Write(maxAutoReceiveGear);
             w.Write(autoReceiveGearProgress);
+
+            StarAssembly.Export(w);
         }
         public void IntoOtherSave()
         {

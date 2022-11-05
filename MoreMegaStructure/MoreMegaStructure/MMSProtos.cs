@@ -618,7 +618,7 @@ namespace MoreMegaStructure
                 LDBTool.SetBuildBar(8, 8, 9496);
                 LDBTool.SetBuildBar(8, 9, 9497);
                 LDBTool.SetBuildBar(8, 10, 9498);
-                LDBTool.SetBuildBar(4, 4, 9499);
+                //LDBTool.SetBuildBar(4, 4, 9499);
             }
         }
 
@@ -628,8 +628,8 @@ namespace MoreMegaStructure
                 return;
 
             int pagePlus = MoreMegaStructure.battlePagenum * 1000;
-            //itemId 9503 available
-            //recipeId 575 available
+            //itemId 9513 available
+            //recipeId 576 available
 
             ProtoRegistry.RegisterItem(9503, "力场发生器", "力场发生器描述", "Assets/MegaStructureTab/forceGen", 201 + pagePlus, 20, EItemType.Component,
                 ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.7f, 0.7f)));
@@ -680,9 +680,10 @@ namespace MoreMegaStructure
                 recipeIdBias = -200;
             }
 
-            //下面是接收器
+            //下面是接收器 以及 新的物流塔
             var oriRecipe3 = LDB.recipes.Select(41);
             var oriItem3 = LDB.items.Select(2208);
+            var oriLogisticStation = LDB.items.Select(2104);
             //Iron
             var ReceiverIronRecipe = oriRecipe3.Copy();
             var ReceiverIron = oriItem3.Copy();
@@ -720,7 +721,7 @@ namespace MoreMegaStructure
             ReceiverIron.maincraft = ReceiverIronRecipe;
             ReceiverIron.recipes = new List<RecipeProto> { ReceiverIronRecipe };
             ReceiverIron.Grade = 1;
-            ReceiverIron.Upgrades = new int[] { 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502, 9499 };
+            ReceiverIron.Upgrades = new int[] { 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502 };
             //ReceiverIron.makes = new List<RecipeProto> { ReceiverIronRecipe };
             Traverse.Create(ReceiverIron).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverIron);
             //Copper
@@ -760,7 +761,7 @@ namespace MoreMegaStructure
             ReceiverCopper.maincraft = ReceiverCopperRecipe;
             ReceiverCopper.recipes = new List<RecipeProto> { ReceiverCopperRecipe };
             ReceiverCopper.Grade = 2;
-            ReceiverCopper.Upgrades = new int[] { 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502, 9499 };
+            ReceiverCopper.Upgrades = new int[] { 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502 };
             //ReceiverCopper.makes = new List<RecipeProto> { ReceiverCopperRecipe };
             Traverse.Create(ReceiverCopper).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverCopper);
             //Silicon
@@ -800,7 +801,7 @@ namespace MoreMegaStructure
             ReceiverSilicon.maincraft = ReceiverSiliconRecipe;
             ReceiverSilicon.recipes = new List<RecipeProto> { ReceiverSiliconRecipe };
             ReceiverSilicon.Grade = 3;
-            ReceiverSilicon.Upgrades = new int[] { 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502, 9499 };
+            ReceiverSilicon.Upgrades = new int[] { 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502 };
             //ReceiverSilicon.makes = new List<RecipeProto> { ReceiverSiliconRecipe };
             Traverse.Create(ReceiverSilicon).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverSilicon);
             //Titanium
@@ -840,7 +841,7 @@ namespace MoreMegaStructure
             ReceiverTitanium.maincraft = ReceiverTitaniumRecipe;
             ReceiverTitanium.recipes = new List<RecipeProto> { ReceiverTitaniumRecipe };
             ReceiverTitanium.Grade = 4;
-            ReceiverTitanium.Upgrades = new int[] { 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502, 9499 };
+            ReceiverTitanium.Upgrades = new int[] { 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502 };
             //ReceiverTitanium.makes = new List<RecipeProto> { ReceiverTitaniumRecipe };
             Traverse.Create(ReceiverTitanium).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverTitanium);
             //Magore
@@ -880,7 +881,7 @@ namespace MoreMegaStructure
             ReceiverMagore.maincraft = ReceiverMagoreRecipe;
             ReceiverMagore.recipes = new List<RecipeProto> { ReceiverMagoreRecipe };
             ReceiverMagore.Grade = 5;
-            ReceiverMagore.Upgrades = new int[] { 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502, 9499 };
+            ReceiverMagore.Upgrades = new int[] { 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502 };
             //ReceiverMagore.makes = new List<RecipeProto> { ReceiverMagoreRecipe };
             Traverse.Create(ReceiverMagore).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverMagore);
             //Coal
@@ -920,7 +921,7 @@ namespace MoreMegaStructure
             ReceiverCoal.maincraft = ReceiverCoalRecipe;
             ReceiverCoal.recipes = new List<RecipeProto> { ReceiverCoalRecipe };
             ReceiverCoal.Grade = 6;
-            ReceiverCoal.Upgrades = new int[] { 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502, 9499 };
+            ReceiverCoal.Upgrades = new int[] { 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502 };
             //ReceiverCoal.makes = new List<RecipeProto> { ReceiverCoalRecipe };
             Traverse.Create(ReceiverCoal).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverCoal);
             //Casimir
@@ -960,7 +961,7 @@ namespace MoreMegaStructure
             ReceiverCasimir.maincraft = ReceiverCasimirRecipe;
             ReceiverCasimir.recipes = new List<RecipeProto> { ReceiverCasimirRecipe };
             ReceiverCasimir.Grade = 7;
-            ReceiverCasimir.Upgrades = new int[] { 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502, 9499 };
+            ReceiverCasimir.Upgrades = new int[] { 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502};
             //ReceiverCasimir.makes = new List<RecipeProto> { ReceiverCasimirRecipe };
             Traverse.Create(ReceiverCasimir).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverCasimir);
             //Grating
@@ -1000,7 +1001,7 @@ namespace MoreMegaStructure
             ReceiverGrating.maincraft = ReceiverGratingRecipe;
             ReceiverGrating.recipes = new List<RecipeProto> { ReceiverGratingRecipe };
             ReceiverGrating.Grade = 8;
-            ReceiverGrating.Upgrades = new int[] { 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502, 9499 };
+            ReceiverGrating.Upgrades = new int[] { 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502};
             //ReceiverGrating.makes = new List<RecipeProto> { ReceiverGratingRecipe };
             Traverse.Create(ReceiverGrating).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverGrating);
 
@@ -1021,7 +1022,7 @@ namespace MoreMegaStructure
             }
             ReceiverICRecipe.Results = new int[] { 9499 };
             ReceiverICRecipe.ResultCounts = new int[] { 1 };
-            ReceiverICRecipe.GridIndex = 309 + pagePlus;
+            ReceiverICRecipe.GridIndex = 9902 + pagePlus;
             ReceiverICRecipe.TimeSpend = 480;
             Traverse.Create(ReceiverICRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverIC);
             ReceiverICRecipe.preTech = LDB.techs.Select(1141); //射线接收站科技 
@@ -1031,7 +1032,7 @@ namespace MoreMegaStructure
             ReceiverIC.name = "组件集成装置".Translate();
             ReceiverIC.Description = "组件集成装置描述";
             ReceiverIC.description = "组件集成装置描述".Translate();
-            ReceiverIC.GridIndex = 309 + pagePlus;
+            ReceiverIC.GridIndex = 9902 + pagePlus;
             ReceiverIC.HeatValue = 0L;
             ReceiverIC.prefabDesc = oriItem3.prefabDesc.Copy();
             ReceiverIC.prefabDesc.powerProductHeat = MoreMegaStructure.multifunctionComponentHeat;
@@ -1040,10 +1041,41 @@ namespace MoreMegaStructure
             ReceiverIC.handcrafts = new List<RecipeProto> { ReceiverICRecipe };
             ReceiverIC.maincraft = ReceiverICRecipe;
             ReceiverIC.recipes = new List<RecipeProto> { ReceiverICRecipe };
-            ReceiverIC.Grade = 9;
-            ReceiverIC.Upgrades = new int[] { 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502, 9499 };
             //ReceiverIC.makes = new List<RecipeProto> { ReceiverICRecipe };
             Traverse.Create(ReceiverIC).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverIC);
+
+
+            //Exchanger
+            var ExchangerRecipe = oriRecipe3.Copy();
+            var Exchanger = oriLogisticStation.Copy();
+            ExchangerRecipe.ID = recipeIdBias + 575;
+            ExchangerRecipe.Name = "物资交换器";
+            ExchangerRecipe.name = "物资交换器".Translate();
+            ExchangerRecipe.Description = "物资交换器描述";
+            ExchangerRecipe.description = "物资交换器描述".Translate();
+            ExchangerRecipe.Items = new int[] { 2104, 2208 };
+            ExchangerRecipe.ItemCounts = new int[] { 1, 1 };
+            ExchangerRecipe.Results = new int[] { 9512 };
+            ExchangerRecipe.ResultCounts = new int[] { 1 };
+            ExchangerRecipe.GridIndex = 310 + pagePlus;
+            ExchangerRecipe.TimeSpend = 480;
+            Traverse.Create(ExchangerRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverIron);
+            ExchangerRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技
+            if (MoreMegaStructure.isBattleActive) ExchangerRecipe.preTech = LDB.techs.Select(1920);
+            Exchanger.ID = 9512;
+            Exchanger.Name = "物资交换器";
+            Exchanger.name = "物资交换器".Translate();
+            Exchanger.Description = "物资交换器描述";
+            Exchanger.description = "物资交换器描述".Translate();
+            Exchanger.GridIndex = 310 + pagePlus;
+            Exchanger.HeatValue = 0L;
+            Exchanger.prefabDesc = oriLogisticStation.prefabDesc.Copy();
+            Exchanger.handcraft = ExchangerRecipe;
+            Exchanger.handcrafts = new List<RecipeProto> { ExchangerRecipe };
+            Exchanger.maincraft = ExchangerRecipe;
+            Exchanger.recipes = new List<RecipeProto> { ExchangerRecipe };
+            //Exchanger.makes = new List<RecipeProto> { ExchangerRecipe };
+            Traverse.Create(Exchanger).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverIron);
 
 
             LDBTool.PostAddProto(ReceiverIron);
@@ -1064,6 +1096,8 @@ namespace MoreMegaStructure
             LDBTool.PostAddProto(ReceiverCoalRecipe);
             LDBTool.PostAddProto(ReceiverGrating);
             LDBTool.PostAddProto(ReceiverGratingRecipe);
+            LDBTool.PostAddProto(Exchanger);
+            LDBTool.PostAddProto(ExchangerRecipe);
 
         }
 
