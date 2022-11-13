@@ -282,7 +282,7 @@ namespace MoreMegaStructure
             {
                 if (recipeIds[starIndex][i] > 0)
                 {
-                    double prog = energy * weights[starIndex][i] / tickEnergyForFullSpeed / (60 * timeSpend[starIndex][i]);
+                    double prog = energy * weights[starIndex][i] / tickEnergyForFullSpeed / timeSpend[starIndex][i];
                     progress[starIndex][i] += prog;
                 }
             }
@@ -431,6 +431,7 @@ namespace MoreMegaStructure
                             for (int j = 1; j < transport.stationCursor; j++)
                             {
                                 StationComponent stationComponent = transport.stationPool[j];
+                                if (stationComponent == null) continue;
                                 int protoId = factory.entityPool[stationComponent.entityId].protoId;
                                 if (protoId != 9512) continue; // 只有物资交换建筑
 
@@ -482,6 +483,7 @@ namespace MoreMegaStructure
                         for (int j = 1; j < transport.stationCursor; j++)
                         {
                             StationComponent stationComponent = transport.stationPool[j];
+                            if (stationComponent == null) continue;
                             int protoId = factory.entityPool[stationComponent.entityId].protoId;
                             if (protoId != 9512) continue; // 只有物资交换建筑
 
@@ -756,6 +758,7 @@ namespace MoreMegaStructure
                     incProgress[i][j] = r.ReadDouble();
                 }
             }
+            tickEnergyForFullSpeed = (int)(20000.0 / MoreMegaStructure.IASpdFactor.Value);
         }
 
         public static void Export(BinaryWriter w)
@@ -776,6 +779,7 @@ namespace MoreMegaStructure
         {
             ResetAndInitArchiveData();
             InitInGameData();
+            tickEnergyForFullSpeed = (int)(20000.0 / MoreMegaStructure.IASpdFactor.Value);
         }
     }
 }
