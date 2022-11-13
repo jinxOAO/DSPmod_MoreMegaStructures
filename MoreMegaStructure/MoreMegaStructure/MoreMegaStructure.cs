@@ -59,6 +59,7 @@ namespace MoreMegaStructure
         public static bool isRemoteReceiveingGear = false;
 
         public static ConfigEntry<bool> NoUIAnimation;
+        public static ConfigEntry<double> IASpdFactor;
         public static bool resolutionLower1080 = false;
 
         public static ResourceData resources;
@@ -203,7 +204,8 @@ namespace MoreMegaStructure
                 pagenum = TabSystem.RegisterTab($"{MODID_tab}:{MODID_tab}Tab", new TabData("MegaStructures", "Assets/MegaStructureTab/megaStructureTabIcon"));
             }
             battlePagenum = pagenum; //深空来敌mod开启后将使用battlePagenum
-            NoUIAnimation = Config.Bind<bool>("config", "NoUIAnimation", false, "Trun this to true if your want to show and hide buttons without animations. 如果你想让按钮的出现和隐藏没有动画立即完成，将此项设置为true。");
+            NoUIAnimation = Config.Bind<bool>("config", "NoUIAnimation", false, "Turn this to true if your want to show and hide buttons without animations. 如果你想让按钮的出现和隐藏没有动画立即完成，将此项设置为true。");
+            IASpdFactor = Config.Bind<double>("config", "InterstellarAssemblySpeedFactor", 1.0, "Higher will make the interstellar assembly work faster with the same energy. Can be a fraction. 在同样的能量水平下，此项越高，星际组装厂的工作速度越快。可以是小数。");
             //var ab = AssetBundle.LoadFromStream(Assembly.GetExecutingAssembly().GetManifestResourceStream("MoreMegaStructure.megastructureicons"));
             iconRocketMattD = Resources.Load<Sprite>("Assets/MegaStructureTab/rocketMatter");
             iconRocketScieN = Resources.Load<Sprite>("Assets/MegaStructureTab/rocketScience");
