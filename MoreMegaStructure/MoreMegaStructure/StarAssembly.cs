@@ -254,6 +254,7 @@ namespace MoreMegaStructure
 
         public static void InternalUpdate(DysonSphere __instance)
         {
+            //Utils.Log("internal updating " + __instance.starData.displayName);
             int starIndex = __instance.starData.index;
             long energy = __instance.energyGenCurrentTick - __instance.energyReqCurrentTick;
             int[] productRegister = null;
@@ -286,8 +287,9 @@ namespace MoreMegaStructure
                     progress[starIndex][i] += prog;
                 }
             }
+            //Utils.Log("compo progress " +  progress[starIndex][0].ToString() + " + " + (energy * weights[starIndex][0] / MoreMegaStructure.multifunctionComponentHeat * (MoreMegaStructure.isRemoteReceiveingGear ? 0.1 : 1.0)).ToString());
             progress[starIndex][0] += energy * weights[starIndex][0] / MoreMegaStructure.multifunctionComponentHeat * (MoreMegaStructure.isRemoteReceiveingGear ? 0.1 : 1.0);
-            
+
             // 生产进度填满，则立刻消耗原材料并根据消耗产出产物，存入巨构的产物暂存storage内
             for (int i = 1; i < 5; i++)
             {
@@ -303,10 +305,13 @@ namespace MoreMegaStructure
                             int gotInc = 0;
 
                             int gotItem = TakeItemForFactory(starIndex, items[starIndex][i][j], minSatisfied * itemCounts[starIndex][i][j], itemCounts[starIndex][i][j], out gotInc);
-                            int[] obj = consumeRegister;
-                            lock (obj)
+                            if (consumeRegister != null)
                             {
-                                consumeRegister[items[starIndex][i][j]] += gotItem;
+                                int[] obj = consumeRegister;
+                                lock (obj)
+                                {
+                                    consumeRegister[items[starIndex][i][j]] += gotItem;
+                                }
                             }
                             if (gotItem >= itemCounts[starIndex][i][j])
                             {
@@ -327,10 +332,13 @@ namespace MoreMegaStructure
                             {
                                 productStorage[starIndex][products[starIndex][i][j]] += minSatisfied * productCounts[starIndex][i][j];
                                 if (productStorage[starIndex][products[starIndex][i][j]] > 10000) productStorage[starIndex][products[starIndex][i][j]] = 10000;
-                                int[] obj = productRegister;
-                                lock (obj)
+                                if (productRegister != null)
                                 {
-                                    productRegister[products[starIndex][i][j]] += minSatisfied * productCounts[starIndex][i][j];
+                                    int[] obj = productRegister;
+                                    lock (obj)
+                                    {
+                                        productRegister[products[starIndex][i][j]] += minSatisfied * productCounts[starIndex][i][j];
+                                    }
                                 }
                             }
                             // 增产效果
@@ -342,10 +350,13 @@ namespace MoreMegaStructure
                                 {
                                     productStorage[starIndex][products[starIndex][i][j]] += bonusProduct * productCounts[starIndex][i][j];
                                     if (productStorage[starIndex][products[starIndex][i][j]] > 10000) productStorage[starIndex][products[starIndex][i][j]] = 10000;
-                                    int[] obj = productRegister;
-                                    lock (obj)
+                                    if (productRegister != null)
                                     {
-                                        productRegister[products[starIndex][i][j]] += minSatisfied * productCounts[starIndex][i][j];
+                                        int[] obj = productRegister;
+                                        lock (obj)
+                                        {
+                                            productRegister[products[starIndex][i][j]] += minSatisfied * productCounts[starIndex][i][j];
+                                        }
                                     }
                                 }
                                 incProgress[starIndex][i] -= (int)incProgress[starIndex][i];
@@ -360,19 +371,22 @@ namespace MoreMegaStructure
                     }
                 }
             }
+
             if (progress[starIndex][0] >= 1)
             {
+                //Utils.Log("gen" + ((int)progress[starIndex][0]).ToString());
                 if (productStorage[starIndex].ContainsKey(9500))
                     productStorage[starIndex][9500] = Math.Min(productStorage[starIndex][9500] + (int)progress[starIndex][0], 10000);
                 else
                     productStorage[starIndex][9500] = Math.Min((int)progress[starIndex][0], 10000);
-
-                int[] obj = productRegister;
-                lock (obj)
+                if (productRegister != null)
                 {
-                    productRegister[9500] += (int)progress[starIndex][0];
+                    int[] obj = productRegister;
+                    lock (obj)
+                    {
+                        productRegister[9500] += (int)progress[starIndex][0];
+                    }
                 }
-
                 progress[starIndex][0] -= (int)progress[starIndex][0];
             }
 
@@ -492,6 +506,14 @@ namespace MoreMegaStructure
                                 int productId = stationComponent.storage[k].itemId;
                                 if (productStorage[starIndex].ContainsKey(productId) && productStorage[starIndex][productId]>0)
                                 {
+                                    //if (productId == 9500)
+                                    //{
+                                    //    Utils.Log("Sending compo");
+                                    //}
+                                    //else
+                                    //{
+                                    //    Utils.Log("Sending others");
+                                    //}
                                     int waitingToSend = productStorage[starIndex][productId];
                                     if (stationComponent.storage[k].max - stationComponent.storage[k].count >= waitingToSend)
                                     {
@@ -520,6 +542,7 @@ namespace MoreMegaStructure
             if (MoreMegaStructure.StarMegaStructureType[starIndex] == 4)
             {
                 GigaFactoryUIObj.SetActive(true);
+                lockSliderListener = true;
                 for (int i = 1; i < 5; i++)
                 {
                     if (recipeIds[starIndex][i] > 0)
@@ -542,6 +565,7 @@ namespace MoreMegaStructure
                 sliders[0].value = (float)weights[starIndex][0] * 100;
 
                 RefreshProduceSpeedText();
+                lockSliderListener = false;
             }
             else
             {
@@ -647,38 +671,37 @@ namespace MoreMegaStructure
         {
             if (MoreMegaStructure.curStar == null || lockSliderListener) return;
             int starIndex = MoreMegaStructure.curStar.index;
-            int use = 0;
+            weights[starIndex][slotIndex] = sliders[slotIndex].value / 100f;
+
+            double use = 0;
             for (int i = 1; i < 5; i++)
             {
-                use += (int)sliders[i].value;
+                use += weights[starIndex][i] * 100;
             }
             if (use <= 100) // 若总分配不足100%，未使用的分配将给0号slot，即多功能集成组件
             {
-                sliders[0].value = 100 - use;
-                for (int i = 0; i < 5; i++)
-                {
-                    weights[starIndex][i] = sliders[i].value / 100f;
-                }
+                sliders[0].value = (float)(100 - use);
+                weights[starIndex][0] = sliders[0].value / 100f;
             }
             else // 若总分配超过100%，除了保证当前的分配不变之外，其他的按比例缩减直到总分配==100%
             {
                 lockSliderListener = true;
                 sliders[0].value = 0;
                 weights[starIndex][0] = 0;
-                int otherUse = 0;
+                double otherUse = 0;
                 for (int i = 1; i < 5; i++)
                 {
                     if (i != slotIndex)
                     {
-                        otherUse += (int)sliders[i].value;
+                        otherUse += weights[starIndex][i] * 100;
                     }
                 }
-                float ratio = (100f - sliders[slotIndex].value) / otherUse;
+                double ratio = (100f - sliders[slotIndex].value) / otherUse;
                 for (int i = 1; i < 5; i++)
                 {
                     if (i != slotIndex)
                     {
-                        sliders[i].value = sliders[i].value * ratio;
+                        sliders[i].value = (float)(weights[starIndex][i] * 100f * ratio);
                     }
                     weights[starIndex][i] = sliders[i].value / 100f;
                 }

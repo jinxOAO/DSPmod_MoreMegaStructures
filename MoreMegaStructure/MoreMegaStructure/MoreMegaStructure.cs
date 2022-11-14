@@ -925,6 +925,7 @@ namespace MoreMegaStructure
                 return;
             }
 
+            //Utils.Log("postPatching dysonSphere GameTick");
             if (StarMegaStructureType[idx] == 2) //如果是科学枢纽
             {
                 //HighStopwatch timetest = new HighStopwatch(); //
