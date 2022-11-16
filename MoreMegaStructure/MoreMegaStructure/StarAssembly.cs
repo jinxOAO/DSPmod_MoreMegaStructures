@@ -283,8 +283,26 @@ namespace MoreMegaStructure
             {
                 if (recipeIds[starIndex][i] > 0)
                 {
-                    double prog = energy * weights[starIndex][i] / tickEnergyForFullSpeed / timeSpend[starIndex][i];
-                    progress[starIndex][i] += prog;
+                    bool flag = false; // 是否能够继续生产，只有在所有产物都堆满的情况下停止生产
+                    for (int pd = 0; pd < products[starIndex][i].Count; pd++)
+                    {
+                        int productId = products[starIndex][i][pd];
+                        if (!productStorage[starIndex].ContainsKey(productId))
+                        {
+                            flag = true;
+                            break;
+                        }
+                        else if (productStorage[starIndex][productId] < 10000)
+                        {
+                            flag = true;
+                            break;
+                        }
+                    }
+                    if (flag)
+                    {
+                        double prog = energy * weights[starIndex][i] / tickEnergyForFullSpeed / timeSpend[starIndex][i];
+                        progress[starIndex][i] += prog;
+                    }
                 }
             }
             //Utils.Log("compo progress " +  progress[starIndex][0].ToString() + " + " + (energy * weights[starIndex][0] / MoreMegaStructure.multifunctionComponentHeat * (MoreMegaStructure.isRemoteReceiveingGear ? 0.1 : 1.0)).ToString());
@@ -361,6 +379,10 @@ namespace MoreMegaStructure
                                 }
                                 incProgress[starIndex][i] -= (int)incProgress[starIndex][i];
                             }
+                            else if (incProgress[starIndex][i] < 0)
+                            {
+                                incProgress[starIndex][i] = 0;
+                            }
                         }
 
                         progress[starIndex][i] -= (int)progress[starIndex][i];
@@ -369,6 +391,10 @@ namespace MoreMegaStructure
                     {
                         progress[starIndex][i] = 0;
                     }
+                }
+                else if (progress[starIndex][i] < 0)
+                {
+                    progress[starIndex][i] = 0;
                 }
             }
 
@@ -388,6 +414,10 @@ namespace MoreMegaStructure
                     }
                 }
                 progress[starIndex][0] -= (int)progress[starIndex][0];
+            }
+            else if (progress[starIndex][0] < 0)
+            {
+                progress[starIndex][0] = 0;
             }
 
             // 将暂存产物全部放入星系地表的交换站，如果有远程传送需求，优先传送
@@ -451,27 +481,31 @@ namespace MoreMegaStructure
 
                                 for (int k = 0; k < 5; k++)
                                 {
-                                    if (stationComponent.storage[k].itemId == itemId && stationComponent.storage[k].count >= minCount)
+                                    StationStore[] obj = stationComponent.storage;
+                                    lock (obj)
                                     {
-                                        int oriInc = stationComponent.storage[k].inc / stationComponent.storage[k].count;
-                                        int need = itemCount - result;
-                                        if (stationComponent.storage[k].count > need)
+                                        if (stationComponent.storage[k].itemId == itemId && stationComponent.storage[k].count >= minCount)
                                         {
-                                            stationComponent.storage[k].count -= need;
-                                            stationComponent.storage[k].inc -= oriInc * need;
-                                            result += need;
-                                            inc += oriInc * need;
-                                            return result;
-                                        }
-                                        else
-                                        {
-                                            result += stationComponent.storage[k].count;
-                                            inc += stationComponent.storage[k].inc;
-                                            stationComponent.storage[k].count = 0;
-                                            stationComponent.storage[k].inc = 0;
-                                        }
+                                            int oriInc = stationComponent.storage[k].inc / stationComponent.storage[k].count;
+                                            int need = itemCount - result;
+                                            if (stationComponent.storage[k].count > need)
+                                            {
+                                                stationComponent.storage[k].count -= need;
+                                                stationComponent.storage[k].inc -= oriInc * need;
+                                                result += need;
+                                                inc += oriInc * need;
+                                                return result;
+                                            }
+                                            else
+                                            {
+                                                result += stationComponent.storage[k].count;
+                                                inc += stationComponent.storage[k].inc;
+                                                stationComponent.storage[k].count = 0;
+                                                stationComponent.storage[k].inc = 0;
+                                            }
 
-                                        break;
+                                            break;
+                                        }
                                     }
                                 }
                             }
@@ -483,6 +517,10 @@ namespace MoreMegaStructure
             return result;
         }
 
+        /// <summary>
+        /// 将产物送回地表
+        /// </summary>
+        /// <param name="starIndex"></param>
         public static void SendProductToGround(int starIndex)
         {
             int planetCount = GameMain.galaxy.stars[starIndex].planetCount;
@@ -503,30 +541,33 @@ namespace MoreMegaStructure
 
                             for (int k = 0; k < 5; k++)
                             {
-                                int productId = stationComponent.storage[k].itemId;
-                                if (productStorage[starIndex].ContainsKey(productId) && productStorage[starIndex][productId]>0)
+                                StationStore[] obj = stationComponent.storage;
+                                lock (obj)
                                 {
-                                    //if (productId == 9500)
-                                    //{
-                                    //    Utils.Log("Sending compo");
-                                    //}
-                                    //else
-                                    //{
-                                    //    Utils.Log("Sending others");
-                                    //}
-                                    int waitingToSend = productStorage[starIndex][productId];
-                                    if (stationComponent.storage[k].max - stationComponent.storage[k].count >= waitingToSend)
+                                    int productId = stationComponent.storage[k].itemId;
+                                    if (productStorage[starIndex].ContainsKey(productId) && productStorage[starIndex][productId] > 0)
                                     {
-                                        stationComponent.storage[k].count += waitingToSend;
-                                        productStorage[starIndex][productId] = 0;
+                                        //if (productId == 9500)
+                                        //{
+                                        //    Utils.Log("Sending compo");
+                                        //}
+                                        //else
+                                        //{
+                                        //    Utils.Log("Sending others");
+                                        //}
+                                        int waitingToSend = productStorage[starIndex][productId];
+                                        if (stationComponent.storage[k].max - stationComponent.storage[k].count >= waitingToSend)
+                                        {
+                                            stationComponent.storage[k].count += waitingToSend;
+                                            productStorage[starIndex][productId] = 0;
+                                        }
+                                        else if(stationComponent.storage[k].max > stationComponent.storage[k].count)
+                                        {
+                                            int sended = stationComponent.storage[k].max - stationComponent.storage[k].count;
+                                            stationComponent.storage[k].count += sended;
+                                            productStorage[starIndex][productId] -= sended;
+                                        }
                                     }
-                                    else
-                                    {
-                                        int sended = stationComponent.storage[k].max - stationComponent.storage[k].count;
-                                        stationComponent.storage[k].count += sended;
-                                        productStorage[starIndex][productId] -= sended;
-                                    }
-
                                 }
                             }
                         }
