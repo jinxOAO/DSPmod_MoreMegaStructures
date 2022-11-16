@@ -205,7 +205,7 @@ namespace MoreMegaStructure
             }
             battlePagenum = pagenum; //深空来敌mod开启后将使用battlePagenum
             NoUIAnimation = Config.Bind<bool>("config", "NoUIAnimation", false, "Turn this to true if your want to show and hide buttons without animations. 如果你想让按钮的出现和隐藏没有动画立即完成，将此项设置为true。");
-            IASpdFactor = Config.Bind<double>("config", "InterstellarAssemblySpeedFactor", 0.5, "Higher will make the interstellar assembly work faster with the same energy. Can be a fraction. 在同样的能量水平下，此项越高，星际组装厂的工作速度越快。可以是小数。");
+            IASpdFactor = Config.Bind<double>("config", "InterstellarAssemblySpeedFactor", 0.2, "Higher will make the interstellar assembly work faster with the same energy. 在同样的能量水平下，此项越高，星际组装厂的工作速度越快。可以是小数。");
             //var ab = AssetBundle.LoadFromStream(Assembly.GetExecutingAssembly().GetManifestResourceStream("MoreMegaStructure.megastructureicons"));
             iconRocketMattD = Resources.Load<Sprite>("Assets/MegaStructureTab/rocketMatter");
             iconRocketScieN = Resources.Load<Sprite>("Assets/MegaStructureTab/rocketScience");

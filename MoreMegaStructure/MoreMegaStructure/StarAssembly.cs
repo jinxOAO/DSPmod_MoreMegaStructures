@@ -823,6 +823,7 @@ namespace MoreMegaStructure
                 }
             }
             tickEnergyForFullSpeed = (int)(20000.0 / MoreMegaStructure.IASpdFactor.Value);
+            if (tickEnergyForFullSpeed <= 0) tickEnergyForFullSpeed = 100000;
         }
 
         public static void Export(BinaryWriter w)
