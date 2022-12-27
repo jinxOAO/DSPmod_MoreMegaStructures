@@ -908,6 +908,7 @@ namespace MoreMegaStructure
                 }
             }
             hashGenByAllSN = 0;
+            StarAssembly.UIFrameUpdate(time);
         }
 
 

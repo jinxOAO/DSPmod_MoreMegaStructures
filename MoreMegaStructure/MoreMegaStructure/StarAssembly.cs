@@ -40,6 +40,7 @@ namespace MoreMegaStructure
         public static List<GameObject> sliderObjs = new List<GameObject>();
         public static List<Slider> sliders = new List<Slider>();
         public static List<Text> weightTxts = new List<Text>();
+        public static List<Text> storageTxts = new List<Text>();
         public static Sprite noRecipeSelectedSprit = null;
 
         public static bool lockSliderListener = false;
@@ -203,7 +204,7 @@ namespace MoreMegaStructure
 
                     GameObject sliderObj = GameObject.Instantiate(oriSliderObj, slotObj.transform);
                     sliderObj.GetComponent<RectTransform>().sizeDelta = new Vector2(100, 20);
-                    sliderObj.transform.localPosition = new Vector3(150, -100, 0);
+                    sliderObj.transform.localPosition = new Vector3(150, -110, 0); // 150, 100, 0
                     sliderObj.SetActive(false);
                     sliderObjs.Add(sliderObj);
                     Slider slider = sliderObj.GetComponent<Slider>();
@@ -214,11 +215,20 @@ namespace MoreMegaStructure
                     sliders.Add(slider);
 
                     GameObject weightTxtObj = GameObject.Instantiate(GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Assembler Window/produce/circle-back/cnt-text"), sliderObj.transform);
-                    weightTxtObj.transform.localPosition = new Vector3(150, -12, 0);
+                    //weightTxtObj.transform.localPosition = new Vector3(150, -12, 0);
+                    weightTxtObj.transform.localPosition = new Vector3(30, 12, 0);
                     weightTxts.Add(weightTxtObj.GetComponent<Text>());
                     weightTxtObj.GetComponent<Text>().fontSize = 16;
                     weightTxtObj.GetComponent<Text>().text = "";
                     weightTxtObj.GetComponent<Text>().alignment = TextAnchor.LowerLeft;
+
+                    GameObject storageTxtObj = GameObject.Instantiate(GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Assembler Window/produce/circle-back/cnt-text"), sliderObj.transform);
+                    storageTxtObj.transform.localPosition = new Vector3(180, -12, 0);
+                    storageTxts.Add(storageTxtObj.GetComponent<Text>());
+                    storageTxtObj.GetComponent<Text>().fontSize = 16;
+                    storageTxtObj.GetComponent<Text>().lineSpacing = 0.95f;
+                    storageTxtObj.GetComponent<Text>().text = "";
+                    storageTxtObj.GetComponent<Text>().alignment = TextAnchor.LowerLeft;
 
                     // 这里不能直接传入i，否则会导致所有的参数都变成了5
                     if (i == 0) 
@@ -298,7 +308,7 @@ namespace MoreMegaStructure
                             break;
                         }
                     }
-                    if (flag)
+                    if (flag && timeSpend[starIndex][i] > 0)
                     {
                         double prog = energy * weights[starIndex][i] / tickEnergyForFullSpeed / timeSpend[starIndex][i];
                         progress[starIndex][i] += prog;
@@ -320,6 +330,8 @@ namespace MoreMegaStructure
 
                         for (int j = 0; j < items[starIndex][i].Count; j++) // 开始尝试取得每个原材料
                         {
+                            if (itemCounts[starIndex][i][j] <= 0) continue;
+                            
                             int gotInc = 0;
 
                             int gotItem = TakeItemForFactory(starIndex, items[starIndex][i][j], minSatisfied * itemCounts[starIndex][i][j], itemCounts[starIndex][i][j], out gotInc);
@@ -606,6 +618,7 @@ namespace MoreMegaStructure
                 sliders[0].value = (float)weights[starIndex][0] * 100;
 
                 RefreshProduceSpeedText();
+                RefreshStorageText();
                 lockSliderListener = false;
             }
             else
@@ -614,16 +627,24 @@ namespace MoreMegaStructure
             }
         }
 
+        public static void UIFrameUpdate(long timei)
+        {
+            RefreshStorageText();
+            if (timei % 60 == 0)
+                RefreshProduceSpeedText();
+        }
+
         public static void RefreshProduceSpeedText()
         {
             if (MoreMegaStructure.curStar == null) return;
             int starIndex = MoreMegaStructure.curStar.index;
+            if (MoreMegaStructure.StarMegaStructureType[starIndex] != 4) return;
             for (int i = 1; i < 5; i++)
             {
                 if (recipeIds[starIndex][i] > 0)
                 {
                     double PPM = (GameMain.data.dysonSpheres[starIndex].energyGenCurrentTick - GameMain.data.dysonSpheres[starIndex].energyReqCurrentTick) * weights[starIndex][i] / tickEnergyForFullSpeed / timeSpend[starIndex][i] * 3600;
-                    string value = PPM > 10 ? PPM.ToString("N0") : (PPM > 1 ? PPM.ToString("N1") : PPM.ToString("N2"));
+                    string value = PPM > 10 ? PPM.ToString("N0") : (PPM > 1 ? PPM.ToString("N1") : (PPM > 0 ? PPM.ToString("N2") : "0.00"));
                     produceSpeedTxts[i].text = "理论最大速度".Translate() + " " +  value + "/min";
                     weightTxts[i].text = "能量分配".Translate() + " " + ((int)(weights[starIndex][i] * 100)).ToString() + "%";
                 }
@@ -633,9 +654,31 @@ namespace MoreMegaStructure
                 }
             }
             double PPM2 = (GameMain.data.dysonSpheres[starIndex].energyGenCurrentTick - GameMain.data.dysonSpheres[starIndex].energyReqCurrentTick) * weights[starIndex][0] / MoreMegaStructure.multifunctionComponentHeat * 3600;
-            string value2 = PPM2 > 10 ? PPM2.ToString("N0") : (PPM2 > 1 ? PPM2.ToString("N1") : PPM2.ToString("N2"));
+            string value2 = PPM2 > 10 ? PPM2.ToString("N0") : (PPM2 > 1 ? PPM2.ToString("N1") : (PPM2 > 0 ? PPM2.ToString("N2") : "0.00"));
             produceSpeedTxts[0].text = "理论最大速度".Translate() + " " + value2 + "/min";
             weightTxts[0].text = "剩余能量".Translate() + " " + ((int)(weights[starIndex][0] * 100)).ToString() + "%";
+        }
+
+        public static void RefreshStorageText()
+        {
+            if (MoreMegaStructure.curStar == null) return; 
+            int starIndex = MoreMegaStructure.curStar.index;
+            if (MoreMegaStructure.StarMegaStructureType[starIndex] != 4) return;
+            for (int i = 1; i < 5; i++)
+            {
+                if (recipeIds[starIndex][i] > 0)
+                {
+                    int itemId = products[starIndex][i][0];
+                    int firstProductCount = productStorage[starIndex].ContainsKey(itemId) ? productStorage[starIndex][itemId] : 0;
+                    storageTxts[i].text = "主产物巨构内部仓储".Translate() + "\n" + firstProductCount.ToString() + "/10000";
+                }
+                else
+                {
+                    storageTxts[i].text = "";
+                }
+            }
+            int MCProductCount = productStorage[starIndex].ContainsKey(9500) ? productStorage[starIndex][9500] : 0;
+            storageTxts[0].text = "巨构内部仓储".Translate() + "\n" + MCProductCount.ToString() + "/10000";
         }
 
         public static void OnRecipeSelectClick(int slotIndex)
@@ -845,6 +888,7 @@ namespace MoreMegaStructure
             ResetAndInitArchiveData();
             InitInGameData();
             tickEnergyForFullSpeed = (int)(20000.0 / MoreMegaStructure.IASpdFactor.Value);
+            if (tickEnergyForFullSpeed <= 0) tickEnergyForFullSpeed = 100000;
         }
     }
 }
