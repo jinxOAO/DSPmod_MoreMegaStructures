@@ -603,7 +603,7 @@ namespace MoreMegaStructure
                         recipeIcons[i].sprite = LDB.recipes.Select(recipeIds[starIndex][i]).iconSprite;
                         recipeSelectTips[i].SetActive(false);
                         sliderObjs[i].SetActive(true);
-                        sliders[i].value = (float)weights[starIndex][i]*100;
+                        sliders[i].value = W2S(weights[starIndex][i]);
                     }
                     else
                     {
@@ -646,7 +646,7 @@ namespace MoreMegaStructure
                     double PPM = (GameMain.data.dysonSpheres[starIndex].energyGenCurrentTick - GameMain.data.dysonSpheres[starIndex].energyReqCurrentTick) * weights[starIndex][i] / tickEnergyForFullSpeed / timeSpend[starIndex][i] * 3600;
                     string value = PPM > 10 ? PPM.ToString("N0") : (PPM > 1 ? PPM.ToString("N1") : (PPM > 0 ? PPM.ToString("N2") : "0.00"));
                     produceSpeedTxts[i].text = "理论最大速度".Translate() + " " +  value + "/min";
-                    weightTxts[i].text = "能量分配".Translate() + " " + ((int)(weights[starIndex][i] * 100)).ToString() + "%";
+                    weightTxts[i].text = "能量分配".Translate() + " " + ((weights[starIndex][i] * 100)).ToString() + "%";
                 }
                 else
                 {
@@ -656,7 +656,7 @@ namespace MoreMegaStructure
             double PPM2 = (GameMain.data.dysonSpheres[starIndex].energyGenCurrentTick - GameMain.data.dysonSpheres[starIndex].energyReqCurrentTick) * weights[starIndex][0] / MoreMegaStructure.multifunctionComponentHeat * 3600;
             string value2 = PPM2 > 10 ? PPM2.ToString("N0") : (PPM2 > 1 ? PPM2.ToString("N1") : (PPM2 > 0 ? PPM2.ToString("N2") : "0.00"));
             produceSpeedTxts[0].text = "理论最大速度".Translate() + " " + value2 + "/min";
-            weightTxts[0].text = "剩余能量".Translate() + " " + ((int)(weights[starIndex][0] * 100)).ToString() + "%";
+            weightTxts[0].text = "剩余能量".Translate() + " " + ((weights[starIndex][0] * 100)).ToString() + "%";
         }
 
         public static void RefreshStorageText()
@@ -751,11 +751,16 @@ namespace MoreMegaStructure
             RefreshUI();
         }
 
+        /// <summary>
+        /// 调整能量分配滑动条
+        /// </summary>
+        /// <param name="slotIndex"></param>
+        /// <param name="sv"></param>
         public static void OnSliderValueChange(int slotIndex, float sv)
         {
             if (MoreMegaStructure.curStar == null || lockSliderListener) return;
             int starIndex = MoreMegaStructure.curStar.index;
-            weights[starIndex][slotIndex] = sliders[slotIndex].value / 100f;
+            weights[starIndex][slotIndex] = S2W(sliders[slotIndex].value);
 
             double use = 0;
             for (int i = 1; i < 5; i++)
@@ -780,14 +785,14 @@ namespace MoreMegaStructure
                         otherUse += weights[starIndex][i] * 100;
                     }
                 }
-                double ratio = (100f - sliders[slotIndex].value) / otherUse;
+                double ratio = (100f - S2W(sliders[slotIndex].value)*100.0) / otherUse;
                 for (int i = 1; i < 5; i++)
                 {
                     if (i != slotIndex)
                     {
-                        sliders[i].value = (float)(weights[starIndex][i] * 100f * ratio);
+                        sliders[i].value = (float)(W2S(weights[starIndex][i]) * ratio);
                     }
-                    weights[starIndex][i] = sliders[i].value / 100f;
+                    weights[starIndex][i] = S2W(sliders[i].value);
                 }
             }
 
@@ -851,6 +856,36 @@ namespace MoreMegaStructure
                 }
             }
             return amount;
+        }
+
+        /// <summary>
+        /// 根据是否线性调整能量分配比例，将SliderValue转变为Weights的数值
+        /// </summary>
+        /// <param name="sliderValue"></param>
+        /// <returns></returns>
+
+        public static double S2W(double sliderValue)
+        {
+            if (MoreMegaStructure.NonlinearEnergy.Value)
+            {
+                return Math.Pow(sliderValue / 100.0, 2);
+            }
+            else
+            {
+                return sliderValue / 100.0;
+            }
+        }
+
+        public static float W2S(double weight)
+        {
+            if (MoreMegaStructure.NonlinearEnergy.Value)
+            {
+                return (float)(Math.Sqrt(weight)*100);
+            }
+            else
+            {
+                return (float)(weight*100);
+            }
         }
 
         public static void Import(BinaryReader r)
