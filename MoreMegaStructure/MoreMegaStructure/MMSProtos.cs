@@ -2032,6 +2032,7 @@ namespace MoreMegaStructure
         public static void AddTranslateProtoNames4()
         {
             ProtoRegistry.RegisterString("每秒伤害gm", "Damage per second", "每秒伤害");
+            ProtoRegistry.RegisterString("最大生产速度gm", "Production speed", "生产速度");
             ProtoRegistry.RegisterString("阶段", "stage", "阶段");
             ProtoRegistry.RegisterString("连续开火次数", "Maximum fire times per charging", "连续开火次数");
             ProtoRegistry.RegisterString("最大射程", "Maximum fire range", "最大射程");

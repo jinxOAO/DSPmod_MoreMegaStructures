@@ -1328,6 +1328,7 @@ namespace MoreMegaStructure
                         RightDysonTitle.text = "星际组装厂".Translate() + " " + star.displayName;
                         set2MegaAssemButtonTextTrans.GetComponent<Text>().color = currentTextColor;
                         set2MegaAssemButtonTextTrans.GetComponent<Text>().text = "当前".Translate() + " " + "星际组装厂".Translate();
+                        RightMaxPowGenText.text = "最大生产速度gm".Translate();
                         break;
                     case 5:
                         RightDysonTitle.text = "晶体重构器".Translate() + " " + star.displayName;
@@ -1456,7 +1457,7 @@ namespace MoreMegaStructure
                 else if (StarMegaStructureType[curDysonSphere.starData.id - 1] == 4)//如果是星际组装厂
                 {
                     long DysonEnergy = (curDysonSphere.energyGenCurrentTick - curDysonSphere.energyReqCurrentTick) * 60;
-                    RightMaxPowGenValueText.text = Capacity2Str(DysonEnergy) + "W";
+                    RightMaxPowGenValueText.text = Capacity2Str(DysonEnergy / 60.0 / StarAssembly.tickEnergyForFullSpeed) + "x";
                 }
                 else if (StarMegaStructureType[curDysonSphere.starData.id - 1] == 6)//如果是恒星炮
                 {
@@ -1664,6 +1665,24 @@ namespace MoreMegaStructure
             RefreshUIWhenLoad();
             InitResolutionWhenLoad();
             EffectRenderer.InitAll();
+        }
+
+        public static string Capacity2Str(double capacityPerSecond)
+        {
+            if (capacityPerSecond >= 100 || capacityPerSecond == 0)
+                return Capacity2Str((long)capacityPerSecond);
+            else if (capacityPerSecond >= 10)
+            {
+                return capacityPerSecond.ToString("F1");
+            }
+            else if (capacityPerSecond >= 1)
+            {
+                return capacityPerSecond.ToString("F2");
+            }
+            else
+            {
+                return capacityPerSecond.ToString("F3");
+            }
         }
 
         public static string Capacity2Str(long capacityPerSecond)
