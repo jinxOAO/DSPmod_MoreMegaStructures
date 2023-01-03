@@ -1673,15 +1673,15 @@ namespace MoreMegaStructure
                 return Capacity2Str((long)capacityPerSecond);
             else if (capacityPerSecond >= 10)
             {
-                return capacityPerSecond.ToString("F1");
+                return capacityPerSecond.ToString("F1") + " ";
             }
             else if (capacityPerSecond >= 1)
             {
-                return capacityPerSecond.ToString("F2");
+                return capacityPerSecond.ToString("F2") + " ";
             }
             else
             {
-                return capacityPerSecond.ToString("F3");
+                return capacityPerSecond.ToString("F3") + " ";
             }
         }
 
