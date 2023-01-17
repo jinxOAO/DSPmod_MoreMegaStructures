@@ -44,7 +44,12 @@ namespace MoreMegaStructure
                 linePlus = -100;
             }
 
-            var oriRecipe = LDB.recipes.Select(51);
+            var oriRecipe0 = LDB.recipes.Select(51);
+            var oriRecipe = oriRecipe0.Copy();
+            if (MoreMegaStructure.GenesisCompatibility)
+            {
+                oriRecipe.Type = (ERecipeType)10;
+            }
             var oriItem = LDB.items.Select(1303);
             int recipeIdBias = 0;
             if(MoreMegaStructure.GenesisCompatibility)
@@ -55,7 +60,7 @@ namespace MoreMegaStructure
             //引力发生装置
             var itemGravityGenRecipe = oriRecipe.Copy();
             var itemGravityGen = oriItem.Copy();
-            itemGravityGenRecipe.ID = 530;
+            itemGravityGenRecipe.ID = recipeIdBias + 530;
             itemGravityGenRecipe.Name = "引力发生装置";
             itemGravityGenRecipe.name = "引力发生装置".Translate();
             itemGravityGenRecipe.Description = "引力发生装置描述";
@@ -74,7 +79,7 @@ namespace MoreMegaStructure
             //位面约束环
             var itemConstrainRingRecipe = oriRecipe.Copy();
             var itemConstrainRing = oriItem.Copy();
-            itemConstrainRingRecipe.ID = 531;
+            itemConstrainRingRecipe.ID = recipeIdBias + 531;
             itemConstrainRingRecipe.Name = "位面约束环";
             itemConstrainRingRecipe.name = "位面约束环".Translate();
             itemConstrainRingRecipe.Description = "位面约束环描述";
@@ -100,7 +105,7 @@ namespace MoreMegaStructure
             //引力钻头
             var itemGravityDrillRecipe = oriRecipe.Copy();
             var itemGravityDrill = oriItem.Copy();
-            itemGravityDrillRecipe.ID = 532;
+            itemGravityDrillRecipe.ID = recipeIdBias + 532;
             itemGravityDrillRecipe.Name = "引力钻头";
             itemGravityDrillRecipe.name = "引力钻头".Translate();
             itemGravityDrillRecipe.Description = "引力钻头描述";
@@ -119,7 +124,7 @@ namespace MoreMegaStructure
             //隧穿激发装置
             var itemExciterRecipe = oriRecipe.Copy();
             var itemExciter = oriItem.Copy();
-            itemExciterRecipe.ID = 533;
+            itemExciterRecipe.ID = recipeIdBias + 533;
             itemExciterRecipe.Name = "隧穿激发装置";
             itemExciterRecipe.name = "隧穿激发装置".Translate();
             itemExciterRecipe.Description = "隧穿激发装置描述";
@@ -146,7 +151,7 @@ namespace MoreMegaStructure
             //谐振盘
             var itemDiscRecipe = oriRecipe.Copy();
             var itemDisc = oriItem.Copy();
-            itemDiscRecipe.ID = 534;
+            itemDiscRecipe.ID = recipeIdBias + 534;
             itemDiscRecipe.Name = "谐振盘";
             itemDiscRecipe.name = "谐振盘".Translate();
             itemDiscRecipe.Description = "谐振盘描述";
@@ -164,7 +169,7 @@ namespace MoreMegaStructure
             //光子探针
             var itemProbeRecipe = oriRecipe.Copy();
             var itemProbe = oriItem.Copy();
-            itemProbeRecipe.ID = 535;
+            itemProbeRecipe.ID = recipeIdBias + 535;
             itemProbeRecipe.Name = "光子探针";
             itemProbeRecipe.name = "光子探针".Translate();
             itemProbeRecipe.Description = "光子探针描述";
@@ -190,7 +195,7 @@ namespace MoreMegaStructure
             //量子计算机
             var itemQuanCompRecipe = oriRecipe.Copy();
             var itemQuanComp = oriItem.Copy();
-            itemQuanCompRecipe.ID = 536;
+            itemQuanCompRecipe.ID = recipeIdBias + 536;
             itemQuanCompRecipe.Name = "量子计算机";
             itemQuanCompRecipe.name = "量子计算机".Translate();
             itemQuanCompRecipe.Description = "量子计算机描述";
@@ -210,7 +215,7 @@ namespace MoreMegaStructure
             //星际组装厂组件
             var itemIACompoRecipe = oriRecipe.Copy();
             var itemIACompo = oriItem.Copy();
-            itemIACompoRecipe.ID = 537;
+            itemIACompoRecipe.ID = recipeIdBias + 537;
             itemIACompoRecipe.Name = "星际组装厂组件";
             itemIACompoRecipe.name = "星际组装厂组件".Translate();
             itemIACompoRecipe.Description = "星际组装厂组件描述";
@@ -233,7 +238,7 @@ namespace MoreMegaStructure
             //物质解压器运载火箭
             var rocketMDRecipe = oriRecipe2.Copy();
             var rocketMD = oriItem2.Copy();
-            rocketMDRecipe.ID = 538;
+            rocketMDRecipe.ID = recipeIdBias + 538;
             rocketMDRecipe.Name = "物质解压器运载火箭";
             rocketMDRecipe.name = "物质解压器运载火箭".Translate();
             rocketMDRecipe.Description = "物质解压器运载火箭描述";
@@ -252,7 +257,7 @@ namespace MoreMegaStructure
             //科学枢纽运载火箭
             var rocketSNRecipe = oriRecipe2.Copy();
             var rocketSN = oriItem2.Copy();
-            rocketSNRecipe.ID = 539;
+            rocketSNRecipe.ID = recipeIdBias + 539;
             rocketSNRecipe.Name = "科学枢纽运载火箭";
             rocketSNRecipe.name = "科学枢纽运载火箭".Translate();
             rocketSNRecipe.Description = "科学枢纽运载火箭描述";
@@ -523,6 +528,17 @@ namespace MoreMegaStructure
             Traverse.Create(quickILogRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconQuickILog);
 
 
+            if (MoreMegaStructure.GenesisCompatibility)
+            {
+                quickReactorRecipe.preTech = LDB.techs.Select(1153);
+                quickPowerRecipe.GridIndex = 9999;
+                quickSmelterRecipe.GridIndex = 9999;
+                quickAssemblyRecipe.GridIndex = 9999;
+                quickChemicalRecipe.GridIndex = 9999;
+                quickRefineryRecipe.GridIndex = 9999;
+                quickColliderRecipe.GridIndex = 9999;
+            }
+
             //itemGravityGen.makes = new List<RecipeProto> { itemGravityDrillRecipe, rocketWBARecipe };
             //itemConstrainRing.makes = new List<RecipeProto> { itemGravityDrillRecipe, rocketSNRecipe};
             //itemGravityDrill.makes = new List<RecipeProto> {rocketMDRecipe };
@@ -666,6 +682,36 @@ namespace MoreMegaStructure
             gluonGenRecipe.Handcraft = false;
             strIntOverloaderRecipe.Handcraft = false;
             dropRecipe.Handcraft = false;
+
+            
+        }
+
+        public static void AddGenesisRecipes()
+        {
+            if (!MoreMegaStructure.GenesisCompatibility)
+                return;
+
+            int pagePlus = MoreMegaStructure.pagenum * 1000;
+            var recipe376 = ProtoRegistry.RegisterRecipe(376, (ERecipeType)10, 6, new int[] { 9500 }, new int[] { 25 }, new int[] { 6257 }, new int[] { 1 }, "巨建快速组装描述", 1823, 403 + pagePlus, "Assets/MegaStructureTab/quick6257");
+            var recipe377 = ProtoRegistry.RegisterRecipe(377, (ERecipeType)10, 6, new int[] { 9500 }, new int[] { 25 }, new int[] { 6258 }, new int[] { 1 }, "巨建快速组装描述", 1824, 404 + pagePlus, "Assets/MegaStructureTab/quick6258");
+            var recipe378 = ProtoRegistry.RegisterRecipe(378, (ERecipeType)10, 6, new int[] { 9500 }, new int[] { 25 }, new int[] { 6259 }, new int[] { 1 }, "巨建快速组装描述", 1825, 405 + pagePlus, "Assets/MegaStructureTab/quick6259");
+            var recipe379 = ProtoRegistry.RegisterRecipe(379, (ERecipeType)10, 6, new int[] { 9500 }, new int[] { 25 }, new int[] { 6260 }, new int[] { 1 }, "巨建快速组装描述", 1826, 406 + pagePlus, "Assets/MegaStructureTab/quick6260");
+            var recipe380 = ProtoRegistry.RegisterRecipe(380, (ERecipeType)10, 6, new int[] { 9500 }, new int[] { 25 }, new int[] { 6264 }, new int[] { 1 }, "巨建快速组装描述", 1831, 407 + pagePlus, "Assets/MegaStructureTab/quick6264");
+            var recipe381 = ProtoRegistry.RegisterRecipe(381, (ERecipeType)10, 6, new int[] { 9500 }, new int[] { 25 }, new int[] { 6265 }, new int[] { 1 }, "巨建快速组装描述", 1827, 408 + pagePlus, "Assets/MegaStructureTab/quick6265");
+
+            recipe376._iconSprite = Resources.Load<Sprite>("Assets/MegaStructureTab/quick6257");
+            recipe377._iconSprite = Resources.Load<Sprite>("Assets/MegaStructureTab/quick6258");
+            recipe378._iconSprite = Resources.Load<Sprite>("Assets/MegaStructureTab/quick6259");
+            recipe379._iconSprite = Resources.Load<Sprite>("Assets/MegaStructureTab/quick6260");
+            recipe380._iconSprite = Resources.Load<Sprite>("Assets/MegaStructureTab/quick6264");
+            recipe381._iconSprite = Resources.Load<Sprite>("Assets/MegaStructureTab/quick6265");
+
+            LDBTool.PostAddProto(recipe376);
+            LDBTool.PostAddProto(recipe377);
+            LDBTool.PostAddProto(recipe378);
+            LDBTool.PostAddProto(recipe379);
+            LDBTool.PostAddProto(recipe380);
+            LDBTool.PostAddProto(recipe381);
         }
 
         public static void AddReceivers()
@@ -2098,12 +2144,17 @@ namespace MoreMegaStructure
             ProtoRegistry.RegisterString("物资交换器", "Exchange Logistic Station", "物资交换物流站");
             ProtoRegistry.RegisterString("物资交换器描述", "Exchange Logistic Station can transport materials like Interstellar Logistics Station. In addition, the interstellar assembly also needs this building to obtain raw materials from the ground, or to transport the product to the ground.", "物资交换物流站可以像星际物流站一样运输物资，除此之外，星际组装厂还需要此建筑来从地面获取原材料，或将产物输送至地表。");
             ProtoRegistry.RegisterString("理论最大速度", "max", "最大");
-            ProtoRegistry.RegisterString("能量分配", "Energy Assignment", "能量分配"); 
-            ProtoRegistry.RegisterString("剩余能量", "Energy Overage", "剩余能量");
+            ProtoRegistry.RegisterString("能量分配", "Energy Allocation", "能量分配"); 
+            ProtoRegistry.RegisterString("剩余能量", "Residual Energy", "剩余能量");
             ProtoRegistry.RegisterString("警告巨构不支持恒星系数量大于100个", "Warning! This MegaStructure do not support the galaxy with more than 100 star systems.", "警告！此巨构不支持恒星系数量大于100个！");
             ProtoRegistry.RegisterString("警告选择了重复的配方", "Please don't select repeated recipes.", "请不要选择重复的配方。");
             ProtoRegistry.RegisterString("主产物巨构内部仓储", "Internal Storage (Primary Product)", "主产物内部仓储");
             ProtoRegistry.RegisterString("巨构内部仓储", "Internal Storage", "内部仓储");
+
+
+            ProtoRegistry.RegisterString("警告巨构不支持此类配方", "Interstellar Assembly is not able to process this recipe.", "星际组装厂无法处理此配方。");
+            ProtoRegistry.RegisterString("钨重构装置", "Tungsten Reconstructor", "钨重构装置");
+            ProtoRegistry.RegisterString("巨建快速组装描述", "Quickly assemble constructions using multi-functional integrated components", "使用多功能集成组件快速递组装成目标巨建。");
 
         }
 

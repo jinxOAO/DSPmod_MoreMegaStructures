@@ -48,6 +48,7 @@ namespace MoreMegaStructure
         // 以下是固定参数
         public static int tickEnergyForFullSpeed = 20000; // 每相当于1.0倍速的产量需要的tick能量
         public static int matrixTimeSpendRatio = 100; // 用星际组装厂生产矩阵的速度修正倍率，这是为了不让该巨构部分替代科学枢纽
+        public static int recipeType1213TimeSpendRatio = 20; // 用星际组装厂生产创世之书特定配方的速度修正
 
         public static void InitAll()
         {
@@ -670,7 +671,11 @@ namespace MoreMegaStructure
                 {
                     int itemId = products[starIndex][i][0];
                     int firstProductCount = productStorage[starIndex].ContainsKey(itemId) ? productStorage[starIndex][itemId] : 0;
-                    storageTxts[i].text = "主产物巨构内部仓储".Translate() + "\n" + firstProductCount.ToString() + "/10000";
+                    int recipeId = recipeIds[starIndex][i];
+                    if (productCounts[starIndex][i].Count>1)
+                        storageTxts[i].text = "主产物巨构内部仓储".Translate() + "\n" + firstProductCount.ToString() + "/10000";
+                    else
+                        storageTxts[i].text = "巨构内部仓储".Translate() + "\n" + firstProductCount.ToString() + "/10000";
                 }
                 else
                 {
@@ -705,6 +710,14 @@ namespace MoreMegaStructure
                 if (recipeIds[starIndex][s] == recipeId)
                 {
                     UIRealtimeTip.Popup("警告选择了重复的配方".Translate());
+                    return;
+                }
+            }
+            if (MoreMegaStructure.GenesisCompatibility)
+            {
+                if (recipe.Type == (ERecipeType)14)
+                {
+                    UIRealtimeTip.Popup("警告巨构不支持此类配方".Translate());
                     return;
                 }
             }
@@ -747,6 +760,13 @@ namespace MoreMegaStructure
             timeSpend[starIndex][i] = Math.Max(1, recipe.TimeSpend);
             if (recipe.Results[0] >= 6001 && recipe.Results[0] <= 6006)
                 timeSpend[starIndex][i] *= matrixTimeSpendRatio;
+            if (MoreMegaStructure.GenesisCompatibility)
+            {
+                if (recipe.Type == (ERecipeType)12 || recipe.Type == (ERecipeType)13)
+                {
+                    timeSpend[starIndex][i] *= recipeType1213TimeSpendRatio;
+                }
+            }
 
             RefreshUI();
         }

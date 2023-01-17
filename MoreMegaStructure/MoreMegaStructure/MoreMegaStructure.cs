@@ -208,7 +208,7 @@ namespace MoreMegaStructure
             battlePagenum = pagenum; //深空来敌mod开启后将使用battlePagenum
             NoUIAnimation = Config.Bind<bool>("config", "NoUIAnimation", false, "Turn this to true if your want to show and hide buttons without animations. 如果你想让按钮的出现和隐藏没有动画立即完成，将此项设置为true。");
             IASpdFactor = Config.Bind<double>("config", "InterstellarAssemblySpeedFactor", 0.2, "Higher will make the interstellar assembly work faster with the same energy. 在同样的能量水平下，此项越高，星际组装厂的工作速度越快。可以是小数。");
-            NonlinearEnergy = Config.Bind<bool>("config", "NonlinearEnergyAssignmentAdjust", false, "Turn this to true will let you adjust the energy assignment of the Interstellar Assembly more finely within the range of lower distribution. 将此项设置为true能够使你在调整星际组装厂配方的能量分配时，在较低分配比例的区间内更加精细地调整。");
+            NonlinearEnergy = Config.Bind<bool>("config", "NonlinearEnergyAssignmentAdjust", false, "Turn this to true will let you adjust the energy allocation of the Interstellar Assembly more finely within the range of lower value. 将此项设置为true能够使你在调整星际组装厂配方的能量分配时，在较低分配比例的区间内更加精细地调整。");
 
             //var ab = AssetBundle.LoadFromStream(Assembly.GetExecutingAssembly().GetManifestResourceStream("MoreMegaStructure.megastructureicons"));
             iconRocketMattD = Resources.Load<Sprite>("Assets/MegaStructureTab/rocketMatter");
@@ -267,6 +267,7 @@ namespace MoreMegaStructure
             LDBTool.PreAddDataAction += MMSProtos.AddTranslateProtoNames4;
             LDBTool.PreAddDataAction += MMSProtos.AddNewItems;
             LDBTool.PreAddDataAction += MMSProtos.AddNewItems2;
+            LDBTool.PostAddDataAction += MMSProtos.AddGenesisRecipes;
             LDBTool.PostAddDataAction += MMSProtos.AddReceivers;
             LDBTool.PostAddDataAction += MMSProtos.RefreshInitAll;
 
@@ -1763,10 +1764,7 @@ namespace MoreMegaStructure
     {
         void Awake()
         {
-            if (MoreMegaStructure.CompatibilityPatchUnlocked)
-            {
-                MoreMegaStructure.GenesisCompatibility = true;
-            }
+            MoreMegaStructure.GenesisCompatibility = true;
         }
     }
 
