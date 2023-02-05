@@ -2146,7 +2146,8 @@ namespace MoreMegaStructure
             ProtoRegistry.RegisterString("理论最大速度", "max", "最大");
             ProtoRegistry.RegisterString("能量分配", "Energy Allocation", "能量分配"); 
             ProtoRegistry.RegisterString("剩余能量", "Residual Energy", "剩余能量");
-            ProtoRegistry.RegisterString("警告巨构不支持恒星系数量大于100个", "Warning! This MegaStructure do not support the galaxy with more than 100 star systems.", "警告！此巨构不支持恒星系数量大于100个！");
+            ProtoRegistry.RegisterString("警告巨构不支持恒星系数量大于100个", "Warning! This MegaStructure do not support the galaxy with more than 100 star systems. Please find a star system with StarIndex lower than 100, or try to edit config file to remove this restriction.", "警告！此巨构不支持恒星系数量大于100个！请寻找序号小于100的恒星系，或在config文件中修改设置来解除此限制。");
+            ProtoRegistry.RegisterString("警告巨构不支持恒星系数量大于1000个", "Warning! This MegaStructure do not support the galaxy with more than 1000 star systems.", "警告！此巨构不支持恒星系数量大于1000个！");
             ProtoRegistry.RegisterString("警告选择了重复的配方", "Please don't select repeated recipes.", "请不要选择重复的配方。");
             ProtoRegistry.RegisterString("主产物巨构内部仓储", "Internal Storage (Primary Product)", "主产物内部仓储");
             ProtoRegistry.RegisterString("巨构内部仓储", "Internal Storage", "内部仓储");

@@ -28,7 +28,8 @@ namespace MoreMegaStructure
         /// <summary>
         /// mod版本会进行存档
         /// </summary>
-        public static int modVersion = 110;
+        public static int modVersion = 116;
+        public static int savedModVersion = 116;
 
         public static bool CompatibilityPatchUnlocked = false;
         public static bool GenesisCompatibility = false;
@@ -62,6 +63,7 @@ namespace MoreMegaStructure
         public static ConfigEntry<bool> NoUIAnimation;
         public static ConfigEntry<double> IASpdFactor;
         public static ConfigEntry<bool> NonlinearEnergy;
+        public static ConfigEntry<bool> Support1000Stars;
         public static bool resolutionLower1080 = false;
 
         public static ResourceData resources;
@@ -209,6 +211,7 @@ namespace MoreMegaStructure
             NoUIAnimation = Config.Bind<bool>("config", "NoUIAnimation", false, "Turn this to true if your want to show and hide buttons without animations. 如果你想让按钮的出现和隐藏没有动画立即完成，将此项设置为true。");
             IASpdFactor = Config.Bind<double>("config", "InterstellarAssemblySpeedFactor", 0.2, "Higher will make the interstellar assembly work faster with the same energy. 在同样的能量水平下，此项越高，星际组装厂的工作速度越快。可以是小数。");
             NonlinearEnergy = Config.Bind<bool>("config", "NonlinearEnergyAssignmentAdjust", false, "Turn this to true will let you adjust the energy allocation of the Interstellar Assembly more finely within the range of lower value. 将此项设置为true能够使你在调整星际组装厂配方的能量分配时，在较低分配比例的区间内更加精细地调整。");
+            Support1000Stars = Config.Bind<bool>("config", "Support1000Stars", false, "Turn this to true will let the Interstellar Assemblies support upto 1000 stars (default is 100), but this might slow down your game or your save/load speed. 将此项设置为true能够使星际组装厂支持最多1000个星系（默认只支持100以下），但这可能使你的游戏速度或存读档速度被拖慢。");
 
             //var ab = AssetBundle.LoadFromStream(Assembly.GetExecutingAssembly().GetManifestResourceStream("MoreMegaStructure.megastructureicons"));
             iconRocketMattD = Resources.Load<Sprite>("Assets/MegaStructureTab/rocketMatter");
@@ -1592,7 +1595,7 @@ namespace MoreMegaStructure
             {
                 curStar = null;
                 curDysonSphere = null;
-                int savedModVersion = r.ReadInt32();
+                savedModVersion = r.ReadInt32();
                 for (int i = 0; i < 1000; i++)
                 {
                     StarMegaStructureType[i] = r.ReadInt32();
