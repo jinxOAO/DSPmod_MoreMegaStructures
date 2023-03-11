@@ -344,13 +344,37 @@ namespace MoreMegaStructure
                         int minSatisfied = (int)progress[starIndex][i]; // 用于指示获取到的原材料是否满足，如果不满足总是取最低的作为最终产出的参照
                         int minInc = 10; // 指示获取的增产等级，总是以最低的为准
 
+                        if (MoreMegaStructure.NoWasteResources.Value) // 如果这个选项被开启，先执行一遍寻找最小满足比例的原材料，将其满足比例设定为最小满足比例
+                        {
+                            for (int j = 0; j < items[starIndex][i].Count; j++)
+                            {
+                                if (itemCounts[starIndex][i][j] <= 0) continue;
+                                int gotInc = 0;
+                                int gotItem = TakeItemForFactory(starIndex, items[starIndex][i][j], minSatisfied * itemCounts[starIndex][i][j], itemCounts[starIndex][i][j], out gotInc, false);
+                                if (gotItem >= itemCounts[starIndex][i][j])
+                                {
+                                    minSatisfied = Math.Min(minSatisfied, gotItem / itemCounts[starIndex][i][j]);
+                                    minInc = Math.Min(minInc, gotInc / gotItem);
+                                }
+                                else
+                                {
+                                    minSatisfied = 0;
+                                    minInc = 0;
+                                    break;
+                                }
+                            }
+                        }
+
                         for (int j = 0; j < items[starIndex][i].Count; j++) // 开始尝试取得每个原材料
                         {
+                            if (minSatisfied <= 0)
+                                break;
+
                             if (itemCounts[starIndex][i][j] <= 0) continue;
                             
                             int gotInc = 0;
 
-                            int gotItem = TakeItemForFactory(starIndex, items[starIndex][i][j], minSatisfied * itemCounts[starIndex][i][j], itemCounts[starIndex][i][j], out gotInc);
+                            int gotItem = TakeItemForFactory(starIndex, items[starIndex][i][j], minSatisfied * itemCounts[starIndex][i][j], itemCounts[starIndex][i][j], out gotInc, true);
                             if (consumeRegister != null)
                             {
                                 int[] obj = consumeRegister;
@@ -476,8 +500,9 @@ namespace MoreMegaStructure
         /// <param name="itemCount"></param>
         /// <param name="minCount"></param> 指单个配方一次产出需要的量，如果已有的少于这个就不取了，否则可能出现一直取但又不生产的情况
         /// <param name="inc"></param>
+        /// <param name="consume"></param> 如果是false，则这次调用是为了检查具体数量的而暂时不消耗。true则是真正开始消耗
         /// <returns></returns>
-        public static int TakeItemForFactory(int starIndex, int itemId, int itemCount, int minCount, out int inc)
+        public static int TakeItemForFactory(int starIndex, int itemId, int itemCount, int minCount, out int inc, bool consume)
         {
             int result = 0;
             inc = 0;
@@ -485,7 +510,8 @@ namespace MoreMegaStructure
             if (productStorage[starIndex].ContainsKey(itemId) && productStorage[starIndex][itemId] >= minCount)
             {
                 result = Math.Min(itemCount, productStorage[starIndex][itemId]);
-                productStorage[starIndex][itemId] -= result;
+                if(consume)
+                    productStorage[starIndex][itemId] -= result;
                 inc = 4 * result;
             }
             // 再从地表拿
@@ -518,18 +544,24 @@ namespace MoreMegaStructure
                                             int need = itemCount - result;
                                             if (stationComponent.storage[k].count > need)
                                             {
-                                                stationComponent.storage[k].count -= need;
-                                                stationComponent.storage[k].inc -= oriInc * need;
                                                 result += need;
                                                 inc += oriInc * need;
+                                                if (consume)
+                                                {
+                                                    stationComponent.storage[k].count -= need;
+                                                    stationComponent.storage[k].inc -= oriInc * need;
+                                                }
                                                 return result;
                                             }
                                             else
                                             {
                                                 result += stationComponent.storage[k].count;
                                                 inc += stationComponent.storage[k].inc;
-                                                stationComponent.storage[k].count = 0;
-                                                stationComponent.storage[k].inc = 0;
+                                                if (consume)
+                                                {
+                                                    stationComponent.storage[k].count = 0;
+                                                    stationComponent.storage[k].inc = 0;
+                                                }
                                             }
 
                                             break;
