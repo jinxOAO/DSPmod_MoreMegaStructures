@@ -14,7 +14,7 @@
 
 
 For more mod description, change log or download the mod file, check https://dsp.thunderstore.io/package/jinxOAO/MoreMegaStructure/  
-Use R2Modman is recommended.  
+Using R2Modman is recommended.  
 更多mod信息和下载mod的地址 https://dsp.thunderstore.io/package/jinxOAO/MoreMegaStructure/  推荐使用R2Modman
 
 All the references files (except other mod files that this mod depends on) can be found in either your DSPGames' folder or the dependency folder of this repo   
