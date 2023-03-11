@@ -20,5 +20,5 @@ Using R2Modman is recommended.
 All the references files (except other mod files that this mod depends on) can be found in either your DSPGames' folder or the dependency folder of this repo   
 Other mod files that this mod depends on can be found on https://dsp.thunderstore.io/  
 所有依赖的引用文件要么在你的戴森球游戏文件夹中可以找到，要么可以在这个repo的dependency文件夹中找到  
-除了此mod依赖的其他mod的mod文件，这些文件需要你在https://dsp.thunderstore.io/上面下载
+除了此mod依赖的其他mod的mod文件，这些文件需要你在   https://dsp.thunderstore.io/     上面下载
 
