@@ -1109,14 +1109,27 @@ namespace MoreMegaStructure
                 default:
                     break;
             }
-
-            if(__instance.bulletId != bulletIdExpected)
+            bool knownId = false; // 此处是为了适配深空来敌mod，有其他的火箭需要借用游戏本体的silo发射，因此只有已知的id会进行转化，位置的id交由深空来敌mod进行处理
+            switch (__instance.bulletId)
+            {
+                case 1503:
+                case 9488:
+                case 9489:
+                case 9490:
+                case 9491:
+                case 9492:
+                case 9510:
+                    knownId = true;
+                    break;
+                default:
+                    break;
+            }
+            if(__instance.bulletId != bulletIdExpected && knownId)
             {
                 __instance.bulletCount = 0;
                 __instance.bulletInc = 0;
                 __instance.bulletId = bulletIdExpected;
             }
-            
         }
 
 
