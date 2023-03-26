@@ -1108,7 +1108,7 @@ namespace MoreMegaStructure
             ExchangerRecipe.TimeSpend = 480;
             Traverse.Create(ExchangerRecipe).Field("_iconSprite").SetValue(Resources.Load<Sprite>("Assets/MegaStructureTab/exchangeLS"));
             ExchangerRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技
-            if (MoreMegaStructure.isBattleActive) ExchangerRecipe.preTech = LDB.techs.Select(1920);
+            if (MoreMegaStructure.isBattleActive) ExchangerRecipe.preTech = LDB.techs.Select(1922);
             Exchanger.ID = 9512;
             Exchanger.Name = "物资交换器";
             Exchanger.name = "物资交换器".Translate();
