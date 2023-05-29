@@ -40,8 +40,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="Assembly-CSharp-nstrip">
-      <HintPath>D:\SteamLibrary\steamapps\common\Dyson Sphere Program\DSPGAME_Data\Managed\Assembly-CSharp-nstrip.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>G:\DysonMods\Assembly-CSharp-nstrip.dll</HintPath>
     </Reference>
     <Reference Include="BepInEx">
       <HintPath>D:\SteamLibrary\steamapps\common\Dyson Sphere Program\BepInEx\core\BepInEx.dll</HintPath>
@@ -110,9 +109,11 @@
     <Compile Include="MMSProtos.cs" />
     <Compile Include="MoreMegaStructure.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReceiverPatchers.cs" />
     <Compile Include="RendererSphere.cs" />
     <Compile Include="StarAssembly.cs" />
     <Compile Include="StarCannon.cs" />
+    <Compile Include="UIReceiverPatchers.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

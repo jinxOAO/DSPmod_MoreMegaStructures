@@ -260,6 +260,8 @@ namespace MoreMegaStructure
             Harmony.CreateAndPatchAll(typeof(StarCannon));
             Harmony.CreateAndPatchAll(typeof(RendererSphere));
             Harmony.CreateAndPatchAll(typeof(EffectRenderer));
+            Harmony.CreateAndPatchAll(typeof(ReceiverPatchers));
+            Harmony.CreateAndPatchAll(typeof(UIReceiverPatchers));
 
 
             LDBTool.EditDataAction += MMSProtos.ChangeReceiverRelatedStringProto;
@@ -292,6 +294,8 @@ namespace MoreMegaStructure
             InitMegaSetUI();
             LateInitOtherUI();
             StarAssembly.InitAll();
+            ReceiverPatchers.InitRawData();
+            UIReceiverPatchers.InitAll();
             if(isBattleActive)
             {
                 Harmony.CreateAndPatchAll(typeof(StarCannon));
@@ -719,20 +723,20 @@ namespace MoreMegaStructure
                 postWork = true;
             }
             int megaType = StarMegaStructureType[idx];
-            int protoID = factory.entityPool[__instance.entityId].protoId;//接收器的建筑的原型ID
-            if (megaType == 0 && protoID == 2208)
+            int protoId = factory.entityPool[__instance.entityId].protoId;//接收器的建筑的原型ID
+            if (megaType == 0 && protoId == 2208)
             {
                 postWork = true;
             }
-            else if (megaType == 1 && ((protoID >= 9493 && protoID <= 9497) || protoID == 9501))//物质解压器
+            else if (megaType == 1 && ((protoId >= 9493 && protoId <= 9497) || protoId == 9501))//物质解压器
             {
                 postWork = true;
             }
-            else if (megaType == 4 && protoID == 9499 && !isRemoteReceiveingGear)//星际组装厂
+            else if (megaType == 4 && protoId == 9499 && !isRemoteReceiveingGear)//星际组装厂
             {
                 postWork = false; // 不再允许用射线接受器接收组件
             }
-            else if (megaType == 5 && (protoID == 9498 || protoID == 9502))//晶体重构器
+            else if (megaType == 5 && (protoId == 9498 || protoId == 9502))//晶体重构器
             {
                 postWork = true;
             }
@@ -1060,7 +1064,6 @@ namespace MoreMegaStructure
         }
 
 
-        
 
         /// <summary>
         /// 火箭发射器所需火箭修正，注意如果更改了巨构类型，而发射器内还存有不相符的火箭，该火箭将直接消失（为了防止用廉价火箭白嫖高价火箭）
@@ -1129,6 +1132,46 @@ namespace MoreMegaStructure
                 __instance.bulletCount = 0;
                 __instance.bulletInc = 0;
                 __instance.bulletId = bulletIdExpected;
+            }
+        }
+
+        /// <summary>
+        /// 弹射器所需发射物修正，类似上面的发射井
+        /// </summary>
+        /// <param name="__instance"></param>
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(EjectorComponent), "InternalUpdate")]
+        public static void EjectorUpdatePatch(ref EjectorComponent __instance)
+        {
+            if (!GenesisCompatibility) return; // 目前只对创世之书生效
+            int planetId = __instance.planetId;
+            int starIndex = planetId / 100 - 1;
+            PlanetFactory factory = GameMain.galaxy.stars[starIndex].planets[planetId % 100 - 1].factory;
+            int gmProtoId = factory.entityPool[__instance.entityId].protoId;
+            if (gmProtoId != 2311) return; //只修改原始弹射器
+
+            if (starIndex < 0 || starIndex > 999)
+            {
+                return;
+            }
+            int megaType = StarMegaStructureType[starIndex];
+            if (megaType == 2)
+            {
+                if (__instance.bulletId == 1501)
+                {
+                    __instance.bulletCount = 0;
+                    __instance.bulletInc = 0;
+                    __instance.bulletId = 6006;
+                }
+            }
+            else
+            {
+                if (__instance.bulletId == 6006)
+                {
+                    __instance.bulletCount = 0;
+                    __instance.bulletInc = 0;
+                    __instance.bulletId = 1501;
+                }
             }
         }
 
@@ -1449,6 +1492,8 @@ namespace MoreMegaStructure
                 RefreshUILabels(curStar);
                 if (type == 4)
                     StarAssembly.ResetInGameDataByStarIndex(idx);
+                if (type == 2 && GenesisCompatibility) // 改成科学枢纽后删除所有太阳帆，目前只对创世之书生效
+                    curDysonSphere.swarm.RemoveSailsByOrbit(-1);
             }
             catch (Exception)
             {

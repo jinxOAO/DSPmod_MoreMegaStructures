@@ -268,8 +268,9 @@ namespace MoreMegaStructure
             rocketSNRecipe.ResultCounts = new int[] { 1 };
             rocketSNRecipe.TimeSpend = 480;
             rocketSNRecipe.GridIndex = 202 + pagePlus;
-            rocketSNRecipe.preTech = LDB.techs.Select(1522); //垂直发射井科技
+            rocketSNRecipe.preTech = LDB.techs.Select(1508); //最终胜利科技
             if (MoreMegaStructure.isBattleActive) rocketSNRecipe.preTech = LDB.techs.Select(1924);
+            if (MoreMegaStructure.GenesisCompatibility) rocketSNRecipe.preTech = LDB.techs.Select(1152);
             Traverse.Create(rocketSNRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconRocketScieN);
             ProtoRegistry.RegisterItem(9489, "科学枢纽运载火箭".Translate(), "科学枢纽运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketScience", 202 + pagePlus, 20,
                 EItemType.Product, ProtoRegistry.GetDefaultIconDesc(new Color(1f, 1f, 0.9f), new Color(0.7f, 0.7f, 0.2f)));
@@ -2156,6 +2157,11 @@ namespace MoreMegaStructure
             ProtoRegistry.RegisterString("警告巨构不支持此类配方", "Interstellar Assembly is not able to process this recipe.", "星际组装厂无法处理此配方。");
             ProtoRegistry.RegisterString("钨重构装置", "Tungsten Reconstructor", "钨重构装置");
             ProtoRegistry.RegisterString("巨建快速组装描述", "Quickly assemble constructions using multi-functional integrated components", "使用多功能集成组件快速递组装成目标巨建。");
+
+
+            ProtoRegistry.RegisterString("巨构状态", "Mega structure status", "巨构状态");
+            ProtoRegistry.RegisterString("巨构类型不符", "type not match", "巨构不符");
+            ProtoRegistry.RegisterString("模式错误", "wrong mode", "模式错误");
 
         }
 

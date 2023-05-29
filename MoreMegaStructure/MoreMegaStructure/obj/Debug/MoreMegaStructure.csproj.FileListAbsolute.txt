@@ -14,7 +14,8 @@ D:\Work\CSFile\DSPmod_MoreMegaStructures\MoreMegaStructure\MoreMegaStructure\obj
 D:\Work\CSFile\DSPmod_MoreMegaStructures\MoreMegaStructure\MoreMegaStructure\obj\Debug\MoreMegaStructure.pdb
 D:\SteamLibrary\steamapps\common\Dyson Sphere Program\BepInEx\plugins\MoreMegaStructure.dll
 D:\SteamLibrary\steamapps\common\Dyson Sphere Program\BepInEx\plugins\MoreMegaStructure.pdb
-F:\GitHubRepository\DSPmod_MoreMegaStructures\MoreMegaStructure\MoreMegaStructure\obj\Debug\MoreMegaStructure.csprojAssemblyReference.cache
 F:\GitHubRepository\DSPmod_MoreMegaStructures\MoreMegaStructure\MoreMegaStructure\obj\Debug\MoreMegaStructure.csproj.CoreCompileInputs.cache
 F:\GitHubRepository\DSPmod_MoreMegaStructures\MoreMegaStructure\MoreMegaStructure\obj\Debug\MoreMegaStructure.dll
 F:\GitHubRepository\DSPmod_MoreMegaStructures\MoreMegaStructure\MoreMegaStructure\obj\Debug\MoreMegaStructure.pdb
+F:\GitHubRepository\DSPmod_MoreMegaStructures\MoreMegaStructure\MoreMegaStructure\obj\Debug\MoreMegaStructure.csproj.CopyComplete
+F:\GitHubRepository\DSPmod_MoreMegaStructures\MoreMegaStructure\MoreMegaStructure\obj\Debug\MoreMegaStructure.csproj.AssemblyReference.cache
