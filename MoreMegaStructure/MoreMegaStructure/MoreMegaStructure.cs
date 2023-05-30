@@ -1832,7 +1832,10 @@ namespace MoreMegaStructure
     {
         void Awake()
         {
-            MoreMegaStructure.GenesisCompatibility = true;
+            if (!MoreMegaStructure.isBattleActive)
+            {
+                MoreMegaStructure.GenesisCompatibility = true;
+            }
         }
     }
 
@@ -1845,6 +1848,7 @@ namespace MoreMegaStructure
         {
             try
             {
+                MoreMegaStructure.GenesisCompatibility = false;
                 if (DSP_Battle.Configs.versionCode >= 30220410)
                 {
                     MoreMegaStructure.isBattleActive = true;
