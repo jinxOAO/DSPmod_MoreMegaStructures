@@ -2131,7 +2131,7 @@ namespace MoreMegaStructure
             ProtoRegistry.RegisterString("物质解压器功能文本", "Produce unipolar magnet and some basic resources such as iron ingot, which can be received by corresponding receivers.", "产出单极磁石和一些基础资源（例如铁块），可被对应的物质重构器接收。");
             ProtoRegistry.RegisterString("科学枢纽功能文本", "Upload hash points for research without requiring any matrix.", "无需矩阵即可上传hash点数进行研究。");
             ProtoRegistry.RegisterString("折跃场广播阵列功能文本", "Increase the warp speed of logistics vessels.", "提高物流运输船的曲速速度。");
-            ProtoRegistry.RegisterString("星际组装厂功能文本", "You can set up to four recipes, this megastructure will automatically obtain materials from the exchange logistic stations on the ground, produce products and transport them back to the ground. The production speed depends on the assignment of energy and the recipe's time cost. Unused energy will automatically produce multi-functional integration components.\nIn addition to receive by the exchange logistic station, components can also be transmitted directly to the mecha (but only 10%efficiency). You can set this function in the mecha panel.", "可设定最多四个配方，从地表的物资交换站获取材料，生产产品并输送回物资交换站，生产速度取决于分配的能量水平，未使用的能量会自动生产多功能集成组件。\n组件除了可以在物资交换站接收，还可以直接远程传输到机甲中（但只有10%效率）。你可以在机甲面板中设置此功能。");
+            ProtoRegistry.RegisterString("星际组装厂功能文本", "You can set up to four recipes, this megastructure will automatically obtain materials from the exchange logistic stations on the ground, produce products and transport them back to the ground. The production speed depends on the assignment of energy and the recipe's time cost. And you can use proliferator to get extra products without consuming extra energy, if the recipe allows extra production. In any cases, you can not choose the production speedup mode. Unused energy will automatically produce multi-functional integration components.\nIn addition to receive by the exchange logistic station, components can also be transmitted directly to the mecha (but only 10%efficiency). You can set this function in the mecha panel.", "可设定最多四个配方，从地表的物资交换站获取材料，生产产品并输送回物资交换站，生产速度取决于分配的能量水平。可以将原料喷涂增产剂来获取额外产出（如果配方允许），这不会占用额外能量，也不能切换为生产加速模式。未使用的能量会自动生产多功能集成组件。\n组件除了可以在物资交换站接收，还可以直接远程传输到机甲中（但只有10%效率）。你可以在机甲面板中设置此功能。");
             ProtoRegistry.RegisterString("晶体重构器功能文本", "Produce Casimir crystals and optical grating crystals, which can be received by corresponding receivers.", "产出卡西米尔晶体和光栅石，可被对应的接收器接收。");
 
             ProtoRegistry.RegisterString("远程折跃多功能组件限制", "Remote-Teleport Multifunction Component Upper Limit", "远程输送多功能组件限制");
@@ -2139,6 +2139,7 @@ namespace MoreMegaStructure
             ProtoRegistry.RegisterString("上限1000", "Max 1000", "上限1000");
             ProtoRegistry.RegisterString("上限2000", "Max 2000", "上限2000");
             ProtoRegistry.RegisterString("组件无限制", "No limit", "无限制");
+            ProtoRegistry.RegisterString("已开启优先传输至机甲", "Remote-Teleport To Mecha Enabled", "已开启优先输送至机甲");
 
             ProtoRegistry.RegisterString("鼠标触碰左侧黄条以规划巨构", "Touch the left bar to plan the megastructure", "鼠标触碰左侧线条以规划巨构");
 

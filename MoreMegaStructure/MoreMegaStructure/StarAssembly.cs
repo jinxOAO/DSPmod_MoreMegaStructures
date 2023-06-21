@@ -18,7 +18,6 @@ namespace MoreMegaStructure
         public static List<List<double>> incProgress = new List<List<double>>(); // 存储不同recipe的增产生产进度
 
         // 以下为不需要存档的数据，在载入时重置或者重新计算
-
         public static Dictionary<int, List<List<int>>> items = new Dictionary<int, List<List<int>>>(); // 存储recipe的原材料的Id
         public static Dictionary<int, List<List<int>>> products = new Dictionary<int, List<List<int>>>(); // 存储recipe的产物的Id
         public static Dictionary<int, List<List<int>>> itemCounts = new Dictionary<int, List<List<int>>>(); // 存储recipe的原材料的需求数量
@@ -27,7 +26,9 @@ namespace MoreMegaStructure
         public static Dictionary<int, Dictionary<int, int>> productStorage = new Dictionary<int, Dictionary<int, int>>(); // 存储产物已暂时堆积在巨构中的数量（可供相同星际组装厂的其他需要此产物作为原材料的配方取用），不区分slot只按照产物Id存储。不进行存档，读档后重置。
         // 上述productStorage项会存在：如果反复疯狂更换recipe会一直增加字典项，可能拖慢速度，但是重进游戏后冗余key会自动清除，因此暂时不做游戏内清理
 
-        public static int currentStarId = 0; // 选择recipe时暂存所选定的是哪一个star的组装厂
+        public static List<int> currentStarIncs = new List<int>();
+
+        //public static int currentStarIndex = 0; // 弃用，使用MoreMegaStructure.curStar.index
         public static int currentRecipeSlot = 0; // 选择recipe时暂存所选定的是第几个recipe栏位
 
         public static int slotCount = 5;
@@ -35,6 +36,7 @@ namespace MoreMegaStructure
         public static GameObject GigaFactoryUIObj = null;
 
         public static List<Image> recipeIcons = new List<Image>();
+        public static List<Image> incIcons = new List<Image>();
         public static List<GameObject> recipeSelectTips = new List<GameObject>();
         public static List<Text> produceSpeedTxts = new List<Text>();
         public static List<GameObject> sliderObjs = new List<GameObject>();
@@ -132,9 +134,22 @@ namespace MoreMegaStructure
                     }
                 }
             }
-            currentStarId = 0;
+            //currentStarIndex = 0;
             currentRecipeSlot = 0;
+            currentStarIncs = new List<int>();
+            for (int i = 0; i < 5; i++)
+            {
+                currentStarIncs.Add(0);
+            }
             lockSliderListener = false;
+        }
+
+        public static void ForceResetIncDataCache()
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                currentStarIncs[i] = 0;
+            }
         }
 
         public static void ResetInGameDataByStarIndex(int starIndex)
@@ -192,6 +207,7 @@ namespace MoreMegaStructure
 
                 GameObject oriSelectObj = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Assembler Window/offwork");
                 GameObject oriSliderObj = GameObject.Find("UI Root/Overlay Canvas/In Game/FPS Stats/priority-bar/slider-2");
+                GameObject oriIncIconObj = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Station Window/storage-box-0(Clone)/storage-icon/inc-3");
 
                 for (int i = 0; i < 5; i++)
                 {
@@ -217,6 +233,15 @@ namespace MoreMegaStructure
                     produceSpeedTxts.Add(produceSpeedTxtObj.GetComponent<Text>());
                     produceSpeedTxtObj.GetComponent<Text>().text = "理论最大速度".Translate() + " --/min";
                     produceSpeedTxtObj.GetComponent<Text>().alignment = TextAnchor.LowerLeft;
+                    produceSpeedTxtObj.GetComponent<Text>().supportRichText = true;
+
+                    GameObject incIconObj = GameObject.Instantiate(oriIncIconObj,slotObj.transform);
+                    incIconObj.transform.localPosition = new Vector3(110,-70);
+                    incIconObj.transform.localScale = new Vector3(1, 1, 1);
+                    //incIconObj.GetComponent<RectTransform>().sizeDelta = new Vector2(24, 24);
+                    incIconObj.SetActive(false);
+                    incIconObj.GetComponent<Image>().enabled = true;
+                    incIcons.Add(incIconObj.GetComponent<Image>());
 
                     GameObject sliderObj = GameObject.Instantiate(oriSliderObj, slotObj.transform);
                     sliderObj.GetComponent<RectTransform>().sizeDelta = new Vector2(100, 20);
@@ -412,29 +437,35 @@ namespace MoreMegaStructure
                                 }
                             }
                             // 增产效果
-                            incProgress[starIndex][i] += minSatisfied * Cargo.incTableMilli[minInc];
-                            if (incProgress[starIndex][i] >= 1)
+                            if (incProgress[starIndex][i] >= 0) // 负数则视为是无法增产的配方
                             {
-                                int bonusProduct = (int)incProgress[starIndex][i];
-                                for (int j = 0; j < products[starIndex][i].Count; j++)
+                                incProgress[starIndex][i] += minSatisfied * Cargo.incTableMilli[minInc];
+                                if (MoreMegaStructure.curStar != null && starIndex == MoreMegaStructure.curStar.index)
+                                    currentStarIncs[i] = minInc; // 将这一帧的增产效果暂存，方便刷新
+
+                                // 增产点数满了之后
+                                if (incProgress[starIndex][i] >= 1)
                                 {
-                                    productStorage[starIndex][products[starIndex][i][j]] += bonusProduct * productCounts[starIndex][i][j];
-                                    if (productStorage[starIndex][products[starIndex][i][j]] > 10000) productStorage[starIndex][products[starIndex][i][j]] = 10000;
-                                    if (productRegister != null)
+                                    int bonusProduct = (int)incProgress[starIndex][i];
+                                    for (int j = 0; j < products[starIndex][i].Count; j++)
                                     {
-                                        int[] obj = productRegister;
-                                        lock (obj)
+                                        productStorage[starIndex][products[starIndex][i][j]] += bonusProduct * productCounts[starIndex][i][j];
+                                        if (productStorage[starIndex][products[starIndex][i][j]] > 10000) productStorage[starIndex][products[starIndex][i][j]] = 10000;
+                                        if (productRegister != null)
                                         {
-                                            productRegister[products[starIndex][i][j]] += minSatisfied * productCounts[starIndex][i][j];
+                                            int[] obj = productRegister;
+                                            lock (obj)
+                                            {
+                                                productRegister[products[starIndex][i][j]] += minSatisfied * productCounts[starIndex][i][j];
+                                            }
                                         }
                                     }
+                                    incProgress[starIndex][i] -= (int)incProgress[starIndex][i];
+                                    if (incProgress[starIndex][i] < 0)
+                                        incProgress[starIndex][i] = 0;
                                 }
-                                incProgress[starIndex][i] -= (int)incProgress[starIndex][i];
                             }
-                            else if (incProgress[starIndex][i] < 0)
-                            {
-                                incProgress[starIndex][i] = 0;
-                            }
+                            
                         }
 
                         progress[starIndex][i] -= (int)progress[starIndex][i];
@@ -665,7 +696,7 @@ namespace MoreMegaStructure
                 recipeIcons[0].sprite = MoreMegaStructure.iconInterCompo;
                 sliders[0].value = (float)weights[starIndex][0] * 100;
 
-                RefreshProduceSpeedText();
+                RefreshProduceSpeedContent();
                 RefreshStorageText();
                 lockSliderListener = false;
             }
@@ -679,10 +710,10 @@ namespace MoreMegaStructure
         {
             RefreshStorageText();
             if (timei % 60 == 0)
-                RefreshProduceSpeedText();
+                RefreshProduceSpeedContent();
         }
 
-        public static void RefreshProduceSpeedText()
+        public static void RefreshProduceSpeedContent()
         {
             if (MoreMegaStructure.curStar == null) return;
             int starIndex = MoreMegaStructure.curStar.index;
@@ -691,9 +722,15 @@ namespace MoreMegaStructure
             {
                 if (recipeIds[starIndex][i] > 0)
                 {
-                    double PPM = (GameMain.data.dysonSpheres[starIndex].energyGenCurrentTick - GameMain.data.dysonSpheres[starIndex].energyReqCurrentTick) * weights[starIndex][i] / tickEnergyForFullSpeed / timeSpend[starIndex][i] * 3600;
+                    double PPM = (GameMain.data.dysonSpheres[starIndex].energyGenCurrentTick - GameMain.data.dysonSpheres[starIndex].energyReqCurrentTick) * weights[starIndex][i] / tickEnergyForFullSpeed / timeSpend[starIndex][i] * 3600 * productCounts[starIndex][i][0];
                     string value = PPM > 10 ? PPM.ToString("N0") : (PPM > 1 ? PPM.ToString("N1") : (PPM > 0 ? PPM.ToString("N2") : "0.00"));
-                    produceSpeedTxts[i].text = "理论最大速度".Translate() + " " +  value + "/min";
+                    string incStr = "";
+                    if (currentStarIncs[i] > 0)
+                    {
+                        int inc = currentStarIncs[i] > 10?10: currentStarIncs[i];
+                        incStr = $"<color=#FD965EE0>  +{Cargo.incTableMilli[inc] * 100} %</color>";
+                    }
+                    produceSpeedTxts[i].text = "理论最大速度".Translate() + " " +  value + "/min" + incStr;
                     weightTxts[i].text = "能量分配".Translate() + " " + ((weights[starIndex][i] * 100)).ToString() + "%";
                 }
                 else
@@ -703,8 +740,29 @@ namespace MoreMegaStructure
             }
             double PPM2 = (GameMain.data.dysonSpheres[starIndex].energyGenCurrentTick - GameMain.data.dysonSpheres[starIndex].energyReqCurrentTick) * weights[starIndex][0] / MoreMegaStructure.multifunctionComponentHeat * 3600;
             string value2 = PPM2 > 10 ? PPM2.ToString("N0") : (PPM2 > 1 ? PPM2.ToString("N1") : (PPM2 > 0 ? PPM2.ToString("N2") : "0.00"));
-            produceSpeedTxts[0].text = "理论最大速度".Translate() + " " + value2 + "/min";
+            string remoteTransportingStr = "";
+            if (MoreMegaStructure.isRemoteReceiveingGear)
+                remoteTransportingStr = "已开启优先传输至机甲".Translate();
+            produceSpeedTxts[0].text = "理论最大速度".Translate() + " " + value2 + "/min   " + remoteTransportingStr;
             weightTxts[0].text = "剩余能量".Translate() + " " + ((weights[starIndex][0] * 100)).ToString() + "%";
+
+            // 增产图标刷新
+            for (int i = 1; i < 5; i++)
+            {
+                int minInc = currentStarIncs[i];
+                if (minInc > 0)
+                {
+                    int iconIdx = minInc;
+                    if (iconIdx == 3) iconIdx = 2;
+                    else if (iconIdx > 4) iconIdx = 4;
+                    incIcons[i].sprite = Resources.Load<Sprite>($"entities/models/cargo/inc-{iconIdx}");
+                    incIcons[i].gameObject.SetActive(true);
+                }
+                else
+                {
+                    incIcons[i].gameObject.SetActive(false);
+                }
+            }
         }
 
         public static void RefreshStorageText()
@@ -777,7 +835,11 @@ namespace MoreMegaStructure
                 }
             }
             recipeIds[starIndex][currentRecipeSlot] = recipe.ID;
+            incProgress[starIndex][currentRecipeSlot] = 0;
             progress[starIndex][currentRecipeSlot] = 0;
+            currentStarIncs[currentRecipeSlot] = 0;
+            if (!recipe.productive) // 不能增产的配方，其incProgress标记为负数
+                incProgress[starIndex][currentRecipeSlot] = -1;
             if (!items.ContainsKey(starIndex))
             {
                 items.Add(starIndex, new List<List<int>>());
@@ -871,7 +933,7 @@ namespace MoreMegaStructure
                 }
             }
 
-            RefreshProduceSpeedText();
+            RefreshProduceSpeedContent();
             lockSliderListener = false;
         }
 

@@ -4,3 +4,6 @@ MoreMegaStructure/.vs/MoreMegaStructure/FileContentIndex/927a4b13-88e3-4023-b027
 MoreMegaStructure/.vs/MoreMegaStructure/v17/.suo
 MoreMegaStructure/.vs/MoreMegaStructure/v17/.suo
 MoreMegaStructure/.vs/MoreMegaStructure/v17/.suo
+*.vsidx
+*.vsidx
+*.cache
