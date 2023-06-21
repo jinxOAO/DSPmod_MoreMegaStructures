@@ -1184,7 +1184,6 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(UIDysonEditor), "_OnOpen")]
         public static void SetTextOnOpen(UIDysonEditor __instance)
         {
-            StarAssembly.ForceResetIncDataCache(); // 为了打开/切换星际组装厂页面时不错误地显示增产效果
             if (__instance.selection.viewDysonSphere != null)
             {
                 curDysonSphere = __instance.selection.viewDysonSphere;
@@ -1205,7 +1204,6 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(UIDysonEditor), "OnViewStarChange")]
         public static void SetTextOnViewStarChange(UIDysonEditor __instance)
         {
-            StarAssembly.ForceResetIncDataCache(); // 为了打开/切换星际组装厂页面时不错误地显示增产效果
             if (__instance.selection.viewDysonSphere != null)
             {
                 curDysonSphere = __instance.selection.viewDysonSphere;

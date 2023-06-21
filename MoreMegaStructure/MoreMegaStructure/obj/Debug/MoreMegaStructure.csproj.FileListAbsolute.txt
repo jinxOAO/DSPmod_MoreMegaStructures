@@ -17,4 +17,5 @@ D:\SteamLibrary\steamapps\common\Dyson Sphere Program\BepInEx\plugins\MoreMegaSt
 F:\GitHubRepository\DSPmod_MoreMegaStructures\MoreMegaStructure\MoreMegaStructure\obj\Debug\MoreMegaStructure.csproj.CoreCompileInputs.cache
 F:\GitHubRepository\DSPmod_MoreMegaStructures\MoreMegaStructure\MoreMegaStructure\obj\Debug\MoreMegaStructure.dll
 F:\GitHubRepository\DSPmod_MoreMegaStructures\MoreMegaStructure\MoreMegaStructure\obj\Debug\MoreMegaStructure.pdb
+F:\GitHubRepository\DSPmod_MoreMegaStructures\MoreMegaStructure\MoreMegaStructure\obj\Debug\MoreMegaStructure.csproj.CopyComplete
 F:\GitHubRepository\DSPmod_MoreMegaStructures\MoreMegaStructure\MoreMegaStructure\obj\Debug\MoreMegaStructure.csproj.AssemblyReference.cache
