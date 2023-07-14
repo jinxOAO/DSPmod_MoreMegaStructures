@@ -16,6 +16,9 @@ namespace MoreMegaStructure
         public static List<List<double>> weights = new List<List<double>>(); // 存储不同recipe的占有能量百分比
         public static List<List<double>> progress = new List<List<double>>(); // 存储不同recipe的生产进度
         public static List<List<double>> incProgress = new List<List<double>>(); // 存储不同recipe的增产生产进度
+        public static List<int> specProgress = new List<int>(); // 存储组装厂特化进度
+        public static List<int> curSpecType = new List<int>(); // 当前组装厂特化类型
+        public static List<int> targetSpecType = new List<int>(); // 目标特化类型
 
         // 以下为不需要存档的数据，在载入时重置或者重新计算
         public static Dictionary<int, List<List<int>>> items = new Dictionary<int, List<List<int>>>(); // 存储recipe的原材料的Id
@@ -31,18 +34,23 @@ namespace MoreMegaStructure
         //public static int currentStarIndex = 0; // 弃用，使用MoreMegaStructure.curStar.index
         public static int currentRecipeSlot = 0; // 选择recipe时暂存所选定的是第几个recipe栏位
 
-        public static int slotCount = 5;
+        public static int slotCount = 16;
 
         public static GameObject GigaFactoryUIObj = null;
+        public static GameObject showHideButtonObj = null;
+        public static Text showHideBtnText;
 
         public static List<Image> recipeIcons = new List<Image>();
         public static List<Image> incIcons = new List<Image>();
         public static List<GameObject> recipeSelectTips = new List<GameObject>();
         public static List<Text> produceSpeedTxts = new List<Text>();
         public static List<GameObject> sliderObjs = new List<GameObject>();
+        public static List<GameObject> speedTextObjs = new List<GameObject>();
+        public static List<GameObject> removeRecipeBtnObjs = new List<GameObject>();
         public static List<Slider> sliders = new List<Slider>();
         public static List<Text> weightTxts = new List<Text>();
         public static List<Text> storageTxts = new List<Text>();
+        public static List<Text> recipePickerTxts = new List<Text>();
         public static Sprite noRecipeSelectedSprit = null;
 
         public static bool lockSliderListener = false;
@@ -51,6 +59,7 @@ namespace MoreMegaStructure
         public static int tickEnergyForFullSpeed = 20000; // 每相当于1.0倍速的产量需要的tick能量
         public static int matrixTimeSpendRatio = 100; // 用星际组装厂生产矩阵的速度修正倍率，这是为了不让该巨构部分替代科学枢纽
         public static int recipeType1213TimeSpendRatio = 20; // 用星际组装厂生产创世之书特定配方的速度修正
+        public static List<long> speedNeededToUnlockSlot = new List<long> { 0, 0, 0, 0, 0, 10, 20, 30, 50, 100, 200, 500, 1000, 5000, 10000, 100000 }; // 星际组装厂解锁对应slot所需速度倍率
 
         public static void InitAll()
         {
@@ -66,10 +75,17 @@ namespace MoreMegaStructure
             incProgress = new List<List<double>>();
             for (int starIndex = 0; starIndex < 1000; starIndex++)
             {
-                recipeIds.Add(new List<int> { 0, 0, 0, 0, 0 });
-                weights.Add(new List<double> { 1, 0, 0, 0, 0 });
-                progress.Add(new List<double> { 0, 0, 0, 0, 0 });
-                incProgress.Add(new List<double> { 0, 0, 0, 0, 0 });
+                recipeIds.Add(new List<int> { 0 });
+                weights.Add(new List<double> { 1 });
+                progress.Add(new List<double> { 0 });
+                incProgress.Add(new List<double> { 0 });
+                for (int i = 1; i < slotCount; i++)
+                {
+                    recipeIds[starIndex].Add(0);
+                    weights[starIndex].Add(0);
+                    progress[starIndex].Add(0);
+                    incProgress[starIndex].Add(0);
+                }
             }
         }
 
@@ -77,7 +93,7 @@ namespace MoreMegaStructure
         {
             for (int i = 100; i < 1000; i++)
             {
-                for (int j = 0; j < 5; j++)
+                for (int j = 0; j < slotCount; j++)
                 {
                     recipeIds[i][j] = 0;
                     weights[i][j] = j == 0 ? 1 : 0;
@@ -98,18 +114,19 @@ namespace MoreMegaStructure
                     products[starIndex] = new List<List<int>>();
                     itemCounts[starIndex] = new List<List<int>>();
                     productCounts[starIndex] = new List<List<int>>();
-                    timeSpend[starIndex] = new List<int> { 1, 1, 1, 1, 1 };
+                    timeSpend[starIndex] = new List<int>();
                     productStorage[starIndex] = new Dictionary<int, int>();
                     productStorage[starIndex][9500] = 0;
-                    for (int s = 0; s < 5; s++)
+                    for (int s = 0; s < slotCount; s++)
                     {
                         items[starIndex].Add(new List<int>());
                         itemCounts[starIndex].Add(new List<int>());
                         products[starIndex].Add(new List<int>());
                         productCounts[starIndex].Add(new List<int>());
+                        timeSpend[starIndex].Add(1);
                     }
 
-                    for (int i = 0; i < 5; i++)
+                    for (int i = 0; i < slotCount; i++)
                     {
                         if (recipeIds[starIndex][i] > 0)
                         {
@@ -137,7 +154,7 @@ namespace MoreMegaStructure
             //currentStarIndex = 0;
             currentRecipeSlot = 0;
             currentStarIncs = new List<int>();
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < slotCount; i++)
             {
                 currentStarIncs.Add(0);
             }
@@ -146,7 +163,7 @@ namespace MoreMegaStructure
 
         public static void ForceResetIncDataCache()
         {
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < slotCount; i++)
             {
                 currentStarIncs[i] = 0;
             }
@@ -158,18 +175,19 @@ namespace MoreMegaStructure
             products[starIndex] = new List<List<int>>();
             itemCounts[starIndex] = new List<List<int>>();
             productCounts[starIndex] = new List<List<int>>();
-            timeSpend[starIndex] = new List<int> { 1, 1, 1, 1, 1 };
+            timeSpend[starIndex] = new List<int>();
             productStorage[starIndex] = new Dictionary<int, int>();
             productStorage[starIndex][9500] = 0;
-            for (int s = 0; s < 5; s++)
+            for (int s = 0; s < slotCount; s++)
             {
                 items[starIndex].Add(new List<int>());
                 itemCounts[starIndex].Add(new List<int>());
                 products[starIndex].Add(new List<int>());
                 productCounts[starIndex].Add(new List<int>());
+                timeSpend[starIndex].Add(1);
             }
 
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < slotCount; i++)
             {
                 if (recipeIds[starIndex][i] > 0)
                 {
@@ -205,20 +223,37 @@ namespace MoreMegaStructure
                 GigaFactoryUIObj.transform.localPosition = new Vector3(300, -DSPGame.globalOption.uiLayoutHeight + 180, 0);
                 GigaFactoryUIObj.SetActive(true);
 
+                // 显示/隐藏按钮
+                GameObject addNewLayerButton = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Dyson Sphere Editor/Dyson Editor Control Panel/hierarchy/layers/buttons-group/buttons/add-button");
+                showHideButtonObj = GameObject.Instantiate(addNewLayerButton, parentTrans);
+                showHideButtonObj.SetActive(true);
+                showHideButtonObj.name = "show-hide"; //名字
+                showHideButtonObj.transform.localPosition = new Vector3(340, -DSPGame.globalOption.uiLayoutHeight + 40, 0); //位置
+                showHideButtonObj.GetComponent<RectTransform>().sizeDelta = new Vector2(200, 24); //按钮大小
+                showHideBtnText = showHideButtonObj.transform.Find("Text").gameObject.GetComponent<Text>();
+                showHideBtnText.text = "显示/隐藏星际组装厂配置".Translate();
+                Button showHideButton = showHideButtonObj.GetComponent<Button>();
+                showHideButton.interactable = true;
+                showHideButton.onClick.RemoveAllListeners();
+                showHideButton.onClick.AddListener(() => { ShowHideUI(); });
+
                 GameObject oriSelectObj = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Assembler Window/offwork");
                 GameObject oriSliderObj = GameObject.Find("UI Root/Overlay Canvas/In Game/FPS Stats/priority-bar/slider-2");
                 GameObject oriIncIconObj = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Station Window/storage-box-0(Clone)/storage-icon/inc-3");
+                GameObject oriRemoveRecipeObj = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Assembler Window/produce/circle-back/stop-btn");
+                GameObject oriRemoveRecipeXObj = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Assembler Window/produce/circle-back/stop-btn/x");
 
-                for (int i = 0; i < 5; i++)
+                for (int i = 0; i < slotCount; i++)
                 {
                     GameObject slotObj = new GameObject("slot" + i.ToString());
                     slotObj.transform.SetParent(GigaFactoryUIObj.transform);
                     slotObj.transform.localScale = new Vector3(1, 1, 1);
-                    slotObj.transform.localPosition = new Vector3(0, i * 80, 0);
+                    slotObj.transform.localPosition = new Vector3((i/8)*500, (i%8) * 80, 0);
 
                     GameObject recipeSelectionObj = GameObject.Instantiate(oriSelectObj, slotObj.transform);
                     recipeSelectionObj.SetActive(true);
                     recipeSelectionObj.transform.Find("tip-group/paste-button").gameObject.SetActive(false);
+                    recipePickerTxts.Add(recipeSelectionObj.transform.Find("tip-group/tip-text").gameObject.GetComponent<Text>());
 
                     GameObject circleButtonObj = recipeSelectionObj.transform.Find("circle").gameObject;
                     recipeIcons.Add(circleButtonObj.GetComponent<Image>());
@@ -226,7 +261,27 @@ namespace MoreMegaStructure
                     recipeSelectTips.Add(recipeSelectionObj.transform.Find("tip-group").gameObject);
                     Button circleButton = circleButtonObj.GetComponent<Button>();
                     circleButton.onClick.RemoveAllListeners();
-                    
+
+                    GameObject removeButtonObj = GameObject.Instantiate(circleButtonObj, recipeSelectionObj.transform);
+                    removeButtonObj.name = "stop-btn";
+                    removeButtonObj.SetActive(true);
+                    removeButtonObj.transform.localPosition = new Vector3(78, -28, 0);
+                    removeButtonObj.GetComponent<RectTransform>().sizeDelta = new Vector2(18, 18);
+                    removeButtonObj.GetComponent<Image>().sprite = oriRemoveRecipeObj.GetComponent<Image>().sprite;
+                    removeButtonObj.GetComponent<Image>().material = oriRemoveRecipeObj.GetComponent<Image>().material;
+                    removeButtonObj.GetComponent<Image>().color = new Color(0.988f, 0.588f, 0.368f, 0.141f);
+                    GameObject removeButtonXObj = GameObject.Instantiate(oriRemoveRecipeXObj, removeButtonObj.transform);
+                    Button removeButton = removeButtonObj.GetComponent<Button>();
+                    removeButton.onClick.RemoveAllListeners();
+                    removeRecipeBtnObjs.Add(removeButtonObj);
+                    UIButton removeBtnUIBtn = removeButtonObj.GetComponent<UIButton>();
+                    for (int t = 0; t < removeBtnUIBtn.transitions.Length; t++)
+                    {
+                        removeBtnUIBtn.transitions[t].normalColor = new Color(0.988f, 0.588f, 0.368f, 0.141f);
+                        removeBtnUIBtn.transitions[t].pressedColor = new Color(0.988f, 0.588f, 0.368f, 0.041f);
+                        removeBtnUIBtn.transitions[t].mouseoverColor = new Color(0.988f, 0.588f, 0.368f, 0.201f);
+                        removeBtnUIBtn.transitions[t].mouseoverSize = 1.1f;
+                    }
 
                     GameObject produceSpeedTxtObj = GameObject.Instantiate(GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Assembler Window/produce/circle-back/cnt-text"), slotObj.transform);
                     produceSpeedTxtObj.transform.localPosition = new Vector3(110, -136);
@@ -234,9 +289,10 @@ namespace MoreMegaStructure
                     produceSpeedTxtObj.GetComponent<Text>().text = "理论最大速度".Translate() + " --/min";
                     produceSpeedTxtObj.GetComponent<Text>().alignment = TextAnchor.LowerLeft;
                     produceSpeedTxtObj.GetComponent<Text>().supportRichText = true;
+                    speedTextObjs.Add(produceSpeedTxtObj);
 
                     GameObject incIconObj = GameObject.Instantiate(oriIncIconObj,slotObj.transform);
-                    incIconObj.transform.localPosition = new Vector3(110,-70);
+                    incIconObj.transform.localPosition = new Vector3(60,-65);
                     incIconObj.transform.localScale = new Vector3(1, 1, 1);
                     //incIconObj.GetComponent<RectTransform>().sizeDelta = new Vector2(24, 24);
                     incIconObj.SetActive(false);
@@ -271,8 +327,8 @@ namespace MoreMegaStructure
                     storageTxtObj.GetComponent<Text>().text = "";
                     storageTxtObj.GetComponent<Text>().alignment = TextAnchor.LowerLeft;
 
-                    // 这里不能直接传入i，否则会导致所有的参数都变成了5
-                    if (i == 0) 
+                    // 这里不能直接传入i，否则会导致所有的参数都变成了5，所以我该怎么写啊啊啊啊啊啊好麻烦
+                    if (i == 0)
                     {
                         // circleButton.onClick.AddListener(() => { OnRecipeSelectClick(0); });
                         // slider.onValueChanged.AddListener((x) => { OnSliderValueChange(0, x); });
@@ -281,27 +337,98 @@ namespace MoreMegaStructure
                     else if (i == 1)
                     {
                         circleButton.onClick.AddListener(() => { OnRecipeSelectClick(1); });
+                        removeButton.onClick.AddListener(()=> { OnRecipeRemoveClick(1); });
                         slider.onValueChanged.AddListener((x) => { OnSliderValueChange(1, x); });
                     }
                     else if (i == 2)
                     {
                         circleButton.onClick.AddListener(() => { OnRecipeSelectClick(2); });
+                        removeButton.onClick.AddListener(() => { OnRecipeRemoveClick(2); });
                         slider.onValueChanged.AddListener((x) => { OnSliderValueChange(2, x); });
                     }
                     else if (i == 3)
                     {
                         circleButton.onClick.AddListener(() => { OnRecipeSelectClick(3); });
+                        removeButton.onClick.AddListener(() => { OnRecipeRemoveClick(3); });
                         slider.onValueChanged.AddListener((x) => { OnSliderValueChange(3, x); });
                     }
                     else if (i == 4)
                     {
                         circleButton.onClick.AddListener(() => { OnRecipeSelectClick(4); });
+                        removeButton.onClick.AddListener(() => { OnRecipeRemoveClick(4); });
                         slider.onValueChanged.AddListener((x) => { OnSliderValueChange(4, x); });
+                    }
+                    else if (i == 5)
+                    {
+                        circleButton.onClick.AddListener(() => { OnRecipeSelectClick(5); });
+                        removeButton.onClick.AddListener(() => { OnRecipeRemoveClick(5); });
+                        slider.onValueChanged.AddListener((x) => { OnSliderValueChange(5, x); });
+                    }
+                    else if (i == 6)
+                    {
+                        circleButton.onClick.AddListener(() => { OnRecipeSelectClick(6); });
+                        removeButton.onClick.AddListener(() => { OnRecipeRemoveClick(6); });
+                        slider.onValueChanged.AddListener((x) => { OnSliderValueChange(6, x); });
+                    }
+                    else if (i == 7)
+                    {
+                        circleButton.onClick.AddListener(() => { OnRecipeSelectClick(7); });
+                        removeButton.onClick.AddListener(() => { OnRecipeRemoveClick(7); });
+                        slider.onValueChanged.AddListener((x) => { OnSliderValueChange(7, x); });
+                    }
+                    else if (i == 8) 
+                    {
+                        circleButton.onClick.AddListener(() => { OnRecipeSelectClick(8); });
+                        removeButton.onClick.AddListener(() => { OnRecipeRemoveClick(8); });
+                        slider.onValueChanged.AddListener((x) => { OnSliderValueChange(8, x); });
+                    }
+                    else if (i == 9)
+                    {
+                        circleButton.onClick.AddListener(() => { OnRecipeSelectClick(9); });
+                        removeButton.onClick.AddListener(() => { OnRecipeRemoveClick(9); });
+                        slider.onValueChanged.AddListener((x) => { OnSliderValueChange(9, x); });
+                    }
+                    else if (i == 10)
+                    {
+                        circleButton.onClick.AddListener(() => { OnRecipeSelectClick(10); });
+                        removeButton.onClick.AddListener(() => { OnRecipeRemoveClick(10); });
+                        slider.onValueChanged.AddListener((x) => { OnSliderValueChange(10, x); });
+                    }
+                    else if (i == 11)
+                    {
+                        circleButton.onClick.AddListener(() => { OnRecipeSelectClick(11); });
+                        removeButton.onClick.AddListener(() => { OnRecipeRemoveClick(11); });
+                        slider.onValueChanged.AddListener((x) => { OnSliderValueChange(11, x); });
+                    }
+                    else if (i == 12)
+                    {
+                        circleButton.onClick.AddListener(() => { OnRecipeSelectClick(12); });
+                        removeButton.onClick.AddListener(() => { OnRecipeRemoveClick(12); });
+                        slider.onValueChanged.AddListener((x) => { OnSliderValueChange(12, x); });
+                    }
+                    else if (i == 13)
+                    {
+                        circleButton.onClick.AddListener(() => { OnRecipeSelectClick(13); });
+                        removeButton.onClick.AddListener(() => { OnRecipeRemoveClick(13); });
+                        slider.onValueChanged.AddListener((x) => { OnSliderValueChange(13, x); });
+                    }
+                    else if (i == 14)
+                    {
+                        circleButton.onClick.AddListener(() => { OnRecipeSelectClick(14); });
+                        removeButton.onClick.AddListener(() => { OnRecipeRemoveClick(14); });
+                        slider.onValueChanged.AddListener((x) => { OnSliderValueChange(14, x); });
+                    }
+                    else if (i == 15)
+                    {
+                        circleButton.onClick.AddListener(() => { OnRecipeSelectClick(15); });
+                        removeButton.onClick.AddListener(() => { OnRecipeRemoveClick(15); });
+                        slider.onValueChanged.AddListener((x) => { OnSliderValueChange(15, x); });
                     }
                 }
 
             }
         }
+
 
         public static void InternalUpdate(DysonSphere __instance)
         {
@@ -310,6 +437,7 @@ namespace MoreMegaStructure
             long energy = __instance.energyGenCurrentTick - __instance.energyReqCurrentTick;
             int[] productRegister = null;
             int[] consumeRegister = null;
+            int maxSlotCount = CalcMaxSlotIndex(__instance) + 1;
             for (int i = 0; i < GameMain.galaxy.stars[starIndex].planetCount; i++)
             {
                 PlanetData planet = GameMain.galaxy.stars[starIndex].planets[i];
@@ -320,7 +448,9 @@ namespace MoreMegaStructure
                     {
                         if (GameMain.statistics.production.factoryStatPool.Length > factory.index)
                         {
-                            FactoryProductionStat factoryProductionStat = GameMain.statistics.production.factoryStatPool[factory.index];
+                            //FactoryProductionStat factoryProductionStat = GameMain.statistics.production.factoryStatPool[factory.index];
+                            FactoryProductionStat factoryProductionStat = GameMain.statistics.production.factoryStatPool[GameMain.data.factories.Length + GameMain.galaxy.starCount - starIndex - 1];
+                            
                             productRegister = factoryProductionStat.productRegister;
                             consumeRegister = factoryProductionStat.consumeRegister;
                             break;
@@ -330,7 +460,7 @@ namespace MoreMegaStructure
             }
 
             // 生产进度计算
-            for (int i = 1; i < 5; i++)
+            for (int i = 1; i < maxSlotCount; i++)
             {
                 if (recipeIds[starIndex][i] > 0)
                 {
@@ -360,7 +490,7 @@ namespace MoreMegaStructure
             progress[starIndex][0] += energy * weights[starIndex][0] / MoreMegaStructure.multifunctionComponentHeat * (MoreMegaStructure.isRemoteReceiveingGear ? 0.1 : 1.0);
 
             // 生产进度填满，则立刻消耗原材料并根据消耗产出产物，存入巨构的产物暂存storage内
-            for (int i = 1; i < 5; i++)
+            for (int i = 1; i < maxSlotCount; i++)
             {
                 if (progress[starIndex][i] >= 1)
                 {
@@ -456,7 +586,7 @@ namespace MoreMegaStructure
                                             int[] obj = productRegister;
                                             lock (obj)
                                             {
-                                                productRegister[products[starIndex][i][j]] += minSatisfied * productCounts[starIndex][i][j];
+                                                productRegister[products[starIndex][i][j]] += bonusProduct * productCounts[starIndex][i][j];
                                             }
                                         }
                                     }
@@ -667,32 +797,46 @@ namespace MoreMegaStructure
             }
         }
 
-        public static void RefreshUI()
+        public static void RefreshUI(bool forceShowUI = false)
         {
             if (MoreMegaStructure.curStar == null) return;
             int starIndex = MoreMegaStructure.curStar.index;
             if (MoreMegaStructure.StarMegaStructureType[starIndex] == 4)
             {
-                GigaFactoryUIObj.SetActive(true);
+                if (forceShowUI)
+                    GigaFactoryUIObj.SetActive(true);
+                showHideButtonObj.SetActive(true);
+                showHideBtnText.text = "显示/隐藏星际组装厂配置".Translate();
                 lockSliderListener = true;
-                for (int i = 1; i < 5; i++)
+                int maxSlotIndex = CalcMaxSlotIndex(GameMain.data.dysonSpheres[MoreMegaStructure.curStar.index]);
+                for (int i = 1; i < slotCount; i++)
                 {
-                    if (recipeIds[starIndex][i] > 0)
+                    if (recipeIds[starIndex][i] > 0 && maxSlotIndex >= i)
                     {
                         recipeIcons[i].sprite = LDB.recipes.Select(recipeIds[starIndex][i]).iconSprite;
                         recipeSelectTips[i].SetActive(false);
                         sliderObjs[i].SetActive(true);
+                        speedTextObjs[i].SetActive(true);
                         sliders[i].value = W2S(weights[starIndex][i]);
+                        removeRecipeBtnObjs[i].SetActive(true);
                     }
                     else
                     {
                         recipeIcons[i].sprite = noRecipeSelectedSprit;
                         recipeSelectTips[i].SetActive(true);
                         sliderObjs[i].SetActive(false);
+                        speedTextObjs[i].SetActive(false);
+                        removeRecipeBtnObjs[i].SetActive(false);
+                        if (maxSlotIndex < i)
+                            recipePickerTxts[i].text = String.Format("组装厂槽位解锁于".Translate(), MoreMegaStructure.Capacity2Str(speedNeededToUnlockSlot[i]));
+                        else
+                            recipePickerTxts[i].text = "指定配方".Translate();
+
                     }
                 }
                 sliderObjs[0].SetActive(true);
                 recipeSelectTips[0].SetActive(false);
+                removeRecipeBtnObjs[0].SetActive(false);
                 recipeIcons[0].sprite = MoreMegaStructure.iconInterCompo;
                 sliders[0].value = (float)weights[starIndex][0] * 100;
 
@@ -703,6 +847,7 @@ namespace MoreMegaStructure
             else
             {
                 GigaFactoryUIObj.SetActive(false);
+                showHideButtonObj.SetActive(false);
             }
         }
 
@@ -710,15 +855,19 @@ namespace MoreMegaStructure
         {
             RefreshStorageText();
             if (timei % 60 == 0)
+            {
                 RefreshProduceSpeedContent();
+                RefreshUI();
+            }
         }
 
         public static void RefreshProduceSpeedContent()
         {
             if (MoreMegaStructure.curStar == null) return;
             int starIndex = MoreMegaStructure.curStar.index;
+            int maxSlotIndex = CalcMaxSlotIndex(GameMain.data.dysonSpheres[starIndex]);
             if (MoreMegaStructure.StarMegaStructureType[starIndex] != 4) return;
-            for (int i = 1; i < 5; i++)
+            for (int i = 1; i < slotCount; i++)
             {
                 if (recipeIds[starIndex][i] > 0)
                 {
@@ -747,10 +896,10 @@ namespace MoreMegaStructure
             weightTxts[0].text = "剩余能量".Translate() + " " + ((weights[starIndex][0] * 100)).ToString() + "%";
 
             // 增产图标刷新
-            for (int i = 1; i < 5; i++)
+            for (int i = 1; i <slotCount; i++)
             {
                 int minInc = currentStarIncs[i];
-                if (minInc > 0)
+                if (minInc > 0 && i <= maxSlotIndex)
                 {
                     int iconIdx = minInc;
                     if (iconIdx == 3) iconIdx = 2;
@@ -770,7 +919,7 @@ namespace MoreMegaStructure
             if (MoreMegaStructure.curStar == null) return; 
             int starIndex = MoreMegaStructure.curStar.index;
             if (MoreMegaStructure.StarMegaStructureType[starIndex] != 4) return;
-            for (int i = 1; i < 5; i++)
+            for (int i = 1; i <slotCount; i++)
             {
                 if (recipeIds[starIndex][i] > 0)
                 {
@@ -793,8 +942,33 @@ namespace MoreMegaStructure
 
         public static void OnRecipeSelectClick(int slotIndex)
         {
+            if (MoreMegaStructure.curStar == null) return;
+            int maxSlotIndex = CalcMaxSlotIndex(GameMain.data.dysonSpheres[MoreMegaStructure.curStar.index]);
+            if (slotIndex > maxSlotIndex)
+            {
+                UIRealtimeTip.Popup("星际组装厂槽位未解锁警告".Translate());
+                return;
+            }
             currentRecipeSlot = slotIndex;
             UIRecipePicker.Popup(new Vector2(0f, 0f), new Action<RecipeProto>(OnRecipePickerReturn));
+        }
+
+        public static void OnRecipeRemoveClick(int slotIndex)
+        {
+            if (MoreMegaStructure.curStar == null) return;
+            int starIndex = MoreMegaStructure.curStar.index;
+            recipeIds[starIndex][slotIndex] = 0;
+            incProgress[starIndex][slotIndex] = 0;
+            progress[starIndex][slotIndex] = 0;
+            weights[starIndex][slotIndex] = 0;
+            currentStarIncs[slotIndex] = 0;
+            double total = 1;
+            for (int i = 1; i < slotCount; i++)
+            {
+                total -= weights[starIndex][i];
+            }
+            weights[starIndex][0] = total;
+            RefreshUI();
         }
 
         /// <summary>
@@ -818,12 +992,19 @@ namespace MoreMegaStructure
                 return;
             }
             int recipeId = recipe.ID;
-            for (int s = 1; s < 5; s++)
+            for (int s = 1; s < slotCount; s++)
             {
-                if (recipeIds[starIndex][s] == recipeId)
+                if (recipeIds[starIndex][s] == recipeId) 
                 {
-                    UIRealtimeTip.Popup("警告选择了重复的配方".Translate());
-                    return;
+                    if (s > CalcMaxSlotIndex(GameMain.data.dysonSpheres[starIndex])) // 配方重复的时候，如果已该配方是被一个还未解锁的槽位占用的，那么则将此配方抢夺过来
+                    {
+                        recipeIds[starIndex][s] = 0; // 不break
+                    }
+                    else // 代表重复发生的位置是已解锁的槽位，那么就阻止重复配方
+                    {
+                        UIRealtimeTip.Popup("警告选择了重复的配方".Translate());
+                        return;
+                    }
                 }
             }
             if (MoreMegaStructure.GenesisCompatibility)
@@ -846,15 +1027,16 @@ namespace MoreMegaStructure
                 products[starIndex] = new List<List<int>>();
                 itemCounts[starIndex] = new List<List<int>>();
                 productCounts[starIndex] = new List<List<int>>();
-                timeSpend[starIndex] = new List<int> { 1, 1, 1, 1, 1 };
+                timeSpend[starIndex] = new List<int>();
                 productStorage[starIndex] = new Dictionary<int, int>();
                 productStorage[starIndex][9500] = 0;
-                for (int s = 0; s < 5; s++)
+                for (int s = 0; s < slotCount; s++)
                 {
                     items[starIndex].Add(new List<int>());
                     itemCounts[starIndex].Add(new List<int>());
                     products[starIndex].Add(new List<int>());
                     productCounts[starIndex].Add(new List<int>());
+                    timeSpend[starIndex].Add(1);
                 }
             }
             int i = currentRecipeSlot;
@@ -900,7 +1082,7 @@ namespace MoreMegaStructure
             weights[starIndex][slotIndex] = S2W(sliders[slotIndex].value);
 
             double use = 0;
-            for (int i = 1; i < 5; i++)
+            for (int i = 1; i < slotCount; i++)
             {
                 use += weights[starIndex][i] * 100;
             }
@@ -915,7 +1097,7 @@ namespace MoreMegaStructure
                 sliders[0].value = 0;
                 weights[starIndex][0] = 0;
                 double otherUse = 0;
-                for (int i = 1; i < 5; i++)
+                for (int i = 1; i < slotCount; i++)
                 {
                     if (i != slotIndex)
                     {
@@ -923,7 +1105,7 @@ namespace MoreMegaStructure
                     }
                 }
                 double ratio = (100f - S2W(sliders[slotIndex].value)*100.0) / otherUse;
-                for (int i = 1; i < 5; i++)
+                for (int i = 1; i < slotCount; i++)
                 {
                     if (i != slotIndex)
                     {
@@ -995,6 +1177,37 @@ namespace MoreMegaStructure
             return amount;
         }
 
+        public static void ShowHideUI()
+        {
+            if (GigaFactoryUIObj == null) return;
+            if (GigaFactoryUIObj.activeSelf)
+                GigaFactoryUIObj.SetActive(false);
+            else
+            {
+                GigaFactoryUIObj.SetActive(true);
+                RefreshUI();
+            }
+        }
+
+        /// <summary>
+        /// 返回当前星际组装厂能量下可支持的最大配方数
+        /// </summary>
+        /// <param name="sphere"></param>
+        /// <returns></returns>
+        public static int CalcMaxSlotIndex(DysonSphere sphere)
+        {
+            if (sphere == null)
+                return 4;
+            long energy = sphere.energyGenCurrentTick - sphere.energyReqCurrentTick;
+            double spd = 1.0 * energy / tickEnergyForFullSpeed;
+            for (int n = slotCount - 1; n > 4; n--)
+            {
+                if (speedNeededToUnlockSlot[n] <= spd)
+                    return n;
+            }
+            return 4;
+        }
+
         /// <summary>
         /// 根据是否线性调整能量分配比例，将SliderValue转变为Weights的数值
         /// </summary>
@@ -1027,14 +1240,26 @@ namespace MoreMegaStructure
 
         public static void Import(BinaryReader r)
         {
+            int slotCountInSave = 5;
+            if (MoreMegaStructure.savedModVersion >= 119)
+            {
+                slotCountInSave = slotCount;
+            }
             for (int i = 0; i < 100; i++)
             {
-                for (int j = 0; j < 5; j++)
+                for (int j = 0; j < slotCountInSave; j++)
                 {
                     recipeIds[i][j] = r.ReadInt32();
                     weights[i][j] = r.ReadDouble();
                     progress[i][j] = r.ReadDouble();
                     incProgress[i][j] = r.ReadDouble();
+                }
+                for (int j = slotCountInSave; j < slotCount; j++)
+                {
+                    recipeIds[i][j] = 0;
+                    weights[i][j] = 0;
+                    progress[i][j] = 0;
+                    incProgress[i][j] = 0;
                 }
             }
             if (MoreMegaStructure.savedModVersion >= 116)
@@ -1044,12 +1269,19 @@ namespace MoreMegaStructure
                 {
                     for (int i = 100; i < 1000; i++)
                     {
-                        for (int j = 0; j < 5; j++)
+                        for (int j = 0; j < slotCountInSave; j++)
                         {
                             recipeIds[i][j] = r.ReadInt32();
                             weights[i][j] = r.ReadDouble();
                             progress[i][j] = r.ReadDouble();
                             incProgress[i][j] = r.ReadDouble();
+                        }
+                        for (int j = slotCountInSave; j < slotCount; j++)
+                        {
+                            recipeIds[i][j] = 0;
+                            weights[i][j] = 0;
+                            progress[i][j] = 0;
+                            incProgress[i][j] = 0;
                         }
                     }
                 }
@@ -1070,7 +1302,7 @@ namespace MoreMegaStructure
         {
             for (int i = 0; i < 100; i++)
             {
-                for (int j = 0; j < 5; j++)
+                for (int j = 0; j < slotCount; j++)
                 {
                     w.Write(recipeIds[i][j]);
                     w.Write(weights[i][j]);
@@ -1084,7 +1316,7 @@ namespace MoreMegaStructure
             {
                 for (int i = 100; i < 1000; i++)
                 {
-                    for (int j = 0; j < 5; j++)
+                    for (int j = 0; j < slotCount; j++)
                     {
                         w.Write(recipeIds[i][j]);
                         w.Write(weights[i][j]);

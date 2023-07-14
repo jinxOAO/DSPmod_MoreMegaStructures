@@ -28,8 +28,8 @@ namespace MoreMegaStructure
         /// <summary>
         /// mod版本会进行存档
         /// </summary>
-        public static int modVersion = 116;
-        public static int savedModVersion = 116;
+        public static int modVersion = 119;
+        public static int savedModVersion = 119;
 
         public static bool CompatibilityPatchUnlocked = false;
         public static bool GenesisCompatibility = false;
@@ -211,7 +211,8 @@ namespace MoreMegaStructure
             battlePagenum = pagenum; //深空来敌mod开启后将使用battlePagenum
             NoUIAnimation = Config.Bind<bool>("config", "NoUIAnimation", false, "Turn this to true if your want to show and hide buttons without animations. 如果你想让按钮的出现和隐藏没有动画立即完成，将此项设置为true。");
             IASpdFactor = Config.Bind<double>("config", "InterstellarAssemblySpeedFactor", 0.2, "Higher will make the interstellar assembly work faster with the same energy. 在同样的能量水平下，此项越高，星际组装厂的工作速度越快。可以是小数。");
-            NonlinearEnergy = Config.Bind<bool>("config", "NonlinearEnergyAssignmentAdjust", false, "Turn this to true will let you adjust the energy allocation of the Interstellar Assembly more finely within the range of lower value. 将此项设置为true能够使你在调整星际组装厂配方的能量分配时，在较低分配比例的区间内更加精细地调整。");
+            var NonlinearEnergyOld = Config.Bind<bool>("config", "NonlinearEnergyAssignmentAdjust", true, "This config is no longer working. 此项已弃用。");
+            NonlinearEnergy = Config.Bind<bool>("config", "NonlinearEnergyAssignmentAdjust2", true, "Turn this to true will let you adjust the energy allocation of the Interstellar Assembly more finely within the range of lower value. 将此项设置为true能够使你在调整星际组装厂配方的能量分配时，在较低分配比例的区间内更加精细地调整。");
             Support1000Stars = Config.Bind<bool>("config", "Support1000Stars", false, "Turn this to true will let the Interstellar Assemblies support upto 1000 stars (default is 100), but this might slow down your game or your save/load speed. 将此项设置为true能够使星际组装厂支持最多1000个星系（默认只支持100以下），但这可能使你的游戏速度或存读档速度被拖慢。");
             NoWasteResources = Config.Bind<bool>("config", "NoWasteResources", true, "Turn this to false might slightly increase the game speed. But this will cause: if one of the various materials required by a recipe in Interstellar Assembly is insufficient, (its supply cannot meet the speed of full-speed production). Although the actual output will slow down, other sufficient materials may still be consumed at full speed, which means that they may be wasted.  将此项设置为false可能会轻微提升游戏速度，但这会导致：当星际组装厂中的部分原材料不支持满速消耗时，虽然产出速度按照最低供应原材料的速度为准，但其他充足供应的原材料仍被满速消耗而产生浪费。");
 
@@ -262,6 +263,8 @@ namespace MoreMegaStructure
             Harmony.CreateAndPatchAll(typeof(EffectRenderer));
             Harmony.CreateAndPatchAll(typeof(ReceiverPatchers));
             Harmony.CreateAndPatchAll(typeof(UIReceiverPatchers));
+            if(UIStatisticsPatcher.active)
+                Harmony.CreateAndPatchAll(typeof(UIStatisticsPatcher));
 
 
             LDBTool.EditDataAction += MMSProtos.ChangeReceiverRelatedStringProto;
@@ -1191,11 +1194,11 @@ namespace MoreMegaStructure
             }
             if (__instance.selection.viewStar != null)
             {
-                RefreshUILabels(__instance.selection.viewStar);
+                RefreshUILabels(__instance.selection.viewStar, true);
             }
             else
             {
-                RefreshUILabels(__instance.gameData.localStar);
+                RefreshUILabels(__instance.gameData.localStar, true);
             }
             try { SetMegaStructureWarningText.text = "鼠标触碰左侧黄条以规划巨构".Translate(); } catch (Exception) { }
             RefreshButtonPos();
@@ -1212,11 +1215,11 @@ namespace MoreMegaStructure
             }
             if (__instance.selection.viewStar != null)
             {
-                RefreshUILabels(__instance.selection.viewStar);
+                RefreshUILabels(__instance.selection.viewStar, true);
             }
             else
             {
-                RefreshUILabels(__instance.gameData.localStar);
+                RefreshUILabels(__instance.gameData.localStar, true);
             }
             try { SetMegaStructureWarningText.text = "鼠标触碰左侧黄条以规划巨构".Translate(); } catch (Exception){ }
             RefreshButtonPos();
@@ -1252,7 +1255,12 @@ namespace MoreMegaStructure
                 LeftMegaBuildWarning.transform.localPosition = new Vector3(280, warnTxtPosY, 0);
         }
 
-        public static void RefreshUILabels(StarData star)//改变UI中显示的文本，不能再叫戴森球了。另外改变新增的设置巨构建筑类型的按钮的状态
+        public static void RefreshUILabels(StarData star)
+        {
+            RefreshUILabels(star, false);
+        }
+
+        public static void RefreshUILabels(StarData star, bool forceShowUI)//改变UI中显示的文本，不能再叫戴森球了。另外改变新增的设置巨构建筑类型的按钮的状态
         {
             try
             {
@@ -1261,7 +1269,7 @@ namespace MoreMegaStructure
                 int idx = star.id - 1;
                 idx = idx < 0 ? 0 : (idx > 999 ? 999 : idx);
 
-                StarAssembly.RefreshUI();
+                StarAssembly.RefreshUI(forceShowUI);
 
                 //Console.WriteLine($"Refreshing phase. ori_idx={star.id -1} and finding idx the name is {GameMain.galaxy.stars[idx].displayName}, while cur name is {star.displayName}");
 
@@ -1690,12 +1698,15 @@ namespace MoreMegaStructure
                 {
                     StarAssembly.Import(r);
                     StarAssembly.InitInGameData();
+                    //StarAssembly.ResetUIBtnTransitions();
                 }
                 else
                 {
                     StarAssembly.ResetAndInitArchiveData();
                     StarAssembly.InitInGameData();
+                    //StarAssembly.ResetUIBtnTransitions();
                 }
+                UIStatisticsPatcher.RearrangeStatisticLists();
             }
             catch (Exception)
             {
@@ -1735,7 +1746,9 @@ namespace MoreMegaStructure
 
             RefreshUIWhenLoad();
             InitResolutionWhenLoad();
+            //StarAssembly.ResetUIBtnTransitions();
             EffectRenderer.InitAll();
+            UIStatisticsPatcher.RearrangeStatisticLists();
         }
 
         public static string Capacity2Str(double capacityPerSecond)

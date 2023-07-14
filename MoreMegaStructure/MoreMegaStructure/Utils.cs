@@ -113,5 +113,28 @@ namespace MoreMegaStructure
             _this.time = (flag ? 0f : 0.3f);
         }
 
+
+        public static string MegaNameByType(int type)
+        { 
+            switch (type) 
+            {
+                case 0:
+                    return "戴森球jinx".Translate();
+                case 1:
+                    return "物质解压器".Translate();
+                case 2:
+                    return "科学枢纽".Translate();
+                case 3:
+                    return "折跃场广播阵列".Translate();
+                case 4:
+                    return "星际组装厂".Translate();
+                case 5:
+                    return "晶体重构器".Translate();
+                case 6:
+                    return "恒星炮".Translate();
+                default:
+                    return "戴森球jinx".Translate();
+            }
+        }
     }
 }

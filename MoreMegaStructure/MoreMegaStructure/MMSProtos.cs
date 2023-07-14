@@ -2153,7 +2153,9 @@ namespace MoreMegaStructure
             ProtoRegistry.RegisterString("警告选择了重复的配方", "Please don't select repeated recipes.", "请不要选择重复的配方。");
             ProtoRegistry.RegisterString("主产物巨构内部仓储", "Internal Storage (Primary Product)", "主产物内部仓储");
             ProtoRegistry.RegisterString("巨构内部仓储", "Internal Storage", "内部仓储");
-
+            ProtoRegistry.RegisterString("显示/隐藏星际组装厂配置", "Show/Hide Star Assembly Recipes", "显示/隐藏 星际组装厂配置");
+            ProtoRegistry.RegisterString("组装厂槽位解锁于", "Locked. Unlock at {0}x speed", "已锁定，解锁于 {0}x 速度");
+            ProtoRegistry.RegisterString("星际组装厂槽位未解锁警告", "This slot is locked!", "此栏位尚未解锁！");
 
             ProtoRegistry.RegisterString("警告巨构不支持此类配方", "Interstellar Assembly is not able to process this recipe.", "星际组装厂无法处理此配方。");
             ProtoRegistry.RegisterString("钨重构装置", "Tungsten Reconstructor", "钨重构装置");

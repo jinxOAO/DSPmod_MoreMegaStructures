@@ -115,6 +115,7 @@
     <Compile Include="StarAssembly.cs" />
     <Compile Include="StarCannon.cs" />
     <Compile Include="UIReceiverPatchers.cs" />
+    <Compile Include="UIStatisticsPatcher.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
