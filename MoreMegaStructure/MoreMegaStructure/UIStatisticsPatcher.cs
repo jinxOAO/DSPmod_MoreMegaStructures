@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,50 +15,116 @@ namespace MoreMegaStructure
     {
         public static bool active = true;
 
-        [HarmonyPostfix]
+        [HarmonyPrefix]
         [HarmonyPatch(typeof(UIStatisticsWindow), "RefreshAstroBox")]
-        public static void RefreshAstroBoxPostPatch(ref UIStatisticsWindow __instance)
+        public static bool RefreshAstroBoxPostPatch(ref UIStatisticsWindow __instance)
         {
             if (__instance == null)
             {
-                return;
+                return true;
             }
             var _this = __instance;
-            // 原方法逻辑：看但凡有在ameData.factories这个列表里的工厂，但是又没在 this.astroBox.Items;和this.astroBox.ItemsData;里面的，将其planetId插入到正确位置（如果是整个星系的第一个插入的工厂，则额外先pushback一个（注意星系在这个ItemsData列表里是不按id排序的，而是按加入顺序排序的，所以说pushback，不是插入）该星系的总统计(starId*100)，然后再add该行星工厂的planetId）。
+            // 原方法逻辑：看但凡有在GameData.factories这个列表里的工厂，但是又没在 this.astroBox.Items;和this.astroBox.ItemsData;里面的，将其planetId插入到正确位置（如果是整个星系的第一个插入的工厂，则额外先pushback一个（注意星系在这个ItemsData列表里是不按id排序的，而是按加入顺序排序的，所以说pushback，不是插入）该星系的总统计(starId*100)，然后再add该行星工厂的planetId）。
 
             // 为了增加巨构独有的production统计，用每个星系第planetCount+1号不存在planet的id存储巨构的统计
-            if (__instance.astroBox == null)
+            if (_this.isStatisticsTab)
             {
-                return;
-            }
-            List<string> items = _this.astroBox.Items;
-            List<int> itemsData = _this.astroBox.ItemsData;
-            int oldStarId = -1;
-            for (int i = 0; i < itemsData.Count; i++)
-            {
-                int nowStarId = itemsData[i] / 100;
-                if (oldStarId != nowStarId && oldStarId != -1 && oldStarId <= 1000 && oldStarId > 0)
+                List<string> items = _this.astroBox.Items;
+                List<int> itemsData = _this.astroBox.ItemsData;
+                items.Clear();
+                itemsData.Clear();
+                items.Add("统计全星系".Translate());
+                itemsData.Add(-1);
+                if (!_this.isDysonTab && _this.gameData.localPlanet != null)
                 {
-                    if (MoreMegaStructure.StarMegaStructureType[oldStarId - 1] == 4)
+                    items.Add("统计当前星球".Translate());
+                    itemsData.Add(0);
+                }
+                int factoryCount = _this.gameData.factoryCount;
+                for (int i = 0; i < factoryCount; i++)
+                {
+                    int planetId = _this.gameData.factories[i].planetId;
+                    int num = planetId / 100;
+                    int num2 = planetId % 100;
+                    bool flag = false;
+                    bool flag2 = false;
+                    int j;
+                    for (j = 0; j < itemsData.Count; j++)
                     {
-                        itemsData.Insert(i, oldStarId * 100 + GameMain.galaxy.StarById(oldStarId).planetCount + 1);
-                        items.Insert(i, Utils.MegaNameByType(MoreMegaStructure.StarMegaStructureType[oldStarId - 1]) + " " + GameMain.galaxy.StarById(oldStarId).displayName);
-                        i++;
+                        if (flag)
+                        {
+                            int num3 = itemsData[j] % 100;
+                            if (num3 >= num2 || num3 == 0)
+                            {
+                                if (num3 == num2)
+                                {
+                                    flag2 = true;
+                                    break;
+                                }
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            flag = (num == itemsData[j] / 100);
+                        }
+                    }
+                    if (!flag2)
+                    {
+                        PlanetData planet = _this.gameData.factories[i].planet;
+                        string displayName = planet.displayName;
+                        if (flag)
+                        {
+                            if (!_this.isDysonTab)
+                            {
+                                itemsData.Insert(j, planetId);
+                                items.Insert(j, displayName);
+                            }
+                        }
+                        else
+                        {
+                            string item = planet.star.displayName + "空格行星系".Translate();
+                            itemsData.Add(num * 100);
+                            items.Add(item);
+                            if (!_this.isDysonTab)
+                            {
+                                itemsData.Add(planetId);
+                                items.Add(displayName);
+                            }
+                        }
                     }
                 }
-                if (i == itemsData.Count - 1) 
+                // 新增部分
+                int oldStarId = -1;
+                for (int i = 0; i < itemsData.Count; i++)
                 {
-                    oldStarId = nowStarId; 
-                    if (oldStarId<=1000 && MoreMegaStructure.StarMegaStructureType[oldStarId - 1] == 4)
+                    int nowStarId = itemsData[i] / 100;
+                    if (oldStarId != nowStarId && oldStarId != -1 && oldStarId <= 1000 && oldStarId > 0)
                     {
-                        itemsData.Add(oldStarId * 100 + GameMain.galaxy.StarById(oldStarId).planetCount + 1);
-                        items.Add(Utils.MegaNameByType(MoreMegaStructure.StarMegaStructureType[oldStarId - 1]) + " " + GameMain.galaxy.StarById(oldStarId).displayName);
-                        break;
+                        if (MoreMegaStructure.StarMegaStructureType[oldStarId - 1] == 4)
+                        {
+                            itemsData.Insert(i, oldStarId * 100 + GameMain.galaxy.StarById(oldStarId).planetCount + 1);
+                            items.Insert(i, GameMain.galaxy.PlanetById(oldStarId * 100 + GameMain.galaxy.StarById(oldStarId).planetCount + 1).displayName);
+                            i++;
+                        }
                     }
+                    if (i == itemsData.Count - 1)
+                    {
+                        oldStarId = nowStarId;
+                        if (oldStarId > 0 && oldStarId <= 1000 && MoreMegaStructure.StarMegaStructureType[oldStarId - 1] == 4)
+                        {
+                            itemsData.Add(oldStarId * 100 + GameMain.galaxy.StarById(oldStarId).planetCount + 1);
+                            items.Add(GameMain.galaxy.PlanetById(oldStarId * 100 + GameMain.galaxy.StarById(oldStarId).planetCount + 1).displayName);
+                            break;
+                        }
+                    }
+                    oldStarId = nowStarId;
                 }
-                oldStarId = nowStarId;
+
+                // 这一行使原本的
+                _this.ValueToAstroBox();
             }
-            _this.ValueToAstroBox();
+            return false;
         }
 
 
@@ -82,7 +149,6 @@ namespace MoreMegaStructure
                 {
                     GameMain.data.statistics.production.factoryStatPool[i] = new FactoryProductionStat();
                     GameMain.data.statistics.production.factoryStatPool[i].Init();
-
                 }
             }
         }
@@ -108,7 +174,7 @@ namespace MoreMegaStructure
                 if (num2 >= __instance.stars[num].planets.Length)
                 {
                     PlanetData planet = new PlanetData();
-                    for (int i = num*100+1; i < planetId; i++)
+                    for (int i = num*100+1; i < planetId; i++) // 这里是为了，bottleneck会用工厂信息，随便找一个不是null的factory搪塞一下，防止他报错。反正后面大概也许把需要处理的数据还得都覆盖一遍
                     {
                         PlanetData pd = GameMain.galaxy.PlanetById(i);
                         if (pd != null && pd.factory!=null)
@@ -118,13 +184,18 @@ namespace MoreMegaStructure
                         }
                     }
                     planet.factoryIndex = GameMain.data.factories.Length + GameMain.galaxy.starCount - num - 1;
+                    planet.overrideName = Utils.MegaNameByType(MoreMegaStructure.StarMegaStructureType[num]) + " " + GameMain.galaxy.StarById(num+1).displayName;
                     __result = planet;
                     return;
                 }
             }
         }
 
-
+        /// <summary>
+        /// 完全拦截，需要__instance.astroFilter %100==0、==-1时候加入巨构的统计
+        /// </summary>
+        /// <param name="__instance"></param>
+        /// <returns></returns>
         [HarmonyPrefix]
         [HarmonyPatch(typeof(UIStatisticsWindow), "ComputeDisplayEntries")]
         public static bool ComputeDisplayEntriesPrePatch(ref UIStatisticsWindow __instance)
@@ -309,6 +380,15 @@ namespace MoreMegaStructure
             }
         }
 
+
+        /// <summary>
+        /// 下面这个防止选中巨构时点击能量面板报错（factoryIndex越界或者是找回的）
+        /// </summary>
+        /// <param name="__instance"></param>
+        /// <param name="powerPool"></param>
+        /// <param name="energyConsumption"></param>
+        /// <param name="factoryIndex"></param>
+        /// <returns></returns>
         [HarmonyPrefix]
         [HarmonyPatch(typeof(UIStatisticsWindow), "ComputePowerTab")]
         public static bool ComputePowerTabPrePatch(ref UIStatisticsWindow __instance, PowerStat[] powerPool, long energyConsumption, long factoryIndex)
@@ -328,5 +408,36 @@ namespace MoreMegaStructure
             }
             return true;
         }
+
+
+        public static void Export(BinaryWriter w)
+        {
+            w.Write(0);
+            w.Write(GameMain.galaxy.starCount);
+            for (int i = GameMain.data.factories.Length; i< GameMain.data.factories.Length + GameMain.galaxy.starCount; i++)
+            {
+                GameMain.statistics.production.factoryStatPool[i].Export(w);
+            }
+        }
+
+        public static void Import(BinaryReader r)
+        {
+            RearrangeStatisticLists();
+            if (MoreMegaStructure.savedModVersion >= 119)
+            {
+                r.ReadInt32();
+                int num = r.ReadInt32();
+                for (int i = GameMain.data.factories.Length; i < GameMain.data.factories.Length + num; i++)
+                {
+                    GameMain.statistics.production.factoryStatPool[i].Import(r);
+                }
+            }
+        }
+
+        public static void IntoOtherSave()
+        {
+            RearrangeStatisticLists();
+        }
+
     }
 }

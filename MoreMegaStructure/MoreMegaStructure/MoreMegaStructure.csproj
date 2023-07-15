@@ -47,6 +47,10 @@
       <HintPath>D:\SteamLibrary\steamapps\common\Dyson Sphere Program\BepInEx\core\BepInEx.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Bottleneck-nstrip">
+      <HintPath>..\dependencies\Bottleneck-nstrip.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="CommonAPI">
       <HintPath>D:\SteamLibrary\steamapps\common\Dyson Sphere Program\BepInEx\plugins\CommonAPI\plugins\CommonAPI.dll</HintPath>
       <Private>False</Private>
@@ -105,6 +109,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BottleneckCompat.cs" />
     <Compile Include="EffectRenderer.cs" />
     <Compile Include="MegaButtonGroupBehaviour.cs" />
     <Compile Include="MMSProtos.cs" />

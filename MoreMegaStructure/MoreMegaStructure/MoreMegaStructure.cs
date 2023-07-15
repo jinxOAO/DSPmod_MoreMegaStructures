@@ -1706,7 +1706,7 @@ namespace MoreMegaStructure
                     StarAssembly.InitInGameData();
                     //StarAssembly.ResetUIBtnTransitions();
                 }
-                UIStatisticsPatcher.RearrangeStatisticLists();
+                UIStatisticsPatcher.Import(r);
             }
             catch (Exception)
             {
@@ -1728,6 +1728,7 @@ namespace MoreMegaStructure
             w.Write(autoReceiveGearProgress);
 
             StarAssembly.Export(w);
+            UIStatisticsPatcher.Export(w);
         }
         public void IntoOtherSave()
         {
@@ -1748,7 +1749,7 @@ namespace MoreMegaStructure
             InitResolutionWhenLoad();
             //StarAssembly.ResetUIBtnTransitions();
             EffectRenderer.InitAll();
-            UIStatisticsPatcher.RearrangeStatisticLists();
+            UIStatisticsPatcher.IntoOtherSave();
         }
 
         public static string Capacity2Str(double capacityPerSecond)

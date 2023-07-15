@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
+using static UnityEngine.EventSystems.EventTrigger;
 
 namespace MoreMegaStructure
 {
@@ -51,6 +52,7 @@ namespace MoreMegaStructure
         public static List<Text> weightTxts = new List<Text>();
         public static List<Text> storageTxts = new List<Text>();
         public static List<Text> recipePickerTxts = new List<Text>();
+        public static List<Text> specializeProgressTxts = new List<Text>();
         public static Sprite noRecipeSelectedSprit = null;
 
         public static bool lockSliderListener = false;
@@ -163,9 +165,10 @@ namespace MoreMegaStructure
 
         public static void ForceResetIncDataCache()
         {
+            currentStarIncs.Clear();
             for (int i = 0; i < slotCount; i++)
             {
-                currentStarIncs[i] = 0;
+                currentStarIncs.Add(0);
             }
         }
 
@@ -796,6 +799,26 @@ namespace MoreMegaStructure
                 }
             }
         }
+
+
+        public static double GetConsumeSpeedRatio(int starIndex, int slotNum)
+        {
+            long energy = GameMain.data.dysonSpheres[starIndex].energyGenCurrentTick - GameMain.data.dysonSpheres[starIndex].energyReqCurrentTick;
+            double prog = energy * weights[starIndex][slotNum] / tickEnergyForFullSpeed / timeSpend[starIndex][slotNum];
+            return prog;
+        }
+
+        public static double GetProduceSpeedRatio(int starIndex, int slotNum, int incLevel)
+        {
+            long energy = GameMain.data.dysonSpheres[starIndex].energyGenCurrentTick - GameMain.data.dysonSpheres[starIndex].energyReqCurrentTick;
+            if (slotNum == 0)
+            {
+                return energy * weights[starIndex][0] / MoreMegaStructure.multifunctionComponentHeat * (MoreMegaStructure.isRemoteReceiveingGear ? 0.1 : 1.0);
+            }
+            double prog = energy * weights[starIndex][slotNum] / tickEnergyForFullSpeed / timeSpend[starIndex][slotNum] * (1 + Cargo.incTableMilli[incLevel]);
+            return prog;
+        }
+
 
         public static void RefreshUI(bool forceShowUI = false)
         {
