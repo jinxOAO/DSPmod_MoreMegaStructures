@@ -28,7 +28,7 @@ namespace MoreMegaStructure
         /// <summary>
         /// mod版本会进行存档
         /// </summary>
-        public static int modVersion = 119;
+        public static int modVersion = 120;
         public static int savedModVersion = 119;
 
         public static bool CompatibilityPatchUnlocked = false;
@@ -1499,9 +1499,16 @@ namespace MoreMegaStructure
 
                 //条件满足
                 StarMegaStructureType[idx] = type;
-                RefreshUILabels(curStar);
                 if (type == 4)
-                    StarAssembly.ResetInGameDataByStarIndex(idx);
+                {
+                    StarAssembly.ResetArchiveDataByStarIndex(idx);
+                    StarAssembly.CalcInGameDataByStarIndex(idx);
+                    RefreshUILabels(curStar, true);
+                }
+                else
+                {
+                    RefreshUILabels(curStar);
+                }
                 if (type == 2 && GenesisCompatibility) // 改成科学枢纽后删除所有太阳帆，目前只对创世之书生效
                     curDysonSphere.swarm.RemoveSailsByOrbit(-1);
             }
@@ -1666,14 +1673,16 @@ namespace MoreMegaStructure
         /// <param name="r"></param>
         public void Import(BinaryReader r)
         {
-            try
-            {
+            //try
+            //{
                 curStar = null;
                 curDysonSphere = null;
                 savedModVersion = r.ReadInt32();
                 for (int i = 0; i < 1000; i++)
                 {
                     StarMegaStructureType[i] = r.ReadInt32();
+                    if(i<64)
+                        Debug.Log($"star{i} type is {StarMegaStructureType[i]}");
                 }
 
                 if(savedModVersion>=101)
@@ -1707,11 +1716,11 @@ namespace MoreMegaStructure
                     //StarAssembly.ResetUIBtnTransitions();
                 }
                 UIStatisticsPatcher.Import(r);
-            }
-            catch (Exception)
-            {
-                IntoOtherSave();
-            }
+            //}
+            //catch (Exception)
+            //{
+            //    IntoOtherSave();
+            //}
             if(isBattleActive)
             {
             }

@@ -10,7 +10,8 @@ namespace MoreMegaStructure
     class Utils
     {
         static System.Random randSeed = new System.Random();
-
+        public static string textColorVanillaBlue = "<color=\"#61D8FFc0\">{1}</color>";
+        public static string textColorVanillaOrange = "<color=\"#FD965ECC\">{1}</color>";
         public static VectorLF3 RandPosDelta()
         {
             return new VectorLF3(randSeed.NextDouble() - 0.5, randSeed.NextDouble() - 0.5, randSeed.NextDouble() - 0.5);

@@ -427,6 +427,7 @@ namespace MoreMegaStructure
             {
                 r.ReadInt32();
                 int num = r.ReadInt32();
+                Debug.Log($"datafactorylenis {GameMain.data.factories.Length}");
                 for (int i = GameMain.data.factories.Length; i < GameMain.data.factories.Length + num; i++)
                 {
                     GameMain.statistics.production.factoryStatPool[i].Import(r);

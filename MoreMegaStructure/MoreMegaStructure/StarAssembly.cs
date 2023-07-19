@@ -19,7 +19,8 @@ namespace MoreMegaStructure
         public static List<List<double>> incProgress = new List<List<double>>(); // 存储不同recipe的增产生产进度
         public static List<int> specProgress = new List<int>(); // 存储组装厂特化进度
         public static List<int> curSpecType = new List<int>(); // 当前组装厂特化类型
-        public static List<int> targetSpecType = new List<int>(); // 目标特化类型
+        public static List<int> inProgressSpecType = new List<int>(); // 正处在特化进程中的类型
+        public static List<int> satisfiedSpecType = new List<int>(); // 当前正满足要求的特化类型
 
         // 以下为不需要存档的数据，在载入时重置或者重新计算
         public static Dictionary<int, List<List<int>>> items = new Dictionary<int, List<List<int>>>(); // 存储recipe的原材料的Id
@@ -29,7 +30,8 @@ namespace MoreMegaStructure
         public static Dictionary<int, List<int>> timeSpend = new Dictionary<int, List<int>>(); // 存储recipe的所需时间
         public static Dictionary<int, Dictionary<int, int>> productStorage = new Dictionary<int, Dictionary<int, int>>(); // 存储产物已暂时堆积在巨构中的数量（可供相同星际组装厂的其他需要此产物作为原材料的配方取用），不区分slot只按照产物Id存储。不进行存档，读档后重置。
         // 上述productStorage项会存在：如果反复疯狂更换recipe会一直增加字典项，可能拖慢速度，但是重进游戏后冗余key会自动清除，因此暂时不做游戏内清理
-
+        public static Dictionary<int, Dictionary<int,int>> productStorageInc = new Dictionary<int, Dictionary<int, int>>(); // 存储产物的增产点数
+        public static Dictionary<int, List<int>> specBuffLevel = new Dictionary<int, List<int>>(); // 星际组装厂特化后，配方能触发加成
         public static List<int> currentStarIncs = new List<int>();
 
         //public static int currentStarIndex = 0; // 弃用，使用MoreMegaStructure.curStar.index
@@ -38,6 +40,7 @@ namespace MoreMegaStructure
         public static int slotCount = 16;
 
         public static GameObject GigaFactoryUIObj = null;
+        public static GameObject specializeObj = null;
         public static GameObject showHideButtonObj = null;
         public static Text showHideBtnText;
 
@@ -52,8 +55,12 @@ namespace MoreMegaStructure
         public static List<Text> weightTxts = new List<Text>();
         public static List<Text> storageTxts = new List<Text>();
         public static List<Text> recipePickerTxts = new List<Text>();
-        public static List<Text> specializeProgressTxts = new List<Text>();
+        public static List<Text> specializeTitleTxts = new List<Text>();
+        public static List<Text> specializeStateTxts = new List<Text>();
+        public static List<Text> tipButtonTxts = new List<Text>();
         public static Sprite noRecipeSelectedSprit = null;
+
+        public static bool lowUIResolution = false;
 
         public static bool lockSliderListener = false;
 
@@ -62,157 +69,18 @@ namespace MoreMegaStructure
         public static int matrixTimeSpendRatio = 100; // 用星际组装厂生产矩阵的速度修正倍率，这是为了不让该巨构部分替代科学枢纽
         public static int recipeType1213TimeSpendRatio = 20; // 用星际组装厂生产创世之书特定配方的速度修正
         public static List<long> speedNeededToUnlockSlot = new List<long> { 0, 0, 0, 0, 0, 10, 20, 30, 50, 100, 200, 500, 1000, 5000, 10000, 100000 }; // 星际组装厂解锁对应slot所需速度倍率
+        public static Color UITextOrange = new Color(1f, 0.705f, 0f, 0.745f);
+        public static Color UITextBlue = new Color(0.382f, 0.845f, 1f, 0.784f);
+        public static Color UITextGreen = new Color(0.225f, 1f, 0.179f, 0.744f);
+        public static Color UITextRed = new Color(1.0f, 0.12f, 0.12f, 0.744f);
+        public static Color UITextGray = new Color(0.5f, 0.5f, 0.5f, 0.5f);
+        public static List<int> specializeRequirements = new List<int> { 0, 5, 3, 3, 5, 4 };
+        public static int specializeTimeNeed = 3600;
 
         public static void InitAll()
         {
             InitUI();
             ResetAndInitArchiveData();
-        }
-
-        public static void ResetAndInitArchiveData()
-        {
-            recipeIds = new List<List<int>>();
-            weights = new List<List<double>>();
-            progress = new List<List<double>>();
-            incProgress = new List<List<double>>();
-            for (int starIndex = 0; starIndex < 1000; starIndex++)
-            {
-                recipeIds.Add(new List<int> { 0 });
-                weights.Add(new List<double> { 1 });
-                progress.Add(new List<double> { 0 });
-                incProgress.Add(new List<double> { 0 });
-                for (int i = 1; i < slotCount; i++)
-                {
-                    recipeIds[starIndex].Add(0);
-                    weights[starIndex].Add(0);
-                    progress[starIndex].Add(0);
-                    incProgress[starIndex].Add(0);
-                }
-            }
-        }
-
-        public static void ResetDataAfterStarIndex100()
-        {
-            for (int i = 100; i < 1000; i++)
-            {
-                for (int j = 0; j < slotCount; j++)
-                {
-                    recipeIds[i][j] = 0;
-                    weights[i][j] = j == 0 ? 1 : 0;
-                    progress[i][j] = 0;
-                    incProgress[i][j] = 0;
-                }
-            }
-        }
-
-        public static void InitInGameData()
-        {
-            int maxStarIndex = MoreMegaStructure.Support1000Stars.Value ? 1000 : 100;
-            for (int starIndex = 0; starIndex  < maxStarIndex; starIndex ++)
-            {
-                if (MoreMegaStructure.StarMegaStructureType[starIndex] == 4)
-                {
-                    items[starIndex] = new List<List<int>>();
-                    products[starIndex] = new List<List<int>>();
-                    itemCounts[starIndex] = new List<List<int>>();
-                    productCounts[starIndex] = new List<List<int>>();
-                    timeSpend[starIndex] = new List<int>();
-                    productStorage[starIndex] = new Dictionary<int, int>();
-                    productStorage[starIndex][9500] = 0;
-                    for (int s = 0; s < slotCount; s++)
-                    {
-                        items[starIndex].Add(new List<int>());
-                        itemCounts[starIndex].Add(new List<int>());
-                        products[starIndex].Add(new List<int>());
-                        productCounts[starIndex].Add(new List<int>());
-                        timeSpend[starIndex].Add(1);
-                    }
-
-                    for (int i = 0; i < slotCount; i++)
-                    {
-                        if (recipeIds[starIndex][i] > 0)
-                        {
-                            RecipeProto recipe = LDB.recipes.Select(recipeIds[starIndex][i]);
-                            
-                            for (int j = 0; j < recipe.Items.Length; j++)
-                            {
-                                items[starIndex][i].Add(recipe.Items[j]);
-                                itemCounts[starIndex][i].Add(recipe.ItemCounts[j]);
-                            }
-                            for (int j = 0; j < recipe.Results.Length; j++)
-                            {
-                                products[starIndex][i].Add(recipe.Results[j]);
-                                productCounts[starIndex][i].Add(recipe.ResultCounts[j]);
-                                if (!productStorage[starIndex].ContainsKey(recipe.Results[j]))
-                                    productStorage[starIndex].Add(recipe.Results[j], 0);
-                            }
-                            timeSpend[starIndex][i] = Math.Max(1, recipe.TimeSpend);
-                            if (recipe.Results[0] >= 6001 && recipe.Results[0] <= 6006)
-                                timeSpend[starIndex][i] *= matrixTimeSpendRatio;
-                        }
-                    }
-                }
-            }
-            //currentStarIndex = 0;
-            currentRecipeSlot = 0;
-            currentStarIncs = new List<int>();
-            for (int i = 0; i < slotCount; i++)
-            {
-                currentStarIncs.Add(0);
-            }
-            lockSliderListener = false;
-        }
-
-        public static void ForceResetIncDataCache()
-        {
-            currentStarIncs.Clear();
-            for (int i = 0; i < slotCount; i++)
-            {
-                currentStarIncs.Add(0);
-            }
-        }
-
-        public static void ResetInGameDataByStarIndex(int starIndex)
-        {
-            items[starIndex] = new List<List<int>>();
-            products[starIndex] = new List<List<int>>();
-            itemCounts[starIndex] = new List<List<int>>();
-            productCounts[starIndex] = new List<List<int>>();
-            timeSpend[starIndex] = new List<int>();
-            productStorage[starIndex] = new Dictionary<int, int>();
-            productStorage[starIndex][9500] = 0;
-            for (int s = 0; s < slotCount; s++)
-            {
-                items[starIndex].Add(new List<int>());
-                itemCounts[starIndex].Add(new List<int>());
-                products[starIndex].Add(new List<int>());
-                productCounts[starIndex].Add(new List<int>());
-                timeSpend[starIndex].Add(1);
-            }
-
-            for (int i = 0; i < slotCount; i++)
-            {
-                if (recipeIds[starIndex][i] > 0)
-                {
-                    RecipeProto recipe = LDB.recipes.Select(recipeIds[starIndex][i]);
-
-                    for (int j = 0; j < recipe.Items.Length; j++)
-                    {
-                        items[starIndex][i].Add(recipe.Items[j]);
-                        itemCounts[starIndex][i].Add(recipe.ItemCounts[j]);
-                    }
-                    for (int j = 0; j < recipe.Results.Length; j++)
-                    {
-                        products[starIndex][i].Add(recipe.Results[j]);
-                        productCounts[starIndex][i].Add(recipe.ResultCounts[j]);
-                        if (!productStorage[starIndex].ContainsKey(recipe.Results[j]))
-                            productStorage[starIndex].Add(recipe.Results[j], 0);
-                    }
-                    timeSpend[starIndex][i] = Math.Max(1, recipe.TimeSpend);
-                    if (recipe.Results[0] >= 6001 && recipe.Results[0] <= 6006)
-                        timeSpend[starIndex][i] *= matrixTimeSpendRatio;
-                }
-            }
         }
 
         public static void InitUI()
@@ -223,7 +91,7 @@ namespace MoreMegaStructure
                 GigaFactoryUIObj = new GameObject("GigaFactory");
                 GigaFactoryUIObj.transform.SetParent(parentTrans);
                 GigaFactoryUIObj.transform.localScale = new Vector3(1, 1, 1);
-                GigaFactoryUIObj.transform.localPosition = new Vector3(300, -DSPGame.globalOption.uiLayoutHeight + 180, 0);
+                GigaFactoryUIObj.transform.localPosition = new Vector3(300, -DSPGame.globalOption.uiLayoutHeight + 190, 0);
                 GigaFactoryUIObj.SetActive(true);
 
                 // 显示/隐藏按钮
@@ -231,7 +99,7 @@ namespace MoreMegaStructure
                 showHideButtonObj = GameObject.Instantiate(addNewLayerButton, parentTrans);
                 showHideButtonObj.SetActive(true);
                 showHideButtonObj.name = "show-hide"; //名字
-                showHideButtonObj.transform.localPosition = new Vector3(340, -DSPGame.globalOption.uiLayoutHeight + 40, 0); //位置
+                showHideButtonObj.transform.localPosition = new Vector3(320, -DSPGame.globalOption.uiLayoutHeight + 40, 0); //位置
                 showHideButtonObj.GetComponent<RectTransform>().sizeDelta = new Vector2(200, 24); //按钮大小
                 showHideBtnText = showHideButtonObj.transform.Find("Text").gameObject.GetComponent<Text>();
                 showHideBtnText.text = "显示/隐藏星际组装厂配置".Translate();
@@ -239,6 +107,14 @@ namespace MoreMegaStructure
                 showHideButton.interactable = true;
                 showHideButton.onClick.RemoveAllListeners();
                 showHideButton.onClick.AddListener(() => { ShowHideUI(); });
+
+                GameObject backObj = new GameObject("back");
+                backObj.transform.parent = GigaFactoryUIObj.transform;
+                backObj.transform.localScale = new Vector3(1, 1, 1);
+                backObj.transform.localPosition = new Vector3(660, 180, 0);
+                backObj.AddComponent<Image>();
+                backObj.GetComponent<Image>().color = new Color(0.106f, 0.180f, 0.228f, 0.88f);
+                backObj.GetComponent<RectTransform>().sizeDelta = new Vector2(1280, 650);
 
                 GameObject oriSelectObj = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Assembler Window/offwork");
                 GameObject oriSliderObj = GameObject.Find("UI Root/Overlay Canvas/In Game/FPS Stats/priority-bar/slider-2");
@@ -251,7 +127,7 @@ namespace MoreMegaStructure
                     GameObject slotObj = new GameObject("slot" + i.ToString());
                     slotObj.transform.SetParent(GigaFactoryUIObj.transform);
                     slotObj.transform.localScale = new Vector3(1, 1, 1);
-                    slotObj.transform.localPosition = new Vector3((i/8)*500, (i%8) * 80, 0);
+                    slotObj.transform.localPosition = new Vector3((i / 8) * 400, (i % 8) * 80, 0);
 
                     GameObject recipeSelectionObj = GameObject.Instantiate(oriSelectObj, slotObj.transform);
                     recipeSelectionObj.SetActive(true);
@@ -294,8 +170,8 @@ namespace MoreMegaStructure
                     produceSpeedTxtObj.GetComponent<Text>().supportRichText = true;
                     speedTextObjs.Add(produceSpeedTxtObj);
 
-                    GameObject incIconObj = GameObject.Instantiate(oriIncIconObj,slotObj.transform);
-                    incIconObj.transform.localPosition = new Vector3(60,-65);
+                    GameObject incIconObj = GameObject.Instantiate(oriIncIconObj, slotObj.transform);
+                    incIconObj.transform.localPosition = new Vector3(60, -65);
                     incIconObj.transform.localScale = new Vector3(1, 1, 1);
                     //incIconObj.GetComponent<RectTransform>().sizeDelta = new Vector2(24, 24);
                     incIconObj.SetActive(false);
@@ -340,7 +216,7 @@ namespace MoreMegaStructure
                     else if (i == 1)
                     {
                         circleButton.onClick.AddListener(() => { OnRecipeSelectClick(1); });
-                        removeButton.onClick.AddListener(()=> { OnRecipeRemoveClick(1); });
+                        removeButton.onClick.AddListener(() => { OnRecipeRemoveClick(1); });
                         slider.onValueChanged.AddListener((x) => { OnSliderValueChange(1, x); });
                     }
                     else if (i == 2)
@@ -379,7 +255,7 @@ namespace MoreMegaStructure
                         removeButton.onClick.AddListener(() => { OnRecipeRemoveClick(7); });
                         slider.onValueChanged.AddListener((x) => { OnSliderValueChange(7, x); });
                     }
-                    else if (i == 8) 
+                    else if (i == 8)
                     {
                         circleButton.onClick.AddListener(() => { OnRecipeSelectClick(8); });
                         removeButton.onClick.AddListener(() => { OnRecipeRemoveClick(8); });
@@ -429,12 +305,237 @@ namespace MoreMegaStructure
                     }
                 }
 
+
+                // 特化UI
+                specializeObj = new GameObject("Specialize");
+                specializeObj.transform.SetParent(parentTrans);
+                specializeObj.transform.localScale = new Vector3(1, 1, 1);
+                specializeObj.transform.localPosition = new Vector3(1200, -DSPGame.globalOption.uiLayoutHeight + 190, 0);
+                if (DSPGame.globalOption.resolution.width * DSPGame.globalOption.uiLayoutHeight / DSPGame.globalOption.resolution.height < 1920)
+                {
+                    lowUIResolution = true;
+                    specializeObj.transform.localPosition = new Vector3(400, -DSPGame.globalOption.uiLayoutHeight + 190, 0);
+                }
+
+                specializeObj.SetActive(true);
+                GameObject specMainTitleObj = GameObject.Instantiate(GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Assembler Window/produce/circle-back/cnt-text"), specializeObj.transform);
+                specMainTitleObj.name = "mainTitle";
+                specMainTitleObj.transform.localPosition = new Vector3(0, 40, 0);
+                specMainTitleObj.GetComponent<Text>().fontSize = 20;
+                specMainTitleObj.GetComponent<Text>().lineSpacing = 0.95f;
+                specMainTitleObj.GetComponent<Text>().text = "星际组装厂特化".Translate();
+                specMainTitleObj.GetComponent<Text>().alignment = TextAnchor.LowerLeft;
+                specializeTitleTxts.Add(specMainTitleObj.GetComponent<Text>()); // 占位用
+                specializeStateTxts.Add(specMainTitleObj.GetComponent<Text>()); // 占位用
+                for (int i = 0; i <= 5; i++)
+                {
+                    if (i > 0)
+                    {
+                        GameObject specTitleObj = GameObject.Instantiate(GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Assembler Window/produce/circle-back/cnt-text"), specializeObj.transform);
+                        specTitleObj.name = $"specTitle{i}";
+                        specTitleObj.transform.localPosition = new Vector3(0, 30 - 30 * i, 0);
+                        specTitleObj.GetComponent<Text>().fontSize = 16;
+                        specTitleObj.GetComponent<Text>().lineSpacing = 0.95f;
+                        specTitleObj.GetComponent<Text>().text = $"星际组装厂特化名称{i}".Translate();
+                        specTitleObj.GetComponent<Text>().alignment = TextAnchor.MiddleLeft;
+                        specTitleObj.GetComponent<Text>().color = new Color(1.0f, 0.705f, 0f, 0.765f);
+                        specializeTitleTxts.Add(specTitleObj.GetComponent<Text>());
+
+                        GameObject specStateObj = GameObject.Instantiate(GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Assembler Window/produce/circle-back/cnt-text"), specializeObj.transform);
+                        specStateObj.name = $"specState{i}";
+                        specStateObj.transform.localPosition = new Vector3(260, 30 -30 * i, 0);
+                        specStateObj.GetComponent<Text>().fontSize = 16;
+                        specStateObj.GetComponent<Text>().lineSpacing = 0.95f;
+                        specStateObj.GetComponent<Text>().text = "";
+                        specStateObj.GetComponent<Text>().alignment = TextAnchor.MiddleCenter;
+                        specializeStateTxts.Add(specStateObj.GetComponent<Text>());
+                    }
+
+                    // 用来显示说明提示的按钮
+                    GameObject tipButtonObj = GameObject.Instantiate(addNewLayerButton, specializeObj.transform);
+                    tipButtonObj.SetActive(true);
+                    tipButtonObj.name = $"tip{i}"; //名字
+                    tipButtonObj.transform.localPosition = new Vector3(-60, 50 - 30 * i, 0); //位置
+                    if(i==0) // 特化标题的问号
+                        tipButtonObj.transform.localPosition = new Vector3(-60, 65, 0);
+                    tipButtonObj.GetComponent<RectTransform>().sizeDelta = new Vector2(20, 20); //按钮大小
+                    tipButtonTxts.Add(tipButtonObj.transform.Find("Text").gameObject.GetComponent<Text>());
+                    tipButtonObj.transform.Find("Text").gameObject.GetComponent<Text>().text = "?";
+                    Button tipButton = tipButtonObj.GetComponent<Button>();
+                    tipButton.interactable = true;
+                    tipButton.onClick.RemoveAllListeners();
+
+                    tipButtonObj.GetComponent<UIButton>().tips.tipTitle = $"特化{i}介绍标题".Translate();
+                    tipButtonObj.GetComponent<UIButton>().tips.tipText = $"特化{i}介绍内容".Translate();
+                    tipButtonObj.GetComponent<UIButton>().tips.delay = 0.1f;
+                    tipButtonObj.GetComponent<UIButton>().tips.width = i == 0 ? 300 : 280;
+                    tipButtonObj.GetComponent<UIButton>().tips.offset = new Vector2(-180, 90);
+                    if(lowUIResolution)
+                        tipButtonObj.GetComponent<UIButton>().tips.offset = new Vector2(150, 90);
+                }
+
             }
         }
 
 
+        // 初始化所有存档数据为默认0，只在加载游戏或游戏开始时使用
+        public static void ResetAndInitArchiveData()
+        {
+            recipeIds = new List<List<int>>();
+            weights = new List<List<double>>();
+            progress = new List<List<double>>();
+            incProgress = new List<List<double>>();
+            specProgress = new List<int>();
+            curSpecType = new List<int>();
+            inProgressSpecType = new List<int>();
+            satisfiedSpecType = new List<int>();
+            for (int starIndex = 0; starIndex < 1000; starIndex++)
+            {
+                recipeIds.Add(new List<int> { 0 });
+                weights.Add(new List<double> { 1 });
+                progress.Add(new List<double> { 0 });
+                incProgress.Add(new List<double> { 0 });
+                for (int i = 1; i < slotCount; i++)
+                {
+                    recipeIds[starIndex].Add(0);
+                    weights[starIndex].Add(0);
+                    progress[starIndex].Add(0);
+                    incProgress[starIndex].Add(0);
+                }
+
+                specProgress.Add(0);
+                curSpecType.Add(0);
+                inProgressSpecType.Add(0);
+                satisfiedSpecType.Add(0);
+            }
+        }
+
+        public static void ResetDataAfterStarIndex100()
+        {
+            for (int i = 100; i < 1000; i++)
+            {
+                for (int j = 0; j < slotCount; j++)
+                {
+                    recipeIds[i][j] = 0;
+                    weights[i][j] = j == 0 ? 1 : 0;
+                    progress[i][j] = 0;
+                    incProgress[i][j] = 0;
+                }
+            }
+        }
+
+        public static void ResetArchiveDataByStarIndex(int starIndex)
+        {
+            recipeIds[starIndex] = new List<int> { 0 };
+            weights[starIndex] = new List<double> { 1 };
+            progress[starIndex] = new List<double> { 0 };
+            incProgress[starIndex] = new List<double> { 0 };
+            for (int i = 1; i < slotCount; i++)
+            {
+                recipeIds[starIndex].Add(0);
+                weights[starIndex].Add(0);
+                progress[starIndex].Add(0);
+                incProgress[starIndex].Add(0);
+            }
+
+            specProgress[starIndex] = 0;
+            curSpecType[starIndex] = 0;
+            inProgressSpecType[starIndex] = 0;
+            satisfiedSpecType[starIndex] = 0;
+        }
+
+        /// <summary>
+        /// 初始化并计算游戏运行时数据
+        /// </summary>
+        public static void InitInGameData()
+        {
+            int maxStarIndex = MoreMegaStructure.Support1000Stars.Value ? 1000 : 100;
+            for (int starIndex = 0; starIndex  < maxStarIndex; starIndex ++)
+            {
+                if (MoreMegaStructure.StarMegaStructureType[starIndex] == 4)
+                {
+                    CalcInGameDataByStarIndex(starIndex);
+                }
+            }
+            //currentStarIndex = 0;
+            currentRecipeSlot = 0;
+            currentStarIncs = new List<int>();
+            for (int i = 0; i < slotCount; i++)
+            {
+                currentStarIncs.Add(0);
+            }
+            lockSliderListener = false;
+        }
+
+        public static void ForceResetIncDataCache()
+        {
+            currentStarIncs.Clear();
+            for (int i = 0; i < slotCount; i++)
+            {
+                currentStarIncs.Add(0);
+            }
+        }
+
+        public static void CalcInGameDataByStarIndex(int starIndex)
+        {
+            items[starIndex] = new List<List<int>>();
+            products[starIndex] = new List<List<int>>();
+            itemCounts[starIndex] = new List<List<int>>();
+            productCounts[starIndex] = new List<List<int>>();
+            timeSpend[starIndex] = new List<int>();
+            productStorage[starIndex] = new Dictionary<int, int>();
+            productStorageInc[starIndex] = new Dictionary<int, int>();
+            productStorage[starIndex][9500] = 0;
+            specBuffLevel[starIndex] = new List<int>();
+            for (int s = 0; s < slotCount; s++)
+            {
+                items[starIndex].Add(new List<int>());
+                itemCounts[starIndex].Add(new List<int>());
+                products[starIndex].Add(new List<int>());
+                productCounts[starIndex].Add(new List<int>());
+                timeSpend[starIndex].Add(1);
+                specBuffLevel[starIndex].Add(0);
+            }
+
+            for (int i = 0; i < slotCount; i++)
+            {
+                if (recipeIds[starIndex][i] > 0)
+                {
+                    RecipeProto recipe = LDB.recipes.Select(recipeIds[starIndex][i]);
+
+                    for (int j = 0; j < recipe.Items.Length; j++)
+                    {
+                        items[starIndex][i].Add(recipe.Items[j]);
+                        itemCounts[starIndex][i].Add(recipe.ItemCounts[j]);
+                    }
+                    for (int j = 0; j < recipe.Results.Length; j++)
+                    {
+                        products[starIndex][i].Add(recipe.Results[j]);
+                        productCounts[starIndex][i].Add(recipe.ResultCounts[j]);
+                        if (!productStorage[starIndex].ContainsKey(recipe.Results[j]))
+                            productStorage[starIndex].Add(recipe.Results[j], 0);
+                    }
+                    timeSpend[starIndex][i] = Math.Max(1, recipe.TimeSpend);
+                    if (recipe.Results[0] >= 6001 && recipe.Results[0] <= 6006)
+                        timeSpend[starIndex][i] *= matrixTimeSpendRatio;
+                }
+            }
+            if (starIndex < GameMain.galaxy.starCount)
+            {
+                if (GameMain.data?.dysonSpheres[starIndex] != null)
+                    CheckSpecializeState(GameMain.data.dysonSpheres[starIndex], true);
+            }
+        }
+
+
+ 
         public static void InternalUpdate(DysonSphere __instance)
         {
+            if (GameMain.instance.timei % 60 == 0)
+                CheckSpecializeState(__instance);
+
+            UpdateSpecializeState(__instance);
+
             //Utils.Log("internal updating " + __instance.starData.displayName);
             int starIndex = __instance.starData.index;
             long energy = __instance.energyGenCurrentTick - __instance.energyReqCurrentTick;
@@ -484,7 +585,7 @@ namespace MoreMegaStructure
                     }
                     if (flag && timeSpend[starIndex][i] > 0)
                     {
-                        double prog = energy * weights[starIndex][i] / tickEnergyForFullSpeed / timeSpend[starIndex][i];
+                        double prog = GetConsumeProduceSpeedRatio(starIndex, i);
                         progress[starIndex][i] += prog;
                     }
                 }
@@ -559,6 +660,18 @@ namespace MoreMegaStructure
                             for (int j = 0; j < products[starIndex][i].Count; j++)
                             {
                                 productStorage[starIndex][products[starIndex][i][j]] += minSatisfied * productCounts[starIndex][i][j];
+                                // 恒星反应釜产物的增产点数储存
+                                if (curSpecType[starIndex] == 2 && specBuffLevel[starIndex][i] > 0)
+                                {
+                                    if (!productStorageInc.ContainsKey(starIndex))
+                                        productStorageInc.Add(starIndex, new Dictionary<int, int>());
+                                    if (!productStorageInc[starIndex].ContainsKey(products[starIndex][i][j]))
+                                        productStorageInc[starIndex].Add(products[starIndex][i][j], minSatisfied * productCounts[starIndex][i][j] * 4);
+                                    else
+                                        productStorageInc[starIndex][products[starIndex][i][j]] += minSatisfied * productCounts[starIndex][i][j] * 4;
+                                    if (productStorageInc[starIndex][products[starIndex][i][j]] > 4 * productStorage[starIndex][products[starIndex][i][j]])
+                                        productStorageInc[starIndex][products[starIndex][i][j]] = 4 * productStorage[starIndex][products[starIndex][i][j]];
+                                }
                                 if (productStorage[starIndex][products[starIndex][i][j]] > 10000) productStorage[starIndex][products[starIndex][i][j]] = 10000;
                                 if (productRegister != null)
                                 {
@@ -570,11 +683,15 @@ namespace MoreMegaStructure
                                 }
                             }
                             // 增产效果
-                            if (incProgress[starIndex][i] >= 0) // 负数则视为是无法增产的配方
+                            if (incProgress[starIndex][i] >= 0 || specBuffLevel[starIndex][i] > 0) // 负数则视为是无法增产的配方，但是如果能够享受特化Buff，那么可以无视recipe设定，强行允许增产！
                             {
-                                incProgress[starIndex][i] += minSatisfied * Cargo.incTableMilli[minInc];
+                                incProgress[starIndex][i] += minSatisfied * GetFullIncMilli(starIndex, i, minInc);
                                 if (MoreMegaStructure.curStar != null && starIndex == MoreMegaStructure.curStar.index)
+                                {
                                     currentStarIncs[i] = minInc; // 将这一帧的增产效果暂存，方便刷新
+                                    if (curSpecType[starIndex] == 2 && specBuffLevel[starIndex][i] > 0)
+                                        currentStarIncs[i] = 4;
+                                }
 
                                 // 增产点数满了之后
                                 if (incProgress[starIndex][i] >= 1)
@@ -677,6 +794,11 @@ namespace MoreMegaStructure
                 if(consume)
                     productStorage[starIndex][itemId] -= result;
                 inc = 4 * result;
+                // 如果内部仓储的该物品有增产点数，得拿掉增产点数。可能导致送回地面的就不带增产了，那得这样。
+                if (productStorageInc.ContainsKey(starIndex) && productStorageInc[starIndex].ContainsKey(itemId))
+                {
+                    productStorageInc[starIndex][itemId] -= inc < productStorageInc[starIndex][itemId] ? inc : productStorageInc[starIndex][itemId];
+                }
             }
             // 再从地表拿
             if (result < itemCount)
@@ -784,12 +906,23 @@ namespace MoreMegaStructure
                                         {
                                             stationComponent.storage[k].count += waitingToSend;
                                             productStorage[starIndex][productId] = 0;
+                                            if (productStorageInc.ContainsKey(starIndex) && productStorageInc[starIndex].ContainsKey(productId))
+                                            {
+                                                stationComponent.storage[k].inc += productStorageInc[starIndex][productId];
+                                                productStorageInc[starIndex][productId] = 0;
+                                            }
                                         }
                                         else if(stationComponent.storage[k].max > stationComponent.storage[k].count)
                                         {
                                             int sended = stationComponent.storage[k].max - stationComponent.storage[k].count;
                                             stationComponent.storage[k].count += sended;
-                                            productStorage[starIndex][productId] -= sended;
+                                            productStorage[starIndex][productId] -= sended; 
+                                            if (productStorageInc.ContainsKey(starIndex) && productStorageInc[starIndex].ContainsKey(productId))
+                                            {
+                                                int sendedInc = Math.Min(productStorageInc[starIndex][productId], sended * 4);
+                                                stationComponent.storage[k].inc += sendedInc;
+                                                productStorageInc[starIndex][productId] -= sendedInc;
+                                            }
                                         }
                                     }
                                 }
@@ -800,34 +933,250 @@ namespace MoreMegaStructure
             }
         }
 
-
-        public static double GetConsumeSpeedRatio(int starIndex, int slotNum)
+        // 返回每帧理想的基础消耗产出系数：这是已被各种特化的加速效果加成过的结果，但还未被增产效果加成
+        public static double GetConsumeProduceSpeedRatio(int starIndex, int slotNum)
         {
             long energy = GameMain.data.dysonSpheres[starIndex].energyGenCurrentTick - GameMain.data.dysonSpheres[starIndex].energyReqCurrentTick;
             double prog = energy * weights[starIndex][slotNum] / tickEnergyForFullSpeed / timeSpend[starIndex][slotNum];
-            return prog;
-        }
-
-        public static double GetProduceSpeedRatio(int starIndex, int slotNum, int incLevel)
-        {
-            long energy = GameMain.data.dysonSpheres[starIndex].energyGenCurrentTick - GameMain.data.dysonSpheres[starIndex].energyReqCurrentTick;
-            if (slotNum == 0)
+            // 特化速度加成或其他影响
+            if (specBuffLevel[starIndex][slotNum] > 0)
             {
-                return energy * weights[starIndex][0] / MoreMegaStructure.multifunctionComponentHeat * (MoreMegaStructure.isRemoteReceiveingGear ? 0.1 : 1.0);
+                if (curSpecType[starIndex] == 1)
+                {
+                    prog *= 3;
+                }
+                else if (curSpecType[starIndex] == 2)
+                {
+                    prog *= 2;
+                }
             }
-            double prog = energy * weights[starIndex][slotNum] / tickEnergyForFullSpeed / timeSpend[starIndex][slotNum] * (1 + Cargo.incTableMilli[incLevel]);
+            else if (slotNum == 0) // 集成组件速率专门计算
+            {
+                if (curSpecType[starIndex] == 1)
+                    return 0;
+                else
+                    return energy * weights[starIndex][0] / MoreMegaStructure.multifunctionComponentHeat * (MoreMegaStructure.isRemoteReceiveingGear ? 0.1 : 1.0);
+            }
+
             return prog;
         }
 
+        // 返回被特化和增产剂增产效果加成后的每帧产出倍率
+        public static double GetIncProduceSpeedRatio(double satisfiedRatio, int starIndex, int slotNum, int incLevel)
+        {
+            return satisfiedRatio * GetFullIncMilli(starIndex, slotNum, incLevel);
+        }
 
+        // 返回特化和增产剂联合作用下的增产系数
+        public static double GetFullIncMilli(int starIndex, int slotNum, int incLevel)
+        {
+            double incByProliferator = Cargo.incTableMilli[incLevel];
+            double incBySpecialization = 0;
+            if (specBuffLevel[starIndex][slotNum] > 0)
+            {
+                if (curSpecType[starIndex] == 2)
+                {
+                    incByProliferator = Math.Max(incByProliferator, Cargo.incTableMilli.Length > 4 ? Cargo.incTableMilli[4] : 0.25);
+                }
+                else if (curSpecType[starIndex] == 3)
+                {
+                    incBySpecialization = 0.25;
+                }
+                else if (curSpecType[starIndex] == 4)
+                {
+                    incBySpecialization = 0.25 * specBuffLevel[starIndex][slotNum];
+                }
+                else if (curSpecType[starIndex] == 5)
+                {
+                    incBySpecialization = 0.5;
+                }
+            }
+            return incByProliferator + incBySpecialization;
+        }
+
+        /// <summary>
+        /// 检查是否触发或改变特化进程，并检查每个配方是否触发特化的buff要求
+        /// </summary>
+        /// <param name="sphere"></param>
+        public static void CheckSpecializeState(DysonSphere sphere, bool forceCheckAllSlot = false)
+        {
+            int starIndex = sphere.starData.index;
+            List<int> specTypeFlag = new List<int> { 0, 0, 0, 0, 0, 0 };
+            int maxSlotIndex = forceCheckAllSlot ? slotCount-1 : CalcMaxSlotIndex(sphere);
+            for (int slot = 1; slot <= maxSlotIndex; slot++)
+            {
+                if (recipeIds[starIndex][slot] == 0)
+                    continue;
+
+                int slotSpecBuffLvl = 0;
+                ERecipeType recipeType = LDB.recipes.Select(recipeIds[starIndex][slot]).Type;
+
+                // 1
+                if (recipeType == ERecipeType.Smelt)
+                {
+                    specTypeFlag[1] += 1;
+                    if (curSpecType[starIndex] == 1)
+                        slotSpecBuffLvl = 1;
+                }
+                else
+                    specTypeFlag[1] = -9999;
+
+                // 2
+                if (recipeType == ERecipeType.Chemical || recipeType == ERecipeType.Refine || products[starIndex][slot].Contains(1141) || products[starIndex][slot].Contains(1142) || products[starIndex][slot].Contains(1143))
+                {
+                    specTypeFlag[2] += 1;
+                    if (curSpecType[starIndex] == 2)
+                        slotSpecBuffLvl = 1;
+                }
+                else
+                    specTypeFlag[2] = -9999;
+
+                // 3
+                bool flag3 = false;
+                for (int i = 0; i < items[starIndex][slot].Count; i++)
+                {
+                    if (items[starIndex][slot][i] == 1121 || items[starIndex][slot][i] == 1122)
+                    {
+                        flag3 = true;
+                        break;
+                    }
+                }
+                if (!flag3)
+                {
+                    for (int i = 0; i < products[starIndex][slot].Count; i++)
+                    {
+                        if (products[starIndex][slot][i] == 1121 || products[starIndex][slot][i] == 1122)
+                        {
+                            flag3 = true;
+                            break;
+                        }
+                    }
+                }
+                if (flag3)
+                {
+                    specTypeFlag[3] += 1;
+                    if (curSpecType[starIndex] == 3)
+                        slotSpecBuffLvl = 1;
+                }
+                else
+                {
+                    specTypeFlag[3] = -9999;
+                }
+
+                // 4
+                int flag4Lvl = 0;
+                for (int i = 0; i < products[starIndex][slot].Count; i++)
+                {
+                    if (products[starIndex][slot][i] == 1303 || products[starIndex][slot][i] == 1305 || products[starIndex][slot][i] == 9486)
+                    {
+                        flag4Lvl = 2;
+                        break;
+                    }
+                }
+                if (flag4Lvl<=0)
+                {
+                    for (int i = 0; i < items[starIndex][slot].Count; i++)
+                    {
+                        if (items[starIndex][slot][i] == 1303 || items[starIndex][slot][i] == 1305 || items[starIndex][slot][i] == 9486)
+                        {
+                            flag4Lvl = 1;
+                            break;
+                        }
+                    }
+                }
+                if (flag4Lvl > 0)
+                {
+                    specTypeFlag[4] += 1;
+                    if (curSpecType[starIndex] == 4)
+                        slotSpecBuffLvl = flag4Lvl;
+                }
+                else
+                    specTypeFlag[4] = -9999;
+
+                // 5
+                int p0Id = products[starIndex][slot][0];
+                if (p0Id >= 9488 && p0Id <= 9492 || p0Id >= 8037 && p0Id <= 8039 || p0Id == 9510 || p0Id == 1503 || p0Id == 1501)
+                {
+                    specTypeFlag[5] += 1;
+                    if (curSpecType[starIndex] == 5)
+                        slotSpecBuffLvl = 1;
+                }
+                else
+                    specTypeFlag[5] = -9999;
+
+                // 存储该slot是否收到加成影响，且设定影响等级
+                specBuffLevel[starIndex][slot] = slotSpecBuffLvl;
+                if (slotSpecBuffLvl == 0) // 未能享受特化加成的配方，若不允许其增产，必须还原其禁止增产的标志，即incProgress为负数
+                {
+                    RecipeProto rp = LDB.recipes.Select(recipeIds[starIndex][slot]);
+                    if (rp != null && !rp.productive)
+                        incProgress[starIndex][slot] = -1;
+                }
+            }
+
+            // 根据结果设定已满足要求的特化类型，之后交由UpdateSpecializeState处理特化进程
+            bool noSatisfied = true;
+            for (int sType = 5; sType >= 1; sType--) // 从5到1是为了让5的优先级比4高。
+            {
+                if (specTypeFlag[sType] >= specializeRequirements[sType])
+                {
+                    satisfiedSpecType[starIndex] = sType;
+                    noSatisfied = false;
+                    break;
+                }
+            }
+            if (noSatisfied)
+                satisfiedSpecType[starIndex] = 0;
+        }
+
+        public static void UpdateSpecializeState(DysonSphere sphere)
+        {
+            int starIndex = sphere.starData.index;
+            if (starIndex >= 1000) return;
+            if (specProgress[starIndex] <= 0)
+            {
+                if (satisfiedSpecType[starIndex] > 0 && satisfiedSpecType[starIndex] != curSpecType[starIndex])
+                {
+                    inProgressSpecType[starIndex] = satisfiedSpecType[starIndex];
+                    specProgress[starIndex]++;
+                }
+            }
+            else
+            {
+                if (satisfiedSpecType[starIndex] == inProgressSpecType[starIndex])
+                    specProgress[starIndex]++;
+                else
+                    specProgress[starIndex]--;
+            }
+
+            if (specProgress[starIndex] >= specializeTimeNeed)
+            {
+                specProgress[starIndex] = 0;
+                curSpecType[starIndex] = inProgressSpecType[starIndex];
+            }
+            else if (specProgress[starIndex] <= 0)
+            {
+                inProgressSpecType[starIndex] = 0;
+                specProgress[starIndex] = 0;
+            }
+
+        }
+
+        // 刷新全部UI
         public static void RefreshUI(bool forceShowUI = false)
         {
             if (MoreMegaStructure.curStar == null) return;
             int starIndex = MoreMegaStructure.curStar.index;
-            if (MoreMegaStructure.StarMegaStructureType[starIndex] == 4)
+            if (starIndex < 1000 && MoreMegaStructure.StarMegaStructureType[starIndex] == 4)
             {
                 if (forceShowUI)
+                {
                     GigaFactoryUIObj.SetActive(true);
+                    if(lowUIResolution)
+                        specializeObj.SetActive(false);
+                    else
+                        specializeObj.SetActive(true);
+                }
                 showHideButtonObj.SetActive(true);
                 showHideBtnText.text = "显示/隐藏星际组装厂配置".Translate();
                 lockSliderListener = true;
@@ -865,11 +1214,14 @@ namespace MoreMegaStructure
 
                 RefreshProduceSpeedContent();
                 RefreshStorageText();
+                RefreshSpecializeUI();
                 lockSliderListener = false;
+
             }
             else
             {
                 GigaFactoryUIObj.SetActive(false);
+                specializeObj.SetActive(false);
                 showHideButtonObj.SetActive(false);
             }
         }
@@ -892,16 +1244,18 @@ namespace MoreMegaStructure
             if (MoreMegaStructure.StarMegaStructureType[starIndex] != 4) return;
             for (int i = 1; i < slotCount; i++)
             {
-                if (recipeIds[starIndex][i] > 0)
+                if (recipeIds[starIndex][i] > 0 && i<= maxSlotIndex)
                 {
-                    double PPM = (GameMain.data.dysonSpheres[starIndex].energyGenCurrentTick - GameMain.data.dysonSpheres[starIndex].energyReqCurrentTick) * weights[starIndex][i] / tickEnergyForFullSpeed / timeSpend[starIndex][i] * 3600 * productCounts[starIndex][i][0];
+                    double PPM = GetConsumeProduceSpeedRatio(starIndex, i) * 3600 * productCounts[starIndex][i][0];
                     string value = PPM > 10 ? PPM.ToString("N0") : (PPM > 1 ? PPM.ToString("N1") : (PPM > 0 ? PPM.ToString("N2") : "0.00"));
                     string incStr = "";
-                    if (currentStarIncs[i] > 0)
+                    double extraProductRatio = GetFullIncMilli(starIndex, i, currentStarIncs[i] > 10 ? 10 : currentStarIncs[i]);
+                    if (extraProductRatio > 0)
                     {
-                        int inc = currentStarIncs[i] > 10?10: currentStarIncs[i];
-                        incStr = $"<color=#FD965EE0>  +{Cargo.incTableMilli[inc] * 100} %</color>";
+                        incStr = $"<color=#FD965EE0>  +{extraProductRatio * 100} %</color>";
                     }
+                    
+                    
                     produceSpeedTxts[i].text = "理论最大速度".Translate() + " " +  value + "/min" + incStr;
                     weightTxts[i].text = "能量分配".Translate() + " " + ((weights[starIndex][i] * 100)).ToString() + "%";
                 }
@@ -961,6 +1315,67 @@ namespace MoreMegaStructure
             }
             int MCProductCount = productStorage[starIndex].ContainsKey(9500) ? productStorage[starIndex][9500] : 0;
             storageTxts[0].text = "巨构内部仓储".Translate() + "\n" + MCProductCount.ToString() + "/10000";
+        }
+
+        public static void RefreshSpecializeUI()
+        {
+            for (int i = 0; i < tipButtonTxts.Count; i++)
+            {
+                if (tipButtonTxts[i] != null)
+                {
+                    tipButtonTxts[i].text = "?";
+                }
+            }
+            for (int i = 0; i < specializeTitleTxts.Count; i++)
+            {
+                specializeTitleTxts[i].text = $"星际组装厂特化名称{i}".Translate();
+            }
+
+            for (int i = 1; i < specializeTitleTxts.Count; i++)
+            {
+                int starIndex = MoreMegaStructure.curStar.index;
+                if (curSpecType[starIndex] == i)
+                {
+                    specializeTitleTxts[i].color = UITextBlue;
+                    if (specProgress[starIndex] > 0 && satisfiedSpecType[starIndex] > 0 && satisfiedSpecType[starIndex] != i)
+                    {
+                        specializeStateTxts[i].color = UITextOrange;
+                        specializeStateTxts[i].text = "特化即将被取代".Translate();
+                    }
+                    else
+                    {
+                        specializeStateTxts[i].color = UITextBlue;
+                        specializeStateTxts[i].text = "特化已激活".Translate();
+                    }
+                }
+                else if (inProgressSpecType[starIndex] == i)
+                {
+                    if (satisfiedSpecType[starIndex] == i)
+                    {
+                        specializeTitleTxts[i].color = UITextGreen;
+                        specializeStateTxts[i].color = UITextGreen;
+                        specializeStateTxts[i].text = string.Format("特化进程".Translate(), (int)(100.0 * specProgress[starIndex] / specializeTimeNeed));
+                    }
+                    else
+                    {
+                        specializeTitleTxts[i].color = UITextOrange;
+                        specializeStateTxts[i].color = UITextOrange;
+                        specializeStateTxts[i].text = string.Format("特化进程消退中".Translate(), (int)(100.0 * specProgress[starIndex] / specializeTimeNeed));
+                    }
+                }
+                else if (satisfiedSpecType[starIndex] == i)
+                {
+                    specializeTitleTxts[i].color = UITextGreen;
+                    specializeStateTxts[i].color = UITextGreen;
+                    specializeStateTxts[i].text = "等待其他特化进程消退".Translate();
+                }
+                else
+                {
+                    specializeTitleTxts[i].color = UITextGray;
+                    specializeStateTxts[i].color = UITextGray;
+                    specializeStateTxts[i].text = "特化条件未满足".Translate();
+                }
+            }
         }
 
         public static void OnRecipeSelectClick(int slotIndex)
@@ -1052,6 +1467,7 @@ namespace MoreMegaStructure
                 productCounts[starIndex] = new List<List<int>>();
                 timeSpend[starIndex] = new List<int>();
                 productStorage[starIndex] = new Dictionary<int, int>();
+                productStorageInc[starIndex] = new Dictionary<int, int>();
                 productStorage[starIndex][9500] = 0;
                 for (int s = 0; s < slotCount; s++)
                 {
@@ -1089,7 +1505,7 @@ namespace MoreMegaStructure
                     timeSpend[starIndex][i] *= recipeType1213TimeSpendRatio;
                 }
             }
-
+            CheckSpecializeState(GameMain.data.dysonSpheres[starIndex]);
             RefreshUI();
         }
 
@@ -1204,10 +1620,27 @@ namespace MoreMegaStructure
         {
             if (GigaFactoryUIObj == null) return;
             if (GigaFactoryUIObj.activeSelf)
+            {
                 GigaFactoryUIObj.SetActive(false);
+                if (lowUIResolution) // lowresolution情况下两个ui占用重叠的位置，所以交替显示。正常1080p以上分辨率的情况下两个ui不重叠，且一起显示或隐藏
+                {
+                    specializeObj.SetActive(true);
+                    RefreshSpecializeUI();
+                }
+                else
+                    specializeObj.SetActive(false);
+            }
             else
             {
                 GigaFactoryUIObj.SetActive(true);
+                if (lowUIResolution)
+                    specializeObj.SetActive(false);
+                else
+                {
+                    specializeObj.SetActive(true);
+                    RefreshSpecializeUI();
+                }
+
                 RefreshUI();
             }
         }
@@ -1230,6 +1663,9 @@ namespace MoreMegaStructure
             }
             return 4;
         }
+
+
+
 
         /// <summary>
         /// 根据是否线性调整能量分配比例，将SliderValue转变为Weights的数值
@@ -1288,7 +1724,7 @@ namespace MoreMegaStructure
             if (MoreMegaStructure.savedModVersion >= 116)
             {
                 int support1000 = r.ReadInt32(); // 读取是否后续记录了101~1000个星系的数据
-                if (MoreMegaStructure.Support1000Stars.Value && support1000 > 0) // 如果记录了，且设置中也打开了1000星系支持，则读取后续数据
+                if (support1000 > 0) // 如果记录了，则读取后续数据
                 {
                     for (int i = 100; i < 1000; i++)
                     {
@@ -1317,6 +1753,17 @@ namespace MoreMegaStructure
             {
                 ResetDataAfterStarIndex100();
             }
+            if (MoreMegaStructure.savedModVersion >= 120)
+            {
+                for (int i = 0; i < 1000; i++)
+                {
+                    specProgress[i] = r.ReadInt32();
+                    curSpecType[i] = r.ReadInt32();
+                    inProgressSpecType[i] = r.ReadInt32();
+                    satisfiedSpecType[i] = r.ReadInt32();
+                }
+            }
+
             tickEnergyForFullSpeed = (int)(20000.0 / MoreMegaStructure.IASpdFactor.Value);
             if (tickEnergyForFullSpeed <= 0) tickEnergyForFullSpeed = 100000;
         }
@@ -1347,6 +1794,13 @@ namespace MoreMegaStructure
                         w.Write(incProgress[i][j]);
                     }
                 }
+            }
+            for (int i = 0; i <1000;  i++) 
+            {
+                w.Write(specProgress[i]);
+                w.Write(curSpecType[i]);
+                w.Write(inProgressSpecType[i]);
+                w.Write(satisfiedSpecType[i]);
             }
         }
 

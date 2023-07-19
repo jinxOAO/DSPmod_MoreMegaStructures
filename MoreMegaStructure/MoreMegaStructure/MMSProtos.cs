@@ -2166,6 +2166,32 @@ namespace MoreMegaStructure
             ProtoRegistry.RegisterString("巨构类型不符", "type not match", "巨构不符");
             ProtoRegistry.RegisterString("模式错误", "wrong mode", "模式错误");
 
+            // 特化
+            ProtoRegistry.RegisterString("星际组装厂特化名称0", "Interstellar Assembly Specilization", "星际组装厂 - 特化");
+            ProtoRegistry.RegisterString("星际组装厂特化名称1", "Stellar Forge", "恒星熔炉");
+            ProtoRegistry.RegisterString("星际组装厂特化名称2", "Stellar reactor", "恒星反应釜");
+            ProtoRegistry.RegisterString("星际组装厂特化名称3", "Ring-star Particle Accelerator", "星环粒子加速器");
+            ProtoRegistry.RegisterString("星际组装厂特化名称4", "Hyper-precision Assembly", "超精密装配厂");
+            ProtoRegistry.RegisterString("星际组装厂特化名称5", "Mega Assembly", "巨型装配厂");
+            ProtoRegistry.RegisterString("特化0介绍标题", "Interstellar Assembly Specilization", "星际组装厂 - 特化");
+            ProtoRegistry.RegisterString("特化1介绍标题", "Stellar Forge", "恒星熔炉");
+            ProtoRegistry.RegisterString("特化2介绍标题", "Stellar Reactor", "恒星反应釜");
+            ProtoRegistry.RegisterString("特化3介绍标题", "Ring-star Particle Accelerator", "星环粒子加速器");
+            ProtoRegistry.RegisterString("特化4介绍标题", "Hyper-precision Assembly", "超精密装配厂");
+            ProtoRegistry.RegisterString("特化5介绍标题", "Mega Assembly", "巨型装配厂");
+            ProtoRegistry.RegisterString("特化0介绍内容", "Interstellar Assembly Specilize", "一旦满足某种特化的<color=#30bb30>要求</color>，星际组装厂的特化进程将开始，<color=#30bb30>保持要求10分钟</color>后可以将星际组装厂转化为该<color=\"#61D8FFc0\">特化模式</color>。\n不同的特化模式将对不同的配方提供<color=\"#61D8FFc0\">加成效果</color>。\n一旦特化进程完成，你可以<color=#30bb30>不再保持特化的要求</color>，<color=#30bb30><i>除非你转而开始满足另一种不同特化的转化要求</i></color>，这将使你的星际组装厂向新的特化开始转变。");
+            ProtoRegistry.RegisterString("特化1介绍内容", "Requirement: ", "要求：分配了至少5个<color=#30bb30>冶炼</color>配方，且无其他类型的配方。\n\n特化效果：所有<color=#30bb30>冶炼</color>配方<color=\"#61D8FFc0\">允许增产</color>，且<color=\"#61D8FFc0\">速度+200%</color>。但无法产出多功能集成组件。\n\n<color=\"#61D8FFc0\">允许增产</color>：配方的原料喷涂增产剂后，在星际组装厂中生产的产物一定可以获得<color=\"#61D8FFc0\">额外产出</color>效果，无论该配方是否禁止额外产出效果。");
+            ProtoRegistry.RegisterString("特化2介绍内容", "Stellar reactor", "要求：分配了至少3个<color=#30bb30>化工</color>、<color=#30bb30>石油</color>或<color=#30bb30>增产剂</color>配方，且无其他类型的配方。\n\n特化效果：为所有<color=#30bb30>化工</color>、<color=#30bb30>石油</color>和<color=#30bb30>增产剂</color>配方的原料和产物<color=\"#61D8FFc0\">免费喷涂增产剂</color>，并<color=\"#61D8FFc0\">允许增产</color>，他们的<color=\"#61D8FFc0\">速度+100%</color>。\n\n<color=\"#61D8FFc0\">允许增产</color>：配方的原料喷涂增产剂后，在星际组装厂中生产的产物一定可以获得<color=\"#61D8FFc0\">额外产出</color>效果，无论该配方是否禁止额外产出效果。");
+            ProtoRegistry.RegisterString("特化3介绍内容", "Ring-star Particle Accelerator", "要求：分配了至少3个与<color=#30bb30>反物质</color>或<color=#30bb30>重氢</color><color=#30bb30><i>相关</i></color>的配方，且没有不<color=#30bb30><i>相关</i></color>的配方。\n\n特化效果：所有与<color=#30bb30>反物质</color>或<color=#30bb30>重氢</color><color=#30bb30><i>相关</i></color>的配方<color=\"#61D8FFc0\">允许增产</color>，并获得<color=\"#61D8FFc0\">+25%额外产出</color>。\n\n<color=#30bb30><i>相关</i></color>：配方的原材料或者产物中包含某个物品\n\n<color=\"#61D8FFc0\">允许增产</color>：配方的原料喷涂增产剂后，在星际组装厂中生产的产物一定可以获得<color=\"#61D8FFc0\">额外产出</color>效果，无论该配方是否禁止额外产出效果。");
+            ProtoRegistry.RegisterString("特化4介绍内容", "Hyper-precision Assembly", "要求：分配了至少5个与<color=#30bb30>处理器</color>、<color=#30bb30>量子芯片</color>、<color=#30bb30>量子计算机</color><color=#30bb30><i>相关</i></color>的配方，且没有不<color=#30bb30><i>相关</i></color>的配方\n\n特化效果：所有<color=#30bb30>使用处理器</color>、<color=#30bb30>量子芯片</color>、<color=#30bb30>量子计算机</color>作为输入的配方<color=\"#61D8FFc0\">允许增产</color>，并获得<color=\"#61D8FFc0\">+25%额外产出</color>；\n<color=#30bb30>生产处理器</color>、<color=#30bb30>量子芯片</color>、<color=#30bb30>量子计算机</color>的配方则转而<color=\"#61D8FFc0\">+50%额外产出</color>。\n\n<color=#30bb30><i>相关</i></color>：配方的原材料或者产物中包含某个物品\n\n<color=\"#61D8FFc0\">允许增产</color>：配方的原料喷涂增产剂后，在星际组装厂中生产的产物一定可以获得<color=\"#61D8FFc0\">额外产出</color>效果，无论该配方是否禁止额外产出效果。");
+            ProtoRegistry.RegisterString("特化5介绍内容", "Hyper-heavy Assembly", "要求：分配了至少4个<color=#30bb30>运载火箭<color=#969696>或</color>太阳帆</color>的配方，且无其他类型的配方。\n\n特化效果：各类<color=#30bb30>运载火箭</color>和<color=#30bb30>太阳帆</color>的配方<color=\"#61D8FFc0\">允许增产</color>，并获得<color=\"#61D8FFc0\">+50%额外产出。</color>\n\n<color=\"#61D8FFc0\">允许增产</color>：配方的原料喷涂增产剂后，在星际组装厂中生产的产物一定可以获得<color=\"#61D8FFc0\">额外产出</color>效果，无论该配方是否禁止额外产出效果。");
+
+            ProtoRegistry.RegisterString("特化已激活", "Specialization Activated", "特化已激活");
+            ProtoRegistry.RegisterString("特化即将被取代", "Specialization is about to be replaced", "特化即将被取代");
+            ProtoRegistry.RegisterString("特化进程", "Specialize in progress {0}%", "特化进程 {0}%");
+            ProtoRegistry.RegisterString("特化进程消退中", "Progress fading {0}%", "特化进程消退中 {0}%");
+            ProtoRegistry.RegisterString("等待其他特化进程消退", "Stand by", "等待进程开始");
+            ProtoRegistry.RegisterString("特化条件未满足", "Requirements not satisfied", "特化条件未满足");
         }
 
         /// <summary>

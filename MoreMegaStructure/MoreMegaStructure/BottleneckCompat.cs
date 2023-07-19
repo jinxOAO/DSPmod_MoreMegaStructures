@@ -108,7 +108,7 @@ namespace MoreMegaStructure
                         calcIncLevel =  ResearchTechHelper.GetMaxIncIndex();
                         for (int s = 1; s < maxSlot; s++)
                         {
-                            double cRatio = StarAssembly.GetConsumeSpeedRatio(starIndex, s);
+                            double cRatio = StarAssembly.GetConsumeProduceSpeedRatio(starIndex, s);
                             double pRatio; // 这个对于每个物品在显示时可能是不同的，因为玩家可能选择不计算增产模式或者计算增产加速模式
                             for (int i = 0; i < StarAssembly.items[starIndex][s].Count; i++)
                             {
@@ -133,8 +133,17 @@ namespace MoreMegaStructure
                                 produceItems[itemId] = 1;
 
                                 ItemCalculationRuntimeSetting itemCalculationRuntimeSetting = PluginConfig.disableProliferatorCalc.Value ? ItemCalculationRuntimeSetting.None : ItemCalculationRuntimeSetting.ForItemId(itemId);
-                                int incLevel = itemCalculationRuntimeSetting.Mode == ItemCalculationMode.None || !itemCalculationRuntimeSetting.Enabled || StarAssembly.incProgress[starIndex][s] < 0 ? 0: ResearchTechHelper.GetMaxIncIndex(); // 由于星际组装厂只支持增产模式，所以只能按增产计算。incProgress<0在星际组装厂中作为recipe不可增产的标志
-                                pRatio = StarAssembly.GetProduceSpeedRatio(starIndex, s, incLevel); 
+                                int incLevel = itemCalculationRuntimeSetting.Mode == ItemCalculationMode.None || !itemCalculationRuntimeSetting.Enabled ? 0: ResearchTechHelper.GetMaxIncIndex();
+                                // 由于星际组装厂只支持增产模式，所以只能按增产计算。incProgress<0在星际组装厂中作为recipe不可增产的标志。但是如果是特化，并且能够享受特化buff，则还能允许叠加增产剂增产！
+                                if (StarAssembly.incProgress[starIndex][s] < 0)
+                                {
+                                    if (StarAssembly.specBuffLevel.ContainsKey(starIndex) && StarAssembly.specBuffLevel[starIndex][s] > 0)
+                                        incLevel = ResearchTechHelper.GetMaxIncIndex();
+                                    else
+                                        incLevel = 0;
+                                }
+                                pRatio = StarAssembly.GetConsumeProduceSpeedRatio(starIndex, s);
+                                pRatio = pRatio + StarAssembly.GetIncProduceSpeedRatio(pRatio, starIndex, s, incLevel); 
 
                                 if (Bottleneck.Stats.BetterStats.counter.ContainsKey(itemId))
                                 {
@@ -152,7 +161,7 @@ namespace MoreMegaStructure
                         }
 
                         // 特别地，集成组件
-                        double icRatio = StarAssembly.GetProduceSpeedRatio(starIndex, 0, 0);
+                        double icRatio = StarAssembly.GetConsumeProduceSpeedRatio(starIndex, 0);
                         if (Bottleneck.Stats.BetterStats.counter.ContainsKey(9500))
                         {
                             if (isExactlyStarAssembly)
