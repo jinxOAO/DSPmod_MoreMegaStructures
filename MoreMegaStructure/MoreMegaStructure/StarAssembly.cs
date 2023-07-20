@@ -591,7 +591,7 @@ namespace MoreMegaStructure
                 }
             }
             //Utils.Log("compo progress " +  progress[starIndex][0].ToString() + " + " + (energy * weights[starIndex][0] / MoreMegaStructure.multifunctionComponentHeat * (MoreMegaStructure.isRemoteReceiveingGear ? 0.1 : 1.0)).ToString());
-            progress[starIndex][0] += energy * weights[starIndex][0] / MoreMegaStructure.multifunctionComponentHeat * (MoreMegaStructure.isRemoteReceiveingGear ? 0.1 : 1.0);
+            progress[starIndex][0] += GetConsumeProduceSpeedRatio(starIndex, 0);
 
             // 生产进度填满，则立刻消耗原材料并根据消耗产出产物，存入巨构的产物暂存storage内
             for (int i = 1; i < maxSlotCount; i++)
