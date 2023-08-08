@@ -476,6 +476,11 @@ namespace MoreMegaStructure
             }
         }
 
+        public static void ResetInGameDataByStarIndex(int starIndex)
+        {
+            CalcInGameDataByStarIndex(starIndex);
+        }
+
         public static void CalcInGameDataByStarIndex(int starIndex)
         {
             items[starIndex] = new List<List<int>>();
