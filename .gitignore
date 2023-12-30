@@ -63,6 +63,8 @@ bld/
 
 MoreMegaStructure/.idea/
 MoreMegaStructure/.vs/
+MoreMegaStructure/MoreMegaStructure/[Oo]bj/
+MoreMegaStructure/MoreMegaStructure/[Bb]in/
 
 *.suo
 *.vsidx
