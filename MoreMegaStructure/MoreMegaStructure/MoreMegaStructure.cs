@@ -744,7 +744,7 @@ namespace MoreMegaStructure
                     GameObject.Find(
                         "UI Root/Overlay Canvas/In Game/Windows/Statistics Window/performance-bg/cpu-panel/Scroll View/Viewport/Content/label"),
                     selectAutoReceiveGearLimitObj.transform);
-            Text oriNarrowText = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Mecha Window/information/line (1)/label")
+            Text oriNarrowText = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Mecha Window/information/construction-panel/label-1")
                                            .GetComponent<Text>();
             selectAutoReceiveGearLimitLabelObj.name = "label";
             selectAutoReceiveGearLimitLabelObj.SetActive(true);
