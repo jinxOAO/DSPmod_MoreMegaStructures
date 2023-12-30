@@ -65,6 +65,7 @@ MoreMegaStructure/.idea/
 MoreMegaStructure/.vs/
 MoreMegaStructure/MoreMegaStructure/[Oo]bj/
 MoreMegaStructure/MoreMegaStructure/[Bb]in/
+MoreMegaStructure/MoreMegaStructure/obj/Debug/
 
 *.suo
 *.vsidx
