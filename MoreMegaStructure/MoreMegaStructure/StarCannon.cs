@@ -1,19 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using HarmonyLib;
-using System.IO;
-using UnityEngine.UI;
-using CommonAPI.Systems;
 
 namespace MoreMegaStructure
 {
     public class StarCannon
     {
-
 		public static List<long> energyPerTickRequiredByLevel = new List<long> { 0, 100000000, 500000000, 2000000000, 4000000000, 9000000000, 9000000000 };
 		public static List<int> basicDamagePerTickByLevel = new List<int> { 0, 500, 1000, 1500, 2000, 700 }; //五级前，伤害是固定的，五级后，伤害是基础伤害+bonus
 		public static float bonusDpsPerMW = 0.2f; //5级后，每1MW的能量提供这么多的秒伤。每tick提供的tick伤害也是这个比值
@@ -110,8 +102,5 @@ namespace MoreMegaStructure
 				__instance.nodeCntText.text = "-" + curData[5].ToString() + "% / ly";
             }
         }
-
-
-
 	}
 }

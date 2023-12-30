@@ -1,18 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using HarmonyLib;
 using UnityEngine;
 
 namespace MoreMegaStructure
 {
-    class RendererSphere
+    public static class RendererSphere
     {
-        public static List<DysonSphere> rendererSpheres;
+        internal static List<DysonSphere> rendererSpheres;
 
-        public static void InitAll() //不能放在Start里加载，会报错
+        private static void InitAll() //不能放在Start里加载，会报错
         {
             rendererSpheres = new List<DysonSphere>();
             for (int i = 0; i < GameMain.galaxy.starCount; i++)
@@ -24,7 +20,6 @@ namespace MoreMegaStructure
                 rendererSpheres[i].layerCount = -1;
             }
         }
-
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(GameMain), "Start")]
@@ -43,7 +38,6 @@ namespace MoreMegaStructure
             return true;
         }
 
-
         [HarmonyPostfix]
         [HarmonyPatch(typeof(GameData), "GameTick")]
         public static void RSphereGameTick(long time)
@@ -54,7 +48,6 @@ namespace MoreMegaStructure
                 spheres.swarm.GameTick(time);
             }
         }
-
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(GameData), "OnPostDraw")]
@@ -67,13 +60,11 @@ namespace MoreMegaStructure
                 int index = __instance.localStar.index;
                 if (rendererSpheres[index] != null)
                 {
-                    if (rendererSpheres[index].swarm == null)
-                        rendererSpheres[index].swarm = new DysonSwarm(rendererSpheres[index]);
+                    if (rendererSpheres[index].swarm == null) rendererSpheres[index].swarm = new DysonSwarm(rendererSpheres[index]);
                     rendererSpheres[index].DrawPost();
-                }                
+                }
             }
         }
-
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(StarmapCamera), "OnPostRender")]
@@ -87,10 +78,9 @@ namespace MoreMegaStructure
                 if (dysonSphere != null && DysonSphere.renderPlace == ERenderPlace.Starmap)
                 {
                     dysonSphere.DrawPost();
-                }                              
+                }
             }
         }
-
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(UIDysonEditor), "DrawDysonSphereMapPost")]
@@ -106,11 +96,10 @@ namespace MoreMegaStructure
                     if (rendererSpheres[index] != null)
                     {
                         rendererSpheres[index].DrawPost();
-                    }                    
+                    }
                 }
             }
         }
-
 
         //[HarmonyPostfix]
         //[HarmonyPatch(typeof(UIDysonEditor), "DrawDysonSphereMapPost")]
