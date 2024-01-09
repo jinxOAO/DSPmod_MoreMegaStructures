@@ -1,12 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BepInEx;
 using HarmonyLib;
-using Unity;
 using UnityEngine;
 
 namespace MoreMegaStructure
@@ -23,9 +18,10 @@ namespace MoreMegaStructure
             {
                 return true;
             }
-            var _this = __instance;
-            // 原方法逻辑：看但凡有在GameData.factories这个列表里的工厂，但是又没在 this.astroBox.Items;和this.astroBox.ItemsData;里面的，将其planetId插入到正确位置（如果是整个星系的第一个插入的工厂，则额外先pushback一个（注意星系在这个ItemsData列表里是不按id排序的，而是按加入顺序排序的，所以说pushback，不是插入）该星系的总统计(starId*100)，然后再add该行星工厂的planetId）。
 
+            var _this = __instance;
+
+            // 原方法逻辑：看但凡有在GameData.factories这个列表里的工厂，但是又没在 this.astroBox.Items;和this.astroBox.ItemsData;里面的，将其planetId插入到正确位置（如果是整个星系的第一个插入的工厂，则额外先pushback一个（注意星系在这个ItemsData列表里是不按id排序的，而是按加入顺序排序的，所以说pushback，不是插入）该星系的总统计(starId*100)，然后再add该行星工厂的planetId）。
             // 为了增加巨构独有的production统计，用每个星系第planetCount+1号不存在planet的id存储巨构的统计
             if (_this.isStatisticsTab)
             {
@@ -40,6 +36,7 @@ namespace MoreMegaStructure
                     items.Add("统计当前星球".Translate());
                     itemsData.Add(0);
                 }
+
                 int factoryCount = _this.gameData.factoryCount;
                 for (int i = 0; i < factoryCount; i++)
                 {
@@ -61,6 +58,7 @@ namespace MoreMegaStructure
                                     flag2 = true;
                                     break;
                                 }
+
                                 break;
                             }
                         }
@@ -69,6 +67,7 @@ namespace MoreMegaStructure
                             flag = (num == itemsData[j] / 100);
                         }
                     }
+
                     if (!flag2)
                     {
                         PlanetData planet = _this.gameData.factories[i].planet;
@@ -94,6 +93,7 @@ namespace MoreMegaStructure
                         }
                     }
                 }
+
                 // 新增部分
                 int oldStarId = -1;
                 for (int i = 0; i < itemsData.Count; i++)
@@ -104,10 +104,12 @@ namespace MoreMegaStructure
                         if (MoreMegaStructure.StarMegaStructureType[oldStarId - 1] == 4)
                         {
                             itemsData.Insert(i, oldStarId * 100 + GameMain.galaxy.StarById(oldStarId).planetCount + 1);
-                            items.Insert(i, GameMain.galaxy.PlanetById(oldStarId * 100 + GameMain.galaxy.StarById(oldStarId).planetCount + 1).displayName);
+                            items.Insert(
+                                i, GameMain.galaxy.PlanetById(oldStarId * 100 + GameMain.galaxy.StarById(oldStarId).planetCount + 1).displayName);
                             i++;
                         }
                     }
+
                     if (i == itemsData.Count - 1)
                     {
                         oldStarId = nowStarId;
@@ -118,33 +120,35 @@ namespace MoreMegaStructure
                             break;
                         }
                     }
+
                     oldStarId = nowStarId;
                 }
 
                 // 这一行使原本的
                 _this.ValueToAstroBox();
             }
+
             return false;
         }
-
 
         /// <summary>
         /// 将巨构独有的production统计倒序存储在GameMain.data.statistics.production.factoryStatPool超过GameMain.data.factories.Length的长度后。即其[length-1]存储starindex=0的巨构，[length-2]存储StarIndex=1的巨构
         /// </summary>
-
         public static void RearrangeStatisticLists()
         {
             if (!active) return;
             if (GameMain.data.statistics.production.factoryStatPool.Length <= GameMain.data.factories.Length) // 说明是游戏初始状态
             {
                 FactoryProductionStat[] old = GameMain.data.statistics.production.factoryStatPool;
-                GameMain.data.statistics.production.factoryStatPool = new FactoryProductionStat[GameMain.data.factories.Length + GameMain.galaxy.starCount];
+                GameMain.data.statistics.production.factoryStatPool
+                    = new FactoryProductionStat[GameMain.data.factories.Length + GameMain.galaxy.starCount];
 
                 int i = 0;
                 for (i = 0; i < old.Length; i++)
                 {
                     GameMain.data.statistics.production.factoryStatPool[i] = old[i];
                 }
+
                 for (; i < GameMain.data.statistics.production.factoryStatPool.Length; i++)
                 {
                     GameMain.data.statistics.production.factoryStatPool[i] = new FactoryProductionStat();
@@ -153,13 +157,12 @@ namespace MoreMegaStructure
             }
         }
 
-
         // 需要在调用PlanetId=指示巨构生产统计的虚空行星的时候返回一个factoryIndex正确的planetData，而非null
         [HarmonyPostfix]
         [HarmonyPatch(typeof(GalaxyData), "PlanetById")]
         public static void PlanetByIdPostPatch(GalaxyData __instance, int planetId, ref PlanetData __result)
-        { 
-            if(__result == null)
+        {
+            if (__result == null)
             {
                 int num = planetId / 100 - 1;
                 int num2 = planetId % 100 - 1;
@@ -167,24 +170,29 @@ namespace MoreMegaStructure
                 {
                     return;
                 }
+
                 if (__instance.stars[num] == null)
                 {
                     return;
                 }
+
                 if (num2 >= __instance.stars[num].planets.Length)
                 {
                     PlanetData planet = new PlanetData();
-                    for (int i = num*100+1; i < planetId; i++) // 这里是为了，bottleneck会用工厂信息，随便找一个不是null的factory搪塞一下，防止他报错。反正后面大概也许把需要处理的数据还得都覆盖一遍
+                    for (int i = num * 100 + 1; i < planetId; i++) // 这里是为了，bottleneck会用工厂信息，随便找一个不是null的factory搪塞一下，防止他报错。反正后面大概也许把需要处理的数据还得都覆盖一遍
                     {
                         PlanetData pd = GameMain.galaxy.PlanetById(i);
-                        if (pd != null && pd.factory!=null)
+                        if (pd != null && pd.factory != null)
                         {
                             planet.factory = pd.factory;
                             break;
                         }
                     }
+
                     planet.factoryIndex = GameMain.data.factories.Length + GameMain.galaxy.starCount - num - 1;
-                    planet.overrideName = Utils.MegaNameByType(MoreMegaStructure.StarMegaStructureType[num]) + " " + GameMain.galaxy.StarById(num+1).displayName;
+                    planet.overrideName = Utils.MegaNameByType(MoreMegaStructure.StarMegaStructureType[num]) +
+                                          " " +
+                                          GameMain.galaxy.StarById(num + 1).displayName;
                     __result = planet;
                     return;
                 }
@@ -200,25 +208,25 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(UIStatisticsWindow), "ComputeDisplayEntries")]
         public static bool ComputeDisplayEntriesPrePatch(ref UIStatisticsWindow __instance)
         {
-            __instance.entryList.PrepareDisplayEntries(__instance.lastListCursor);
-            __instance.statGroupCursor = 0;
+            __instance.productEntryList.PrepareDisplayEntries(__instance.lastListCursor);
+            __instance.factoryStatGroupCursor = 0;
             if (__instance.astroFilter == -1)
             {
                 int factoryCount = __instance.gameData.factoryCount;
                 for (int i = 0; i < factoryCount; i++)
                 {
-                    __instance.AddStatGroup(i);
+                    __instance.AddFactoryStatGroup(i);
                 }
+
                 for (int i = GameMain.data.factories.Length; i < GameMain.data.factories.Length + GameMain.galaxy.starCount; i++) // 加入巨构统计
                 {
                     int idx = GameMain.data.factories.Length + GameMain.galaxy.starCount - i - 1;
-                    if (idx < 1000 && MoreMegaStructure.StarMegaStructureType[idx] == 4)
-                        __instance.AddStatGroup(i);
+                    if (idx < 1000 && MoreMegaStructure.StarMegaStructureType[idx] == 4) __instance.AddFactoryStatGroup(i);
                 }
             }
             else if (__instance.gameData.localPlanet != null && __instance.astroFilter == 0)
             {
-                __instance.AddStatGroup(__instance.gameData.localPlanet.factoryIndex);
+                __instance.AddFactoryStatGroup(__instance.gameData.localPlanet.factoryIndex);
             }
             else if (__instance.astroFilter % 100 == 0)
             {
@@ -230,35 +238,36 @@ namespace MoreMegaStructure
                     {
                         if (starData.planets[j].factory != null)
                         {
-                            __instance.AddStatGroup(starData.planets[j].factoryIndex);
+                            __instance.AddFactoryStatGroup(starData.planets[j].factoryIndex);
                         }
                     }
 
-                    __instance.AddStatGroup(GameMain.data.factories.Length + GameMain.galaxy.starCount - starId); // 加入巨构统计
+                    __instance.AddFactoryStatGroup(GameMain.data.factories.Length + GameMain.galaxy.starCount - starId); // 加入巨构统计
                 }
                 else
                 {
                     int factoryCount2 = __instance.gameData.factoryCount;
                     for (int k = 0; k < factoryCount2; k++)
                     {
-                        __instance.AddStatGroup(k);
+                        __instance.AddFactoryStatGroup(k);
                     }
+
                     for (int k = GameMain.data.factories.Length; k < GameMain.data.factories.Length + GameMain.galaxy.starCount; k++) // 加入巨构统计
                     {
                         int idx = GameMain.data.factories.Length + GameMain.galaxy.starCount - k - 1;
-                        if (idx<1000 && MoreMegaStructure.StarMegaStructureType[idx] == 4)
-                            __instance.AddStatGroup(k);
+                        if (idx < 1000 && MoreMegaStructure.StarMegaStructureType[idx] == 4) __instance.AddFactoryStatGroup(k);
                     }
                 }
             }
             else
             {
-                __instance.AddStatGroup(__instance.gameData.galaxy.PlanetById(__instance.astroFilter).factoryIndex);
+                __instance.AddFactoryStatGroup(__instance.gameData.galaxy.PlanetById(__instance.astroFilter).factoryIndex);
             }
+
             int num = __instance.timeLevel + 1;
             int num2 = num + 7;
             bool flag = __instance.isProductionTab || __instance.isDysonTab;
-            for (int l = 0; l < __instance.statGroupCursor; l++)
+            for (int l = 0; l < __instance.factoryStatGroupCursor; l++)
             {
                 UIStatisticsWindow.UIFactoryStatGroup uifactoryStatGroup = __instance.factoryStatGroup[l];
                 ProductStat[] productPool = uifactoryStatGroup.productPool;
@@ -274,11 +283,11 @@ namespace MoreMegaStructure
                         if (num5 > 0)
                         {
                             long[] total = productPool[num5].total;
-                            __instance.entryList.Add(num4, total[num], total[num2]);
+                            __instance.productEntryList.Add(num4, total[num], total[num2]);
                         }
                         else
                         {
-                            __instance.entryList.Add(num4);
+                            __instance.productEntryList.Add(num4);
                         }
                     }
                     else
@@ -286,9 +295,10 @@ namespace MoreMegaStructure
                         ProductStat productStat = productPool[m];
                         int num4 = productStat.itemId;
                         long[] total = productStat.total;
-                        __instance.entryList.Add(num4, total[num], total[num2]);
+                        __instance.productEntryList.Add(num4, total[num], total[num2]);
                     }
                 }
+
                 if (__instance.isPowerTab)
                 {
                     __instance.ComputePowerTab(powerPool, uifactoryStatGroup.energyConsumption, (long)uifactoryStatGroup.factoryIndex);
@@ -298,29 +308,30 @@ namespace MoreMegaStructure
                     __instance.ComputeResearchTab(powerPool, num);
                 }
             }
-            __instance.lastListCursor = __instance.entryList.entryDatasCursor;
+
+            __instance.lastListCursor = __instance.productEntryList.entryDatasCursor;
             if (__instance.isProductionTab)
             {
-                __instance.entryList.SetEntriesFavorite(__instance.productionStat.favoriteIds);
-                __instance.entryList.FilterEntries(__instance.favoriteMask);
-                int max = __instance.entryList.entryDatasCursor - 1;
+                __instance.productEntryList.SetEntriesFavorite(__instance.productionStat.favoriteIds);
+                __instance.productEntryList.FilterEntries(__instance.favoriteMask);
+                int max = __instance.productEntryList.entryDatasCursor - 1;
                 if (__instance.sortMethod == 0)
                 {
-                    __instance.entryList.QuickSortByItemIndex(__instance.entryList.entryDatas, 0, max);
+                    __instance.productEntryList.QuickSortByItemIndex(__instance.productEntryList.entryDatas, 0, max);
                 }
                 else if (__instance.sortMethod == 1)
                 {
-                    __instance.entryList.QuickSortByProductionDesc(__instance.entryList.entryDatas, 0, max);
+                    __instance.productEntryList.QuickSortByProductionDesc(__instance.productEntryList.entryDatas, 0, max);
                 }
                 else
                 {
-                    __instance.entryList.QuickSortByProductionAsc(__instance.entryList.entryDatas, 0, max);
+                    __instance.productEntryList.QuickSortByProductionAsc(__instance.productEntryList.entryDatas, 0, max);
                 }
             }
-            __instance.entryList.RefreshDatasIndices(__instance.lastListCursor);
+
+            __instance.productEntryList.RefreshDatasIndices(__instance.lastListCursor);
             return false;
         }
-
 
         //[HarmonyPrefix]
         //[HarmonyPatch(typeof(UIStatisticsWindow), "AddStatGroup")]
@@ -341,7 +352,6 @@ namespace MoreMegaStructure
         //    return false;
         //}
 
-
         /// <summary>
         /// 下面两个让新增的production进行正常统计计算
         /// </summary>
@@ -355,7 +365,6 @@ namespace MoreMegaStructure
                 __instance.factoryStatPool[i].PrepareTick();
             }
         }
-
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(ProductionStatistics), "GameTick")]
@@ -375,11 +384,11 @@ namespace MoreMegaStructure
                     {
                         Debug.LogError(message);
                     }
+
                     flag = false;
                 }
             }
         }
-
 
         /// <summary>
         /// 下面这个防止选中巨构时点击能量面板报错（factoryIndex越界或者是找回的）
@@ -391,32 +400,36 @@ namespace MoreMegaStructure
         /// <returns></returns>
         [HarmonyPrefix]
         [HarmonyPatch(typeof(UIStatisticsWindow), "ComputePowerTab")]
-        public static bool ComputePowerTabPrePatch(ref UIStatisticsWindow __instance, PowerStat[] powerPool, long energyConsumption, long factoryIndex)
+        public static bool ComputePowerTabPrePatch(
+            ref UIStatisticsWindow __instance,
+            PowerStat[] powerPool,
+            long energyConsumption,
+            long factoryIndex)
         {
             if (factoryIndex >= GameMain.data.factories.Length)
             {
                 long num = __instance.ComputePower(powerPool[0]);
-                __instance.entryList.Add(1, num, 0L, energyConsumption);
+                __instance.productEntryList.Add(1, num, 0L, energyConsumption);
                 num = __instance.ComputePower(powerPool[1]);
-                __instance.entryList.Add(1, 0L, num);
+                __instance.productEntryList.Add(1, 0L, num);
                 num = __instance.ComputePower(powerPool[3]);
                 long num2 = 0L;
-                __instance.entryList.Add(2, num, 0L, num2);
+                __instance.productEntryList.Add(2, num, 0L, num2);
                 num = __instance.ComputePower(powerPool[2]);
-                __instance.entryList.Add(2, 0L, num);
+                __instance.productEntryList.Add(2, 0L, num);
                 return false;
             }
+
             return true;
         }
-
 
         public static void Export(BinaryWriter w)
         {
             w.Write(0);
             w.Write(GameMain.galaxy.starCount);
-            for (int i = GameMain.data.factories.Length; i< GameMain.data.factories.Length + GameMain.galaxy.starCount; i++)
+            for (int i = GameMain.data.factories.Length; i < GameMain.data.factories.Length + GameMain.galaxy.starCount; i++)
             {
-                GameMain.statistics.production.factoryStatPool[i].Export(w);
+                GameMain.statistics.production.factoryStatPool[i].Export(w.BaseStream, w);
             }
         }
 
@@ -430,7 +443,7 @@ namespace MoreMegaStructure
                 Debug.Log($"datafactorylenis {GameMain.data.factories.Length}");
                 for (int i = GameMain.data.factories.Length; i < GameMain.data.factories.Length + num; i++)
                 {
-                    GameMain.statistics.production.factoryStatPool[i].Import(r);
+                    GameMain.statistics.production.factoryStatPool[i].Import(r.BaseStream, r);
                 }
             }
         }
@@ -439,6 +452,5 @@ namespace MoreMegaStructure
         {
             RearrangeStatisticLists();
         }
-
     }
 }

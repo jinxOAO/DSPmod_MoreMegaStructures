@@ -1,32 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BepInEx;
+﻿using System.Collections.Generic;
 using HarmonyLib;
 using UnityEngine;
 
 namespace MoreMegaStructure
 {
-    public class ReceiverPatchers
+    public static class ReceiverPatchers
     {
-        public static Dictionary<int,int> productId2MegaType = new Dictionary<int,int>();
+        internal static readonly Dictionary<int,int> ProductId2MegaType = new Dictionary<int,int>();
 
-        public static void InitRawData()
+        internal static void InitRawData()
         {
-            productId2MegaType.Add(0, 0);
-            productId2MegaType.Add(1208, 0);
+            ProductId2MegaType.Add(0, 0);
+            ProductId2MegaType.Add(1208, 0);
+            
+            ProductId2MegaType.Add(1101, 1);
+            ProductId2MegaType.Add(1104, 1);
+            ProductId2MegaType.Add(1105, 1);
+            ProductId2MegaType.Add(1106, 1);
+            ProductId2MegaType.Add(1109, 1);
+            ProductId2MegaType.Add(1016, 1);
 
-            productId2MegaType.Add(1101, 1);
-            productId2MegaType.Add(1104, 1);
-            productId2MegaType.Add(1105, 1);
-            productId2MegaType.Add(1106, 1);
-            productId2MegaType.Add(1109, 1);
-            productId2MegaType.Add(1016, 1);
-
-            productId2MegaType.Add(1014, 5);
-            productId2MegaType.Add(1126, 5);
+            ProductId2MegaType.Add(1014, 5);
+            ProductId2MegaType.Add(1126, 5);
         }
 
 
@@ -61,7 +56,7 @@ namespace MoreMegaStructure
                         _this.genPool[i].capacityCurrentTick = 0;
                         continue;
                     }
-                    else if (!productId2MegaType.ContainsKey(productId) || productId2MegaType[productId] != megaType) // 都是0则代表戴森球下直接发电。否则如果是物质生成模式且和巨构不符
+                    else if (!ProductId2MegaType.ContainsKey(productId) || ProductId2MegaType[productId] != megaType) // 都是0则代表戴森球下直接发电。否则如果是物质生成模式且和巨构不符
                     {
                         _this.genPool[i].capacityCurrentTick = 0;
                         continue;
@@ -81,15 +76,5 @@ namespace MoreMegaStructure
 
             return false;
         }
-
-
-        // 这里不用写Patch了，因为RequestDysonSpherePowerPrePatch这个patch在发现锅盖和巨构种类不符时，设置了其capacityCurrentTick为0，而后续的发电和物质生成的量都取决于capacityCurrentTick，自然地就是无法工作的状态
-        //[HarmonyPrefix]
-        //[HarmonyPatch(typeof(PowerGeneratorComponent), "EnergyCap_Gamma")]
-        //public static void EnergyCap_Gamma_PostPatch(ref PowerGeneratorComponent __instance, ref long __result)
-        //{
-
-        //}
-
     }
 }

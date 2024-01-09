@@ -1,20 +1,19 @@
 ﻿using HarmonyLib;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using xiaoye97;
-using CommonAPI;
 using CommonAPI.Systems;
+using CommonAPI.Systems.ModLocalization;
 using UnityEngine;
+
+// ReSharper disable once InconsistentNaming
+
+#pragma warning disable CS0618 // Type or member is obsolete
 
 namespace MoreMegaStructure
 {
-    [CommonAPISubmoduleDependency(nameof(ProtoRegistry))]
-    class MMSProtos
+    internal static class MMSProtos
     {
-        public static void RefreshInitAll()
+        internal static void RefreshInitAll()
         {
             ItemProto.InitFluids();
             ItemProto.InitItemIds();
@@ -22,6 +21,7 @@ namespace MoreMegaStructure
             ItemProto.InitItemIndices();
             ItemProto.InitMechaMaterials();
         }
+
         public static void ItemsDesc()
         {
             //简单地用临界光子轰击奇异物质即可激发引力波，但这也意味着只有在恒星附近才能使引力发生装置高效运行。
@@ -33,12 +33,11 @@ namespace MoreMegaStructure
             //只要供给足够的能量，量子计算机的单线程运算时钟能够无限逼近普朗克时间，通过量子比特协同，其潜在的单线程运算速率还能突破物理极限，并可以无限提升。现在，限制其计算效率的将只有能量输入水平。
         }
 
-
-        public static void AddNewItems()
+        internal static void AddNewItems()
         {
             int pagePlus = MoreMegaStructure.pagenum * 1000;
             int linePlus = 0;
-            if(MoreMegaStructure.isBattleActive)
+            if (MoreMegaStructure.isBattleActive)
             {
                 pagePlus = MoreMegaStructure.battlePagenum * 1000 + 100;
                 linePlus = -100;
@@ -50,9 +49,10 @@ namespace MoreMegaStructure
             {
                 oriRecipe.Type = (ERecipeType)10;
             }
+
             var oriItem = LDB.items.Select(1303);
             int recipeIdBias = 0;
-            if(MoreMegaStructure.GenesisCompatibility)
+            if (MoreMegaStructure.GenesisCompatibility)
             {
                 recipeIdBias = -200;
             }
@@ -73,8 +73,9 @@ namespace MoreMegaStructure
             itemGravityGenRecipe.GridIndex = 101 + pagePlus + linePlus;
             itemGravityGenRecipe.preTech = LDB.techs.Select(1704);
             Traverse.Create(itemGravityGenRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconGravityGen);
-            ProtoRegistry.RegisterItem(9480, "引力发生装置".Translate(), "引力发生装置描述".Translate(), "Assets/MegaStructureTab/gravitygenerator", 101 + pagePlus + linePlus, 100,
-                EItemType.Component, ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.9f, 0.3f)));
+            ProtoRegistry.RegisterItem(9480, "引力发生装置".Translate(), "引力发生装置描述".Translate(), "Assets/MegaStructureTab/gravitygenerator",
+                                       101 + pagePlus + linePlus, 100, EItemType.Component,
+                                       ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.9f, 0.3f)));
 
             //位面约束环
             var itemConstrainRingRecipe = oriRecipe.Copy();
@@ -86,22 +87,23 @@ namespace MoreMegaStructure
             itemConstrainRingRecipe.description = "位面约束环描述".Translate();
             itemConstrainRingRecipe.Items = new int[] { 1205, 1304 };
             itemConstrainRingRecipe.ItemCounts = new int[] { 2, 1 };
-            if(MoreMegaStructure.GenesisCompatibility)
+            if (MoreMegaStructure.GenesisCompatibility)
             {
                 itemConstrainRingRecipe.Items = new int[] { 1205, 1119, 1126 };
                 itemConstrainRingRecipe.ItemCounts = new int[] { 2, 1, 1 };
-
             }
+
             itemConstrainRingRecipe.Results = new int[] { 9481 };
             itemConstrainRingRecipe.ResultCounts = new int[] { 2 };
             itemConstrainRingRecipe.TimeSpend = 180;
             itemConstrainRingRecipe.GridIndex = 102 + pagePlus + linePlus;
             itemConstrainRingRecipe.preTech = LDB.techs.Select(1141);
             Traverse.Create(itemConstrainRingRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconConstrainRing);
-            ProtoRegistry.RegisterItem(9481, "位面约束环".Translate(), "位面约束环描述".Translate(), "Assets/MegaStructureTab/constrainring", 102 + pagePlus + linePlus, 100,
-                EItemType.Component, ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.4f,0.08f,0.4f)));
+            ProtoRegistry.RegisterItem(9481, "位面约束环".Translate(), "位面约束环描述".Translate(), "Assets/MegaStructureTab/constrainring",
+                                       102 + pagePlus + linePlus, 100, EItemType.Component,
+                                       ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.4f, 0.08f, 0.4f)));
 
-            
+
             //引力钻头
             var itemGravityDrillRecipe = oriRecipe.Copy();
             var itemGravityDrill = oriItem.Copy();
@@ -118,8 +120,9 @@ namespace MoreMegaStructure
             itemGravityDrillRecipe.GridIndex = 103 + pagePlus + linePlus;
             itemGravityDrillRecipe.preTech = LDB.techs.Select(1704);
             Traverse.Create(itemGravityDrillRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconGravityDrill);
-            ProtoRegistry.RegisterItem(9482, "引力钻头".Translate(), "引力钻头描述".Translate(), "Assets/MegaStructureTab/gravitydrill2", 103 + pagePlus + linePlus, 50,
-                EItemType.Component, ProtoRegistry.GetDefaultIconDesc(Color.black, new Color(0.3f, 0.9f, 0.3f)));
+            ProtoRegistry.RegisterItem(9482, "引力钻头".Translate(), "引力钻头描述".Translate(), "Assets/MegaStructureTab/gravitydrill2",
+                                       103 + pagePlus + linePlus, 50, EItemType.Component,
+                                       ProtoRegistry.GetDefaultIconDesc(Color.black, new Color(0.3f, 0.9f, 0.3f)));
 
             //隧穿激发装置
             var itemExciterRecipe = oriRecipe.Copy();
@@ -136,6 +139,7 @@ namespace MoreMegaStructure
                 itemExciterRecipe.Items = new int[] { 1303, 1014 };
                 itemExciterRecipe.ItemCounts = new int[] { 1, 2 };
             }
+
             itemExciterRecipe.Results = new int[] { 9483 };
             itemExciterRecipe.ResultCounts = new int[] { 6 };
             itemExciterRecipe.TimeSpend = 360;
@@ -145,9 +149,11 @@ namespace MoreMegaStructure
             {
                 itemExciterRecipe.preTech = LDB.techs.Select(1302);
             }
+
             Traverse.Create(itemExciterRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconTunnExciter);
-            ProtoRegistry.RegisterItem(9483, "隧穿激发装置".Translate(), "隧穿激发装置描述".Translate(), "Assets/MegaStructureTab/tunnelingexciter2", 104 + pagePlus + linePlus, 200,
-                EItemType.Component, ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.1f, 0.0f)));
+            ProtoRegistry.RegisterItem(9483, "隧穿激发装置".Translate(), "隧穿激发装置描述".Translate(), "Assets/MegaStructureTab/tunnelingexciter2",
+                                       104 + pagePlus + linePlus, 200, EItemType.Component,
+                                       ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.1f, 0.0f)));
             //谐振盘
             var itemDiscRecipe = oriRecipe.Copy();
             var itemDisc = oriItem.Copy();
@@ -164,8 +170,9 @@ namespace MoreMegaStructure
             itemDiscRecipe.GridIndex = 105 + pagePlus + linePlus;
             itemDiscRecipe.preTech = LDB.techs.Select(1303);
             Traverse.Create(itemDiscRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconResDisc);
-            ProtoRegistry.RegisterItem(9484, "谐振盘".Translate(), "谐振盘描述".Translate(), "Assets/MegaStructureTab/resonancedisc", 105 + pagePlus + linePlus, 200,
-                EItemType.Component, ProtoRegistry.GetDefaultIconDesc(Color.gray, new Color(0.4f, 0.4f, 0.8f)));
+            ProtoRegistry.RegisterItem(9484, "谐振盘".Translate(), "谐振盘描述".Translate(), "Assets/MegaStructureTab/resonancedisc",
+                                       105 + pagePlus + linePlus, 200, EItemType.Component,
+                                       ProtoRegistry.GetDefaultIconDesc(Color.gray, new Color(0.4f, 0.4f, 0.8f)));
             //光子探针
             var itemProbeRecipe = oriRecipe.Copy();
             var itemProbe = oriItem.Copy();
@@ -181,6 +188,7 @@ namespace MoreMegaStructure
                 itemProbeRecipe.Items = new int[] { 1014, 1208 };
                 itemProbeRecipe.ItemCounts = new int[] { 4, 1 };
             }
+
             itemProbeRecipe.Results = new int[] { 9485 };
             itemProbeRecipe.ResultCounts = new int[] { 1 };
             itemProbeRecipe.TimeSpend = 240;
@@ -189,8 +197,8 @@ namespace MoreMegaStructure
             Traverse.Create(itemProbeRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconPhotonProbe);
             var icondesc_alpha = ProtoRegistry.GetDefaultIconDesc(Color.gray, new Color(0.6f, 0.6f, 0.9f));
             icondesc_alpha.solidAlpha = 0.1f;
-            ProtoRegistry.RegisterItem(9485, "光子探针".Translate(), "光子探针描述".Translate(), "Assets/MegaStructureTab/photonprobeflipsmall", 106 + pagePlus + linePlus, 200,
-                EItemType.Component, icondesc_alpha);
+            ProtoRegistry.RegisterItem(9485, "光子探针".Translate(), "光子探针描述".Translate(), "Assets/MegaStructureTab/photonprobeflipsmall",
+                                       106 + pagePlus + linePlus, 200, EItemType.Component, icondesc_alpha);
 
             //量子计算机
             var itemQuanCompRecipe = oriRecipe.Copy();
@@ -210,8 +218,8 @@ namespace MoreMegaStructure
             Traverse.Create(itemQuanCompRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconQuanComp);
             var icondesc_alpha2 = ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0f, 0.7f, 1f));
             icondesc_alpha2.solidAlpha = 0f;
-            ProtoRegistry.RegisterItem(9486, "量子计算机".Translate(), "量子计算机描述".Translate(), "Assets/MegaStructureTab/quantumcomputer3", 107 + pagePlus + linePlus, 200,
-                EItemType.Component, icondesc_alpha2);
+            ProtoRegistry.RegisterItem(9486, "量子计算机".Translate(), "量子计算机描述".Translate(), "Assets/MegaStructureTab/quantumcomputer3",
+                                       107 + pagePlus + linePlus, 200, EItemType.Component, icondesc_alpha2);
             //星际组装厂组件
             var itemIACompoRecipe = oriRecipe.Copy();
             var itemIACompo = oriItem.Copy();
@@ -229,8 +237,9 @@ namespace MoreMegaStructure
             itemIACompoRecipe.preTech = LDB.techs.Select(1303);
             if (MoreMegaStructure.isBattleActive) itemIACompoRecipe.preTech = LDB.techs.Select(1922);
             Traverse.Create(itemIACompoRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconIACompo);
-            ProtoRegistry.RegisterItem(9487, "星际组装厂组件".Translate(), "星际组装厂组件描述".Translate(), "Assets/MegaStructureTab/iacomponent", 108 + pagePlus + linePlus, 200,
-                EItemType.Component, ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.7f,0.2f,0.7f)));
+            ProtoRegistry.RegisterItem(9487, "星际组装厂组件".Translate(), "星际组装厂组件描述".Translate(), "Assets/MegaStructureTab/iacomponent",
+                                       108 + pagePlus + linePlus, 200, EItemType.Component,
+                                       ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.7f, 0.2f, 0.7f)));
 
             //下面是火箭
             var oriRecipe2 = LDB.recipes.Select(83);
@@ -252,8 +261,9 @@ namespace MoreMegaStructure
             rocketMDRecipe.preTech = LDB.techs.Select(1522); //垂直发射井科技
             if (MoreMegaStructure.isBattleActive) rocketMDRecipe.preTech = LDB.techs.Select(1920);
             Traverse.Create(rocketMDRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconRocketMattD);
-            ProtoRegistry.RegisterItem(9488, "物质解压器运载火箭".Translate(), "物质解压器运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketMatter", 201 + pagePlus, 20,
-                EItemType.Product, ProtoRegistry.GetDefaultIconDesc(new Color(1f, 0.9f, 0.9f), new Color(0.7f, 0.2f, 0.2f)));
+            ProtoRegistry.RegisterItem(9488, "物质解压器运载火箭".Translate(), "物质解压器运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketMatter",
+                                       201 + pagePlus, 20, EItemType.Product,
+                                       ProtoRegistry.GetDefaultIconDesc(new Color(1f, 0.9f, 0.9f), new Color(0.7f, 0.2f, 0.2f)));
             //科学枢纽运载火箭
             var rocketSNRecipe = oriRecipe2.Copy();
             var rocketSN = oriItem2.Copy();
@@ -272,8 +282,9 @@ namespace MoreMegaStructure
             if (MoreMegaStructure.isBattleActive) rocketSNRecipe.preTech = LDB.techs.Select(1924);
             if (MoreMegaStructure.GenesisCompatibility) rocketSNRecipe.preTech = LDB.techs.Select(1152);
             Traverse.Create(rocketSNRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconRocketScieN);
-            ProtoRegistry.RegisterItem(9489, "科学枢纽运载火箭".Translate(), "科学枢纽运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketScience", 202 + pagePlus, 20,
-                EItemType.Product, ProtoRegistry.GetDefaultIconDesc(new Color(1f, 1f, 0.9f), new Color(0.7f, 0.7f, 0.2f)));
+            ProtoRegistry.RegisterItem(9489, "科学枢纽运载火箭".Translate(), "科学枢纽运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketScience",
+                                       202 + pagePlus, 20, EItemType.Product,
+                                       ProtoRegistry.GetDefaultIconDesc(new Color(1f, 1f, 0.9f), new Color(0.7f, 0.7f, 0.2f)));
             //谐振发射器运载火箭
             var rocketWBARecipe = oriRecipe2.Copy();
             var rocketWBA = oriItem2.Copy();
@@ -291,8 +302,9 @@ namespace MoreMegaStructure
             rocketWBARecipe.preTech = LDB.techs.Select(1522); //垂直发射井科技
             if (MoreMegaStructure.isBattleActive) rocketWBARecipe.preTech = LDB.techs.Select(1921);
             Traverse.Create(rocketWBARecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconRocketWarpG);
-            ProtoRegistry.RegisterItem(9490, "谐振发射器运载火箭".Translate(), "谐振发射器运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketWarp", 203 + pagePlus, 20,
-                EItemType.Product, ProtoRegistry.GetDefaultIconDesc(new Color(0.9f, 1f, 0.9f), new Color(0.2f, 0.7f, 0.2f)));
+            ProtoRegistry.RegisterItem(9490, "谐振发射器运载火箭".Translate(), "谐振发射器运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketWarp", 203 + pagePlus,
+                                       20, EItemType.Product,
+                                       ProtoRegistry.GetDefaultIconDesc(new Color(0.9f, 1f, 0.9f), new Color(0.2f, 0.7f, 0.2f)));
             //星际组装厂运载火箭
             var rocketIARecipe = oriRecipe2.Copy();
             var rocketIA = oriItem2.Copy();
@@ -310,8 +322,9 @@ namespace MoreMegaStructure
             rocketIARecipe.preTech = LDB.techs.Select(1522); //垂直发射井科技
             if (MoreMegaStructure.isBattleActive) rocketIARecipe.preTech = LDB.techs.Select(1922);
             Traverse.Create(rocketIARecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconRocketMegaA);
-            ProtoRegistry.RegisterItem(9491, "星际组装厂运载火箭".Translate(), "星际组装厂运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketAssembly", 204 + pagePlus, 20,
-                EItemType.Product, ProtoRegistry.GetDefaultIconDesc(new Color(0.9f, 0.9f, 1f), new Color(0.1f, 0.5f, 0.7f)));
+            ProtoRegistry.RegisterItem(9491, "星际组装厂运载火箭".Translate(), "星际组装厂运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketAssembly",
+                                       204 + pagePlus, 20, EItemType.Product,
+                                       ProtoRegistry.GetDefaultIconDesc(new Color(0.9f, 0.9f, 1f), new Color(0.1f, 0.5f, 0.7f)));
             //晶体重构器运载火箭
             var rocketCRRecipe = oriRecipe2.Copy();
             var rocketCR = oriItem2.Copy();
@@ -329,11 +342,11 @@ namespace MoreMegaStructure
             rocketCRRecipe.preTech = LDB.techs.Select(1522); //垂直发射井科技
             if (MoreMegaStructure.isBattleActive) rocketCRRecipe.preTech = LDB.techs.Select(1923);
             Traverse.Create(rocketCRRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconRocketCrysM);
-            ProtoRegistry.RegisterItem(9492, "晶体重构器运载火箭".Translate(), "晶体重构器运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketCrystal", 205 + pagePlus, 20,
-                EItemType.Product, ProtoRegistry.GetDefaultIconDesc(new Color(1f, 0.9f, 1f), new Color(0.7f, 0.2f, 0.7f)));
+            ProtoRegistry.RegisterItem(9492, "晶体重构器运载火箭".Translate(), "晶体重构器运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketCrystal",
+                                       205 + pagePlus, 20, EItemType.Product,
+                                       ProtoRegistry.GetDefaultIconDesc(new Color(1f, 0.9f, 1f), new Color(0.7f, 0.2f, 0.7f)));
 
-            
-            
+
             //多功能集成组件
             var oriItem4 = LDB.items.Select(1131); //地基
             var itemICRecipe = oriRecipe.Copy();
@@ -351,8 +364,9 @@ namespace MoreMegaStructure
             itemICRecipe.TimeSpend = 60;
             itemICRecipe.preTech = LDB.techs.Select(1203); //量子打印科技
             Traverse.Create(itemICRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconInterCompo);
-            ProtoRegistry.RegisterItem(9500, "多功能集成组件".Translate(), "多功能集成组件描述".Translate(), "Assets/MegaStructureTab/integratedcomponents", 109 + pagePlus + linePlus, 1000,
-                EItemType.Component, ProtoRegistry.GetDefaultIconDesc(Color.white, Color.white));
+            ProtoRegistry.RegisterItem(9500, "多功能集成组件".Translate(), "多功能集成组件描述".Translate(), "Assets/MegaStructureTab/integratedcomponents",
+                                       109 + pagePlus + linePlus, 1000, EItemType.Component,
+                                       ProtoRegistry.GetDefaultIconDesc(Color.white, Color.white));
 
             //快速组装配方
             var oriRecipe5 = LDB.recipes.Select(47);
@@ -642,63 +656,78 @@ namespace MoreMegaStructure
 
         public static void AddNewItems2()
         {
-            if (!MoreMegaStructure.isBattleActive)
-                return;
+            if (!MoreMegaStructure.isBattleActive) return;
 
             int pagePlus = MoreMegaStructure.battlePagenum * 1000;
             //itemId 9513 available
             //recipeId 576 available
 
             ProtoRegistry.RegisterItem(9503, "力场发生器", "力场发生器描述", "Assets/MegaStructureTab/forceGen", 201 + pagePlus, 20, EItemType.Component,
-                ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.7f, 0.7f)));
+                                       ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.7f, 0.7f)));
             ProtoRegistry.RegisterItem(9504, "复合态晶体", "复合态晶体描述", "Assets/MegaStructureTab/compoCrystal", 202 + pagePlus, 100, EItemType.Component,
-                ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.7f, 0.7f)));
-            ProtoRegistry.RegisterItem(9505, "电磁力抑制器", "电磁力抑制器描述", "Assets/MegaStructureTab/elemaginhibitor2", 203 + pagePlus, 50, EItemType.Component,
-                ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.7f, 0.7f)));
+                                       ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.7f, 0.7f)));
+            ProtoRegistry.RegisterItem(9505, "电磁力抑制器", "电磁力抑制器描述", "Assets/MegaStructureTab/elemaginhibitor2", 203 + pagePlus, 50,
+                                       EItemType.Component, ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.7f, 0.7f)));
             ProtoRegistry.RegisterItem(9506, "胶子发生器", "胶子发生器描述", "Assets/MegaStructureTab/gluonGen", 204 + pagePlus, 50, EItemType.Component,
-                ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.7f, 0.7f)));
-            ProtoRegistry.RegisterItem(9507, "强力过载装置", "强力过载装置描述", "Assets/MegaStructureTab/strIntOverloader", 205 + pagePlus, 20, EItemType.Component,
-                ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.7f, 0.7f)));
+                                       ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.7f, 0.7f)));
+            ProtoRegistry.RegisterItem(9507, "强力过载装置", "强力过载装置描述", "Assets/MegaStructureTab/strIntOverloader", 205 + pagePlus, 20,
+                                       EItemType.Component, ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.7f, 0.7f)));
             ProtoRegistry.RegisterItem(9508, "导流框架", "导流框架描述", "Assets/MegaStructureTab/starcannonframe", 206 + pagePlus, 20, EItemType.Component,
-                ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.7f, 0.7f)));
+                                       ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.7f, 0.7f)));
             ProtoRegistry.RegisterItem(9509, "恒星炮组件", "恒星炮组件描述", "Assets/MegaStructureTab/starcannoncompo", 207 + pagePlus, 20, EItemType.Component,
-                ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.3f, 0.3f, 0.9f)));
-            ProtoRegistry.RegisterItem(9510, "恒星炮运载火箭", "恒星炮运载火箭描述", "Assets/MegaStructureTab/rocketStarcannon", 306 + pagePlus, 20, EItemType.Product,
-                ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.3f, 0.9f, 0.9f)));
+                                       ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.3f, 0.3f, 0.9f)));
+            ProtoRegistry.RegisterItem(9510, "恒星炮运载火箭", "恒星炮运载火箭描述", "Assets/MegaStructureTab/rocketStarcannon", 306 + pagePlus, 20,
+                                       EItemType.Product, ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.3f, 0.9f, 0.9f)));
 
-            ItemProto dropletItem = ProtoRegistry.RegisterItem(9511, "水滴gm", "水滴描述gm", "Assets/MegaStructureTab/drop1", 707 + pagePlus, 1, EItemType.Product,
-                ProtoRegistry.GetDefaultIconDesc(Color.white, Color.white));
+            ItemProto dropletItem = ProtoRegistry.RegisterItem(9511, "水滴gm", "水滴描述gm", "Assets/MegaStructureTab/drop1", 707 + pagePlus, 1,
+                                                               EItemType.Product, ProtoRegistry.GetDefaultIconDesc(Color.white, Color.white));
             dropletItem.DescFields = new int[] { 50, 51, 56, 54, 55, 1 };
 
-            ProtoRegistry.RegisterRecipe(565, ERecipeType.Assemble, 240, new int[] { 9480, 9484 }, new int[] { 2, 2 }, new int[] { 9503 }, new int[] { 1 }, "力场发生器描述", 1916, 201 + pagePlus, "Assets/MegaStructureTab/forceGen");
-            RecipeProto SIMRecipe = ProtoRegistry.RegisterRecipe(566, ERecipeType.Particle, 600, new int[] { 1014, 1126, 1124, 1118, 1120 }, new int[] { 1, 1, 1, 1, 1 }, new int[] { 9504 }, new int[] { 1 }, "复合态晶体描述", 1919, 202 + pagePlus, "Assets/MegaStructureTab/compoCrystal");
-            ProtoRegistry.RegisterRecipe(567, ERecipeType.Assemble, 360, new int[] { 1305, 1205 }, new int[] { 1, 2 }, new int[] { 9505 }, new int[] { 1 }, "电磁力抑制器描述", 1919, 203 + pagePlus, "Assets/MegaStructureTab/elemaginhibitor2");
-            RecipeProto gluonGenRecipe = ProtoRegistry.RegisterRecipe(568, ERecipeType.Assemble, 360, new int[] { 9483, 1402, 1122 }, new int[] { 1, 1, 2 }, new int[] { 9506 }, new int[] { 1 }, "胶子发生器描述", 1919, 204 + pagePlus, "Assets/MegaStructureTab/gluonGen");
-            RecipeProto strIntOverloaderRecipe = ProtoRegistry.RegisterRecipe(569, ERecipeType.Assemble, 1200, new int[] { 9506, 9486 }, new int[] { 2, 2 }, new int[] { 9507 }, new int[] { 1 }, "强力过载装置描述", 1919, 205 + pagePlus, "Assets/MegaStructureTab/strIntOverloader");
-            ProtoRegistry.RegisterRecipe(570, ERecipeType.Assemble, 180, new int[] { 1125, 9481 }, new int[] { 3, 2 }, new int[] { 9508 }, new int[] { 1 }, "导流框架描述", 1918, 206 + pagePlus, "Assets/MegaStructureTab/starcannonframe");
-            ProtoRegistry.RegisterRecipe(571, ERecipeType.Assemble, 480, new int[] { 1209, 9508, 9484 }, new int[] { 3, 2, 1 }, new int[] { 9509 }, new int[] { 1 }, "恒星炮组件描述", 1918, 207 + pagePlus, "Assets/MegaStructureTab/starcannoncompo");
-            ProtoRegistry.RegisterRecipe(572, ERecipeType.Assemble, 360, new int[] { 9509, 1802, 1305 }, new int[] { 2, 2, 2 }, new int[] { 9510 }, new int[] { 1 }, "恒星炮运载火箭描述", 1918, 306 + pagePlus, "Assets/MegaStructureTab/rocketStarcannon");
-            RecipeProto dropRecipe = ProtoRegistry.RegisterRecipe(573, ERecipeType.Assemble, 3600, new int[] { 9505, 9507, 9504 }, new int[] { 20, 20, 100 }, new int[] { 9511 }, new int[] { 1 }, "水滴描述", 1919, 707 + pagePlus, "Assets/MegaStructureTab/drop1");
+            ProtoRegistry.RegisterRecipe(565, ERecipeType.Assemble, 240, new int[] { 9480, 9484 }, new int[] { 2, 2 }, new int[] { 9503 },
+                                         new int[] { 1 }, "力场发生器描述", 1916, 201 + pagePlus, "Assets/MegaStructureTab/forceGen");
+            RecipeProto SIMRecipe = ProtoRegistry.RegisterRecipe(566, ERecipeType.Particle, 600, new int[] { 1014, 1126, 1124, 1118, 1120 },
+                                                                 new int[] { 1, 1, 1, 1, 1 }, new int[] { 9504 }, new int[] { 1 }, "复合态晶体描述", 1919,
+                                                                 202 + pagePlus, "Assets/MegaStructureTab/compoCrystal");
+            ProtoRegistry.RegisterRecipe(567, ERecipeType.Assemble, 360, new int[] { 1305, 1205 }, new int[] { 1, 2 }, new int[] { 9505 },
+                                         new int[] { 1 }, "电磁力抑制器描述", 1919, 203 + pagePlus, "Assets/MegaStructureTab/elemaginhibitor2");
+            RecipeProto gluonGenRecipe = ProtoRegistry.RegisterRecipe(568, ERecipeType.Assemble, 360, new int[] { 9483, 1402, 1122 },
+                                                                      new int[] { 1, 1, 2 }, new int[] { 9506 }, new int[] { 1 }, "胶子发生器描述", 1919,
+                                                                      204 + pagePlus, "Assets/MegaStructureTab/gluonGen");
+            RecipeProto strIntOverloaderRecipe = ProtoRegistry.RegisterRecipe(569, ERecipeType.Assemble, 1200, new int[] { 9506, 9486 },
+                                                                              new int[] { 2, 2 }, new int[] { 9507 }, new int[] { 1 }, "强力过载装置描述",
+                                                                              1919, 205 + pagePlus, "Assets/MegaStructureTab/strIntOverloader");
+            ProtoRegistry.RegisterRecipe(570, ERecipeType.Assemble, 180, new int[] { 1125, 9481 }, new int[] { 3, 2 }, new int[] { 9508 },
+                                         new int[] { 1 }, "导流框架描述", 1918, 206 + pagePlus, "Assets/MegaStructureTab/starcannonframe");
+            ProtoRegistry.RegisterRecipe(571, ERecipeType.Assemble, 480, new int[] { 1209, 9508, 9484 }, new int[] { 3, 2, 1 }, new int[] { 9509 },
+                                         new int[] { 1 }, "恒星炮组件描述", 1918, 207 + pagePlus, "Assets/MegaStructureTab/starcannoncompo");
+            ProtoRegistry.RegisterRecipe(572, ERecipeType.Assemble, 360, new int[] { 9509, 1802, 1305 }, new int[] { 2, 2, 2 }, new int[] { 9510 },
+                                         new int[] { 1 }, "恒星炮运载火箭描述", 1918, 306 + pagePlus, "Assets/MegaStructureTab/rocketStarcannon");
+            RecipeProto dropRecipe = ProtoRegistry.RegisterRecipe(573, ERecipeType.Assemble, 3600, new int[] { 9505, 9507, 9504 },
+                                                                  new int[] { 20, 20, 100 }, new int[] { 9511 }, new int[] { 1 }, "水滴描述", 1919,
+                                                                  707 + pagePlus, "Assets/MegaStructureTab/drop1");
             SIMRecipe.Handcraft = false;
             gluonGenRecipe.Handcraft = false;
             strIntOverloaderRecipe.Handcraft = false;
             dropRecipe.Handcraft = false;
-
-            
         }
 
         public static void AddGenesisRecipes()
         {
-            if (!MoreMegaStructure.GenesisCompatibility)
-                return;
+            if (!MoreMegaStructure.GenesisCompatibility) return;
 
             int pagePlus = MoreMegaStructure.pagenum * 1000;
-            var recipe376 = ProtoRegistry.RegisterRecipe(376, (ERecipeType)10, 6, new int[] { 9500 }, new int[] { 25 }, new int[] { 6257 }, new int[] { 1 }, "巨建快速组装描述", 1823, 403 + pagePlus, "Assets/MegaStructureTab/quick6257");
-            var recipe377 = ProtoRegistry.RegisterRecipe(377, (ERecipeType)10, 6, new int[] { 9500 }, new int[] { 25 }, new int[] { 6258 }, new int[] { 1 }, "巨建快速组装描述", 1824, 404 + pagePlus, "Assets/MegaStructureTab/quick6258");
-            var recipe378 = ProtoRegistry.RegisterRecipe(378, (ERecipeType)10, 6, new int[] { 9500 }, new int[] { 25 }, new int[] { 6259 }, new int[] { 1 }, "巨建快速组装描述", 1825, 405 + pagePlus, "Assets/MegaStructureTab/quick6259");
-            var recipe379 = ProtoRegistry.RegisterRecipe(379, (ERecipeType)10, 6, new int[] { 9500 }, new int[] { 25 }, new int[] { 6260 }, new int[] { 1 }, "巨建快速组装描述", 1826, 406 + pagePlus, "Assets/MegaStructureTab/quick6260");
-            var recipe380 = ProtoRegistry.RegisterRecipe(380, (ERecipeType)10, 6, new int[] { 9500 }, new int[] { 25 }, new int[] { 6264 }, new int[] { 1 }, "巨建快速组装描述", 1831, 407 + pagePlus, "Assets/MegaStructureTab/quick6264");
-            var recipe381 = ProtoRegistry.RegisterRecipe(381, (ERecipeType)10, 6, new int[] { 9500 }, new int[] { 25 }, new int[] { 6265 }, new int[] { 1 }, "巨建快速组装描述", 1827, 408 + pagePlus, "Assets/MegaStructureTab/quick6265");
+            var recipe376 = ProtoRegistry.RegisterRecipe(376, (ERecipeType)10, 6, new int[] { 9500 }, new int[] { 25 }, new int[] { 6257 },
+                                                         new int[] { 1 }, "巨建快速组装描述", 1823, 403 + pagePlus, "Assets/MegaStructureTab/quick6257");
+            var recipe377 = ProtoRegistry.RegisterRecipe(377, (ERecipeType)10, 6, new int[] { 9500 }, new int[] { 25 }, new int[] { 6258 },
+                                                         new int[] { 1 }, "巨建快速组装描述", 1824, 404 + pagePlus, "Assets/MegaStructureTab/quick6258");
+            var recipe378 = ProtoRegistry.RegisterRecipe(378, (ERecipeType)10, 6, new int[] { 9500 }, new int[] { 25 }, new int[] { 6259 },
+                                                         new int[] { 1 }, "巨建快速组装描述", 1825, 405 + pagePlus, "Assets/MegaStructureTab/quick6259");
+            var recipe379 = ProtoRegistry.RegisterRecipe(379, (ERecipeType)10, 6, new int[] { 9500 }, new int[] { 25 }, new int[] { 6260 },
+                                                         new int[] { 1 }, "巨建快速组装描述", 1826, 406 + pagePlus, "Assets/MegaStructureTab/quick6260");
+            var recipe380 = ProtoRegistry.RegisterRecipe(380, (ERecipeType)10, 6, new int[] { 9500 }, new int[] { 25 }, new int[] { 6264 },
+                                                         new int[] { 1 }, "巨建快速组装描述", 1831, 407 + pagePlus, "Assets/MegaStructureTab/quick6264");
+            var recipe381 = ProtoRegistry.RegisterRecipe(381, (ERecipeType)10, 6, new int[] { 9500 }, new int[] { 25 }, new int[] { 6265 },
+                                                         new int[] { 1 }, "巨建快速组装描述", 1827, 408 + pagePlus, "Assets/MegaStructureTab/quick6265");
 
             recipe376._iconSprite = Resources.Load<Sprite>("Assets/MegaStructureTab/quick6257");
             recipe377._iconSprite = Resources.Load<Sprite>("Assets/MegaStructureTab/quick6258");
@@ -722,6 +751,7 @@ namespace MoreMegaStructure
             {
                 pagePlus = MoreMegaStructure.battlePagenum * 1000 + 100;
             }
+
             int recipeIdBias = 0;
             if (MoreMegaStructure.GenesisCompatibility)
             {
@@ -742,11 +772,12 @@ namespace MoreMegaStructure
             ReceiverIronRecipe.description = "接收重构装置描述".Translate();
             ReceiverIronRecipe.Items = new int[] { 1103, 1404, 1303, 9481 };
             ReceiverIronRecipe.ItemCounts = new int[] { 20, 10, 5, 2 };
-            if(MoreMegaStructure.GenesisCompatibility)
+            if (MoreMegaStructure.GenesisCompatibility)
             {
                 ReceiverIronRecipe.Items = new int[] { 1103, 1014, 1303, 9481 };
                 ReceiverIronRecipe.ItemCounts = new int[] { 20, 20, 5, 2 };
             }
+
             ReceiverIronRecipe.Results = new int[] { 9493 };
             ReceiverIronRecipe.ResultCounts = new int[] { 1 };
             ReceiverIronRecipe.GridIndex = 301 + pagePlus;
@@ -787,13 +818,14 @@ namespace MoreMegaStructure
                 ReceiverCopperRecipe.Items = new int[] { 1103, 1014, 1303, 9481 };
                 ReceiverCopperRecipe.ItemCounts = new int[] { 20, 20, 5, 2 };
             }
+
             ReceiverCopperRecipe.Results = new int[] { 9494 };
             ReceiverCopperRecipe.ResultCounts = new int[] { 1 };
             ReceiverCopperRecipe.GridIndex = 302 + pagePlus;
             ReceiverCopperRecipe.TimeSpend = 480;
             Traverse.Create(ReceiverCopperRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverCopper);
             ReceiverCopperRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技
-            if (MoreMegaStructure.isBattleActive) ReceiverCopperRecipe.preTech = LDB.techs.Select(1920); 
+            if (MoreMegaStructure.isBattleActive) ReceiverCopperRecipe.preTech = LDB.techs.Select(1920);
             ReceiverCopper.ID = 9494;
             ReceiverCopper.Name = "铜金属重构装置";
             ReceiverCopper.name = "铜金属重构装置".Translate();
@@ -827,6 +859,7 @@ namespace MoreMegaStructure
                 ReceiverSiliconRecipe.Items = new int[] { 1103, 1014, 1303, 9481 };
                 ReceiverSiliconRecipe.ItemCounts = new int[] { 20, 20, 5, 2 };
             }
+
             ReceiverSiliconRecipe.Results = new int[] { 9495 };
             ReceiverSiliconRecipe.ResultCounts = new int[] { 1 };
             ReceiverSiliconRecipe.GridIndex = 303 + pagePlus;
@@ -867,6 +900,7 @@ namespace MoreMegaStructure
                 ReceiverTitaniumRecipe.Items = new int[] { 1103, 1014, 1303, 9481 };
                 ReceiverTitaniumRecipe.ItemCounts = new int[] { 20, 20, 5, 2 };
             }
+
             ReceiverTitaniumRecipe.Results = new int[] { 9496 };
             ReceiverTitaniumRecipe.ResultCounts = new int[] { 1 };
             ReceiverTitaniumRecipe.GridIndex = 304 + pagePlus;
@@ -907,6 +941,7 @@ namespace MoreMegaStructure
                 ReceiverMagoreRecipe.Items = new int[] { 1103, 1014, 1303, 9481 };
                 ReceiverMagoreRecipe.ItemCounts = new int[] { 20, 20, 5, 2 };
             }
+
             ReceiverMagoreRecipe.Results = new int[] { 9497 };
             ReceiverMagoreRecipe.ResultCounts = new int[] { 1 };
             ReceiverMagoreRecipe.GridIndex = 305 + pagePlus;
@@ -947,13 +982,14 @@ namespace MoreMegaStructure
                 ReceiverCoalRecipe.Items = new int[] { 1103, 1014, 1303, 9481 };
                 ReceiverCoalRecipe.ItemCounts = new int[] { 20, 20, 5, 2 };
             }
+
             ReceiverCoalRecipe.Results = new int[] { 9501 };
             ReceiverCoalRecipe.ResultCounts = new int[] { 1 };
             ReceiverCoalRecipe.GridIndex = 306 + pagePlus;
             ReceiverCoalRecipe.TimeSpend = 480;
             Traverse.Create(ReceiverCoalRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverCoal);
             ReceiverCoalRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技 
-            if (MoreMegaStructure.isBattleActive) ReceiverCoalRecipe.preTech = LDB.techs.Select(1920); 
+            if (MoreMegaStructure.isBattleActive) ReceiverCoalRecipe.preTech = LDB.techs.Select(1920);
             ReceiverCoal.ID = 9501;
             ReceiverCoal.Name = "石墨提炼装置";
             ReceiverCoal.name = "石墨提炼装置".Translate();
@@ -987,6 +1023,7 @@ namespace MoreMegaStructure
                 ReceiverCasimirRecipe.Items = new int[] { 1107, 1014, 1303 };
                 ReceiverCasimirRecipe.ItemCounts = new int[] { 10, 20, 10 };
             }
+
             ReceiverCasimirRecipe.Results = new int[] { 9498 };
             ReceiverCasimirRecipe.ResultCounts = new int[] { 1 };
             ReceiverCasimirRecipe.GridIndex = 307 + pagePlus;
@@ -1009,7 +1046,7 @@ namespace MoreMegaStructure
             ReceiverCasimir.maincraft = ReceiverCasimirRecipe;
             ReceiverCasimir.recipes = new List<RecipeProto> { ReceiverCasimirRecipe };
             ReceiverCasimir.Grade = 7;
-            ReceiverCasimir.Upgrades = new int[] { 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502};
+            ReceiverCasimir.Upgrades = new int[] { 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502 };
             //ReceiverCasimir.makes = new List<RecipeProto> { ReceiverCasimirRecipe };
             Traverse.Create(ReceiverCasimir).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverCasimir);
             //Grating
@@ -1027,6 +1064,7 @@ namespace MoreMegaStructure
                 ReceiverGratingRecipe.Items = new int[] { 1107, 1014, 1303 };
                 ReceiverGratingRecipe.ItemCounts = new int[] { 10, 20, 10 };
             }
+
             ReceiverGratingRecipe.Results = new int[] { 9502 };
             ReceiverGratingRecipe.ResultCounts = new int[] { 1 };
             ReceiverGratingRecipe.GridIndex = 308 + pagePlus;
@@ -1049,7 +1087,7 @@ namespace MoreMegaStructure
             ReceiverGrating.maincraft = ReceiverGratingRecipe;
             ReceiverGrating.recipes = new List<RecipeProto> { ReceiverGratingRecipe };
             ReceiverGrating.Grade = 8;
-            ReceiverGrating.Upgrades = new int[] { 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502};
+            ReceiverGrating.Upgrades = new int[] { 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502 };
             //ReceiverGrating.makes = new List<RecipeProto> { ReceiverGratingRecipe };
             Traverse.Create(ReceiverGrating).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverGrating);
 
@@ -1068,6 +1106,7 @@ namespace MoreMegaStructure
                 ReceiverICRecipe.Items = new int[] { 1125, 1014, 1303 };
                 ReceiverICRecipe.ItemCounts = new int[] { 10, 20, 10 };
             }
+
             ReceiverICRecipe.Results = new int[] { 9499 };
             ReceiverICRecipe.ResultCounts = new int[] { 1 };
             ReceiverICRecipe.GridIndex = 9902 + pagePlus;
@@ -1146,1179 +1185,531 @@ namespace MoreMegaStructure
             LDBTool.PostAddProto(ReceiverGratingRecipe);
             LDBTool.PostAddProto(Exchanger);
             LDBTool.PostAddProto(ExchangerRecipe);
-
         }
 
+        public class StringProto
+        {
+            public string Name { get; set; }
+            public string ZHCN { get; set; }
+            public string ENUS { get; set; }
 
+            public void RegisterTranslation() => LocalizationModule.RegisterTranslation(Name, ENUS, ZHCN, "");
+        }
 
-        
         public static void AddTranslateUILabel()
         {
-            StringProto tr1 = new StringProto();
-            StringProto tr2 = new StringProto();
-            StringProto tr3 = new StringProto();
-            StringProto tr4 = new StringProto();
-            StringProto tr5 = new StringProto();
-            StringProto tr6 = new StringProto();
-            StringProto tr7 = new StringProto();
-            StringProto tr8 = new StringProto();
-            StringProto tr9 = new StringProto();
-            StringProto tr10 = new StringProto();
-            StringProto tr11 = new StringProto();
-            StringProto tr12 = new StringProto();
-            StringProto tr13 = new StringProto();
-            StringProto tr14 = new StringProto();
-            StringProto tr15 = new StringProto();
-            StringProto tr16 = new StringProto();
-            StringProto tr17 = new StringProto();
-            StringProto tr18 = new StringProto();
-            StringProto tr19 = new StringProto();
-            //StringProto tr20 = new StringProto();
-
-            tr1.ID = 10610;
-            tr1.Name = "巨构建筑";
-            tr1.name = "巨构建筑";
-            tr1.ZHCN = "巨构建筑";
-            tr1.ENUS = "Megastructure";
-            tr1.FRFR = "Megastructure";
-
-            tr2.ID = 10611;
-            tr2.Name = "规划巨构建筑类型";
-            tr2.name = "规划巨构建筑类型";
-            tr2.ZHCN = "规划巨构建筑类型";
-            tr2.ENUS = "Plan Megastructure";
-            tr2.FRFR = "Plan Megastructure";
-
-
-            tr3.ID = 10612;
-            tr3.Name = "自由组件";
-            tr3.name = "自由组件";
-            tr3.ZHCN = "自由组件";
-            tr3.ENUS = "Floating components ";
-            tr3.FRFR = "Floating components ";
-
-
-            tr4.ID = 10613;
-            tr4.Name = "工作效率";
-            tr4.name = "工作效率";
-            tr4.ZHCN = "工作效率";
-            tr4.ENUS = "Capacity";
-            tr4.FRFR = "Capacity";
-
-
-            tr5.ID = 10614;
-            tr5.Name = "自由组件数量";
-            tr5.name = "自由组件数量";
-            tr5.ZHCN = "自由组件数量";
-            tr5.ENUS = "Floating components in total";
-            tr5.FRFR = "Floating components in total";
-
-
-            tr6.ID = 10615;
-            tr6.Name = "自由组件云";
-            tr6.name = "自由组件云";
-            tr6.ZHCN = "自由组件云";
-            tr6.ENUS = "Components Swarm";
-            tr6.FRFR = "Components Swarm";
-
-            tr7.ID = 10616;
-            tr7.Name = "组件云蓝图";
-            tr7.name = "组件云蓝图";
-            tr7.ZHCN = "组件云蓝图";
-            tr7.ENUS = "Swarm Blueprint";
-            tr7.FRFR = "Swarm Blueprint";
-
-            tr8.ID = 10617;
-            tr8.Name = "锚定结构";
-            tr8.name = "锚定结构";
-            tr8.ZHCN = "锚定结构";
-            tr8.ENUS = "Anchored Structure";
-            tr8.FRFR = "Anchored Structure";
-
-            tr9.ID = 10618;
-            tr9.Name = "结构层级";
-            tr9.name = "结构层级";
-            tr9.ZHCN = "结构层级";
-            tr9.ENUS = "Structure Layers";
-            tr9.FRFR = "Structure Layers";
-
-            tr10.ID = 10619;
-            tr10.Name = "锚定结构蓝图";
-            tr10.name = "锚定结构蓝图";
-            tr10.ZHCN = "锚定结构蓝图";
-            tr10.ENUS = "Anchored Structure Blueprint";
-            tr10.FRFR = "Anchored Structure Blueprint";
-
-            tr11.ID = 10620;
-            tr11.Name = "恒星功效系数";
-            tr11.name = "恒星功效系数";
-            tr11.ZHCN = "恒星功效系数";
-            tr11.ENUS = "Star Efficiency";
-            tr11.FRFR = "Star Efficiency";
-
-            tr12.ID = 10621;
-            tr12.Name = "最大工作效率";
-            tr12.name = "最大工作效率";
-            tr12.ZHCN = "最大工作效率";
-            tr12.ENUS = "Capacity";
-            tr12.FRFR = "Capacity";
-
-            tr13.ID = 10622;
-            tr13.Name = "巨构建筑蓝图";
-            tr13.name = "巨构建筑蓝图";
-            tr13.ZHCN = "巨构建筑蓝图";
-            tr13.ENUS = "Structure Blueprint";
-            tr13.FRFR = "Structure Blueprint";
-
-            tr14.ID = 10623;
-            tr14.Name = "自由组件寿命分布";
-            tr14.name = "自由组件寿命分布";
-            tr14.ZHCN = "自由组件寿命分布";
-            tr14.ENUS = "Life Distribution of Floating Components";
-            tr14.FRFR = "Life Distribution of Floating Components";
-
-            tr15.ID = 10624;
-            tr15.Name = "自由组件状态统计";
-            tr15.name = "自由组件状态统计";
-            tr15.ZHCN = "自由组件状态统计";
-            tr15.ENUS = "Floating Components Status Statistics";
-            tr15.FRFR = "Floating Components Status Statistics";
-
-            tr16.ID = 10625;
-            tr16.Name = "自由组件工作效率";
-            tr16.name = "自由组件工作效率";
-            tr16.ZHCN = "自由组件工作效率";
-            tr16.ENUS = "Generation of Floating Components";
-            tr16.FRFR = "Generation of Floating Components";
-
-            tr17.ID = 10626;
-            tr17.Name = "锚定结构工作效率";
-            tr17.name = "锚定结构工作效率";
-            tr17.ZHCN = "锚定结构工作效率";
-            tr17.ENUS = "Generation of Anchored Structure";
-            tr17.FRFR = "Generation of Anchored Structure";
-
-            tr18.ID = 10627;
-            tr18.Name = "研究效率";
-            tr18.name = "研究效率";
-            tr18.ZHCN = "研究效率";
-            tr18.ENUS = "Research Capacity";
-            tr18.FRFR = "Research Capacity";
-
-            tr19.ID = 10628;
-            tr19.Name = "折跃场加速";
-            tr19.name = "折跃场加速";
-            tr19.ZHCN = "折跃场加速";
-            tr19.ENUS = "Warp Acceleration";
-            tr19.FRFR = "Warp Acceleration";
-
-            //tr20.ID = 10629;
-            //tr20.Name = "锚定结构工作效率";
-            //tr20.name = "锚定结构工作效率";
-            //tr20.ZHCN = "锚定结构工作效率";
-            //tr20.ENUS = "Generation of Anchored Structure";
-            //tr20.FRFR = "Generation of Anchored Structure";
-
-            LDBTool.PreAddProto(tr1);
-            LDBTool.PreAddProto(tr2);
-            LDBTool.PreAddProto(tr3);
-            LDBTool.PreAddProto(tr4);
-            LDBTool.PreAddProto(tr5);
-            LDBTool.PreAddProto(tr6);
-            LDBTool.PreAddProto(tr7);
-            LDBTool.PreAddProto(tr8);
-            LDBTool.PreAddProto(tr9);
-            LDBTool.PreAddProto(tr10);
-            LDBTool.PreAddProto(tr11);
-            LDBTool.PreAddProto(tr12);
-            LDBTool.PreAddProto(tr13);
-            LDBTool.PreAddProto(tr14);
-            LDBTool.PreAddProto(tr15);
-            LDBTool.PreAddProto(tr16);
-            LDBTool.PreAddProto(tr17);
-            LDBTool.PreAddProto(tr18);
-            LDBTool.PreAddProto(tr19);
-            //LDBTool.PreAddProto(tr20);
+            new StringProto { Name = "巨构建筑", ZHCN = "巨构建筑", ENUS = "Megastructure" }.RegisterTranslation();
+            new StringProto { Name = "规划巨构建筑类型", ZHCN = "规划巨构建筑类型", ENUS = "Plan Megastructure" }.RegisterTranslation();
+            new StringProto { Name = "自由组件", ZHCN = "自由组件", ENUS = "Floating components " }.RegisterTranslation();
+            new StringProto { Name = "工作效率", ZHCN = "工作效率", ENUS = "Capacity" }.RegisterTranslation();
+            new StringProto { Name = "自由组件数量", ZHCN = "自由组件数量", ENUS = "Floating components in total" }.RegisterTranslation();
+            new StringProto { Name = "自由组件云", ZHCN = "自由组件云", ENUS = "Components Swarm" }.RegisterTranslation();
+            new StringProto { Name = "组件云蓝图", ZHCN = "组件云蓝图", ENUS = "Swarm Blueprint" }.RegisterTranslation();
+            new StringProto { Name = "锚定结构", ZHCN = "锚定结构", ENUS = "Anchored Structure" }.RegisterTranslation();
+            new StringProto { Name = "结构层级", ZHCN = "结构层级", ENUS = "Structure Layers" }.RegisterTranslation();
+            new StringProto { Name = "锚定结构蓝图", ZHCN = "锚定结构蓝图", ENUS = "Anchored Structure Blueprint" }.RegisterTranslation();
+            new StringProto { Name = "恒星功效系数", ZHCN = "恒星功效系数", ENUS = "Star Efficiency" }.RegisterTranslation();
+            new StringProto { Name = "最大工作效率", ZHCN = "最大工作效率", ENUS = "Capacity" }.RegisterTranslation();
+            new StringProto { Name = "巨构建筑蓝图", ZHCN = "巨构建筑蓝图", ENUS = "Structure Blueprint" }.RegisterTranslation();
+            new StringProto { Name = "自由组件寿命分布", ZHCN = "自由组件寿命分布", ENUS = "Life Distribution of Floating Components" }.RegisterTranslation();
+            new StringProto { Name = "自由组件状态统计", ZHCN = "自由组件状态统计", ENUS = "Floating Components Status Statistics" }.RegisterTranslation();
+            new StringProto { Name = "自由组件工作效率", ZHCN = "自由组件工作效率", ENUS = "Generation of Floating Components" }.RegisterTranslation();
+            new StringProto { Name = "锚定结构工作效率", ZHCN = "锚定结构工作效率", ENUS = "Generation of Anchored Structure" }.RegisterTranslation();
+            new StringProto { Name = "研究效率", ZHCN = "研究效率", ENUS = "Research Capacity" }.RegisterTranslation();
+            new StringProto { Name = "折跃场加速", ZHCN = "折跃场加速", ENUS = "Warp Acceleration" }.RegisterTranslation();
         }
 
         public static void AddTranslateStructureName()
         {
-            StringProto tr1 = new StringProto();
-            StringProto tr2 = new StringProto();
-            StringProto tr3 = new StringProto();
-            StringProto tr4 = new StringProto();
-            StringProto tr5 = new StringProto();
-            StringProto tr6 = new StringProto();
-            StringProto tr7 = new StringProto();
-            StringProto tr8 = new StringProto();
-            StringProto tr9 = new StringProto();
-            StringProto tr10 = new StringProto();
-            StringProto tr11 = new StringProto();
-            StringProto tr12 = new StringProto();
-            StringProto tr13 = new StringProto();
-            StringProto tr14 = new StringProto();
-            StringProto tr15 = new StringProto();
-            StringProto tr16 = new StringProto();
-            StringProto tr17 = new StringProto();
+            new StringProto { Name = "规划", ZHCN = "规划", ENUS = "Plan " }.RegisterTranslation();
 
-            tr1.ID = 10630;
-            tr1.Name = "规划";
-            tr1.name = "规划";
-            tr1.ZHCN = "规划";
-            tr1.ENUS = "Plan ";
-            tr1.FRFR = "Plan ";
+            new StringProto { Name = "戴森球jinx", ZHCN = "戴森球", ENUS = "Dyson Sphere" }.RegisterTranslation();
 
-            tr2.ID = 10631;
-            tr2.Name = "戴森球jinx";
-            tr2.name = "戴森球jinx";
-            tr2.ZHCN = "戴森球";
-            tr2.ENUS = "Dyson Sphere";
-            tr2.FRFR = "Dyson Sphere";
+            new StringProto { Name = "物质解压器", ZHCN = "物质解压器", ENUS = "Matter Decompressor" }.RegisterTranslation();
 
 
-            tr3.ID = 10632;
-            tr3.Name = "物质解压器";
-            tr3.name = "物质解压器";
-            tr3.ZHCN = "物质解压器";
-            tr3.ENUS = "Matter Decompressor";
-            tr3.FRFR = "Matter Decompressor";
+            new StringProto { Name = "科学枢纽", ZHCN = "科学枢纽", ENUS = "Science Nexus" }.RegisterTranslation();
 
 
-            tr4.ID = 10633;
-            tr4.Name = "科学枢纽";
-            tr4.name = "科学枢纽";
-            tr4.ZHCN = "科学枢纽";
-            tr4.ENUS = "Science Nexus";
-            tr4.FRFR = "Science Nexus";
+            new StringProto { Name = "折跃场广播阵列", ZHCN = "折跃场广播阵列", ENUS = "Warp Field Broadcast Array" }.RegisterTranslation();
 
 
-            tr5.ID = 10634;
-            tr5.Name = "折跃场广播阵列";
-            tr5.name = "折跃场广播阵列";
-            tr5.ZHCN = "折跃场广播阵列";
-            tr5.ENUS = "Warp Field Broadcast Array";
-            tr5.FRFR = "Warp Field Broadcast Array";
+            new StringProto { Name = "星际组装厂", ZHCN = "星际组装厂", ENUS = "Interstellar Assembly" }.RegisterTranslation();
+
+            new StringProto { Name = "晶体重构器", ZHCN = "晶体重构器", ENUS = "Crystal Reconstructor" }.RegisterTranslation();
+
+            new StringProto
+            {
+                Name = "警告最多一个", ZHCN = "折跃场广播阵列最多建造一个，请检查星系:", ENUS = "You can only build one Wrapfield broadcast array, please check:"
+            }.RegisterTranslation();
+
+            new StringProto
+            {
+                Name = "警告先拆除",
+                ZHCN = "你必须先拆除所有锚定结构（节点）再规划不同的巨构建筑。",
+                ENUS = "You have to remove all anchor structures (nodes) before planning different megastructures."
+            }.RegisterTranslation();
+
+            new StringProto { Name = "警告仅黑洞", ZHCN = "物质解压器只能在黑洞上建造。", ENUS = "Matter decompressors can only be built on black holes." }
+               .RegisterTranslation();
+
+            new StringProto
+            {
+                Name = "警告仅中子星白矮星",
+                ZHCN = "晶体重构器只能在中子星或白矮星上建造。",
+                ENUS = "Crystal reconstructors can only be built on neutron stars or white drawf."
+            }.RegisterTranslation();
 
 
-            tr6.ID = 10635;
-            tr6.Name = "星际组装厂";
-            tr6.name = "星际组装厂";
-            tr6.ZHCN = "星际组装厂";
-            tr6.ENUS = "Interstellar Assembly";
-            tr6.FRFR = "Interstellar Assembly";
+            new StringProto { Name = "当前", ZHCN = "当前", ENUS = "Currently" }.RegisterTranslation();
 
-            tr7.ID = 10636;
-            tr7.Name = "晶体重构器";
-            tr7.name = "晶体重构器";
-            tr7.ZHCN = "晶体重构器";
-            tr7.ENUS = "Crystal Reconstructor";
-            tr7.FRFR = "Crystal Reconstructor";
+            new StringProto { Name = "警告未知错误", ZHCN = "设置异常失败，请像mod作者反馈该问题。", ENUS = "The setting fails abnormally, please report this problem." }
+               .RegisterTranslation();
 
-            tr8.ID = 10637;
-            tr8.Name = "警告最多一个";
-            tr8.name = "警告最多一个";
-            tr8.ZHCN = "折跃场广播阵列最多建造一个，请检查星系:";
-            tr8.ENUS = "You can only build one Wrapfield broadcast array, please check:";
-            tr8.FRFR = "You can only build one Wrapfield broadcast array, please check:";
+            new StringProto { Name = "MegaStructures", ZHCN = "巨构", ENUS = "Megastructures" }.RegisterTranslation();
 
-            tr9.ID = 10638;
-            tr9.Name = "警告先拆除";
-            tr9.name = "警告先拆除";
-            tr9.ZHCN = "你必须先拆除所有锚定结构（节点）再规划不同的巨构建筑。";
-            tr9.ENUS = "You have to remove all anchor structures (nodes) before planning different megastructures.";
-            tr9.FRFR = "You have to remove all anchor structures (nodes) before planning different megastructures.";
+            new StringProto { Name = "物质合成", ZHCN = "物质合成", ENUS = "Substance generation" }.RegisterTranslation();
 
-            tr10.ID = 10639;
-            tr10.Name = "警告仅黑洞";
-            tr10.name = "警告仅黑洞";
-            tr10.ZHCN = "物质解压器只能在黑洞上建造。";
-            tr10.ENUS = "Matter decompressors can only be built on black holes.";
-            tr10.FRFR = "Matter decompressors can only be built on black holes.";
+            new StringProto { Name = "恒星炮", ZHCN = "恒星炮", ENUS = "Star cannon" }.RegisterTranslation();
 
-            tr11.ID = 10640;
-            tr11.Name = "警告仅中子星白矮星";
-            tr11.name = "警告仅中子星白矮星";
-            tr11.ZHCN = "晶体重构器只能在中子星或白矮星上建造。";
-            tr11.ENUS = "Crystal reconstructors can only be built on neutron stars or white drawf.";
-            tr11.FRFR = "Crystal reconstructors can only be built on neutron stars or white drawf.";
-
-            
-            tr12.ID = 10641;
-            tr12.Name = "当前";
-            tr12.name = "当前";
-            tr12.ZHCN = "当前";
-            tr12.ENUS = "Currently";
-            tr12.FRFR = "Currently";
-            
-            tr13.ID = 10642;
-            tr13.Name = "警告未知错误";
-            tr13.name = "警告未知错误";
-            tr13.ZHCN = "设置异常失败，请像mod作者反馈该问题。";
-            tr13.ENUS = "The setting fails abnormally, please report this problem.";
-            tr13.FRFR = "The setting fails abnormally, please report this problem.";
-            
-            tr14.ID = 10643;
-            tr14.Name = "MegaStructures";
-            tr14.name = "MegaStructures";
-            tr14.ZHCN = "巨构";
-            tr14.ENUS = "Megastructures";
-            tr14.FRFR = "Megastructures";
-            
-            tr15.ID = 10644;
-            tr15.Name = "物质合成";
-            tr15.name = "物质合成";
-            tr15.ZHCN = "物质合成";
-            tr15.ENUS = "Substance generation";
-            tr15.FRFR = "Substance generation";
-            
-            tr16.ID = 10645;
-            tr16.Name = "恒星炮";
-            tr16.name = "恒星炮";
-            tr16.ZHCN = "恒星炮";
-            tr16.ENUS = "Star cannon";
-            tr16.FRFR = "Star cannon";
-
-            tr17.ID = 10646;
-            tr17.Name = "警告最多一个恒星炮";
-            tr17.name = "警告最多一个恒星炮";
-            tr17.ZHCN = "恒星炮最多建造一个，请检查星系:";
-            tr17.ENUS = "You can only build one Star cannon, please check:";
-            tr17.FRFR = "You can only build one Star cannon, please check:";
-            
-
-            LDBTool.PreAddProto(tr1);
-            LDBTool.PreAddProto(tr2);
-            LDBTool.PreAddProto(tr3);
-            LDBTool.PreAddProto(tr4);
-            LDBTool.PreAddProto(tr5);
-            LDBTool.PreAddProto(tr6);
-            LDBTool.PreAddProto(tr7);
-            LDBTool.PreAddProto(tr8);
-            LDBTool.PreAddProto(tr9);
-            LDBTool.PreAddProto(tr10);
-            LDBTool.PreAddProto(tr11);
-            LDBTool.PreAddProto(tr12);
-            LDBTool.PreAddProto(tr13);
-            LDBTool.PreAddProto(tr14);
-            LDBTool.PreAddProto(tr15);
-            LDBTool.PreAddProto(tr16);
-            LDBTool.PreAddProto(tr17);
+            new StringProto { Name = "警告最多一个恒星炮", ZHCN = "恒星炮最多建造一个，请检查星系:", ENUS = "You can only build one Star cannon, please check:" }
+               .RegisterTranslation();
         }
 
         public static void AddTranslateProtoNames1()
         {
-            int bias = 40;
-            StringProto tr1 = new StringProto();
-            StringProto tr2 = new StringProto();
-            StringProto tr3 = new StringProto();
-            StringProto tr4 = new StringProto();
-            StringProto tr5 = new StringProto();
-            StringProto tr6 = new StringProto();
-            StringProto tr7 = new StringProto();
-            StringProto tr8 = new StringProto();
-            StringProto tr9 = new StringProto();
-            StringProto tr10 = new StringProto();
-            StringProto tr11 = new StringProto();
-            StringProto tr12 = new StringProto();
-            StringProto tr13 = new StringProto();
-            StringProto tr14 = new StringProto();
-            StringProto tr15 = new StringProto();
-            StringProto tr16 = new StringProto();
-            StringProto tr17 = new StringProto();
-            StringProto tr18 = new StringProto();
-            StringProto tr19 = new StringProto();
-            StringProto tr20 = new StringProto();
+            new StringProto { Name = "引力发生装置", ZHCN = "引力发生装置", ENUS = "Gravity generator" }.RegisterTranslation();
 
-            tr1.ID = 10610 + bias;
-            tr1.Name = "引力发生装置";
-            tr1.name = "引力发生装置";
-            tr1.ZHCN = "引力发生装置";
-            tr1.ENUS = "Gravity generator";
-            tr1.FRFR = tr1.ENUS;
-
-            tr2.ID = 10611 + bias;
-            tr2.Name = "引力发生装置描述";
-            tr2.name = "引力发生装置描述";
-            tr2.ZHCN = "引导临界光子轰击奇异物质即可激发引力波。恒星附近能够获取大量的临界光子，从而能够使引力发生装置高效地运行。";
-            tr2.ENUS = "Gravitational waves can be excited by directing critical photons to hit strange matter. A large number of critical photons can be obtained near the star, allowing the gravitational generator to operate efficiently.";
-            tr2.FRFR = tr2.ENUS;
+            new StringProto
+            {
+                Name = "引力发生装置描述",
+                ZHCN = "引导临界光子轰击奇异物质即可激发引力波。恒星附近能够获取大量的临界光子，从而能够使引力发生装置高效地运行。",
+                ENUS
+                    = "Gravitational waves can be excited by directing critical photons to hit strange matter. A large number of critical photons can be obtained near the star, allowing the gravitational generator to operate efficiently."
+            }.RegisterTranslation();
 
 
-            tr3.ID = 10612 + bias;
-            tr3.Name = "位面约束环";
-            tr3.name = "位面约束环";
-            tr3.ZHCN = "位面约束环";
-            tr3.ENUS = "Plane constraint ring";
-            tr3.FRFR = tr3.ENUS;
+            new StringProto { Name = "位面约束环", ZHCN = "位面约束环", ENUS = "Plane constraint ring" }.RegisterTranslation();
 
 
-            tr4.ID = 10613 + bias;
-            tr4.Name = "位面约束环描述";
-            tr4.name = "位面约束环描述";
-            tr4.ZHCN = "位面约束环能够协同引力透镜引导并操纵引力，也是构建科学枢纽所需的恒星级粒子加速器的必要组件。";
-            tr4.ENUS = "Plane constraint ring can guide and manipulate gravity with graviton lens, and it is also an essential component of the stellar-scale particle accelerators which are needed to build science nexus.";
-            tr4.FRFR = tr4.ENUS;
+            new StringProto
+            {
+                Name = "位面约束环描述",
+                ZHCN = "位面约束环能够协同引力透镜引导并操纵引力，也是构建科学枢纽所需的恒星级粒子加速器的必要组件。",
+                ENUS
+                    = "Plane constraint ring can guide and manipulate gravity with graviton lens, and it is also an essential component of the stellar-scale particle accelerators which are needed to build science nexus."
+            }.RegisterTranslation();
 
 
-            tr5.ID = 10614 + bias;
-            tr5.Name = "引力钻头";
-            tr5.name = "引力钻头";
-            tr5.ZHCN = "引力钻头";
-            tr5.ENUS = "Graviton drill";
-            tr5.FRFR = tr5.ENUS;
+            new StringProto { Name = "引力钻头", ZHCN = "引力钻头", ENUS = "Graviton drill" }.RegisterTranslation();
 
 
-            tr6.ID = 10615 + bias;
-            tr6.Name = "引力钻头描述";
-            tr6.name = "引力钻头描述";
-            tr6.ZHCN = "借助黑洞本身的引力，引力钻头能够将物质从黑洞中取出，这还包括吸积盘中大量的单极磁石。借助谐振盘，黑洞原质将能够被解压并在星系内输送。";
-            tr6.ENUS = "The graviton drill can pull matter out of the black hole using the gravity of the black hole itself, which also includes the unipolar magnets in the accretion disk. With the help of the resonant disc, the matter from the black hole will be able to be decompressed and transported within the galaxy.";
-            tr6.FRFR = tr6.ENUS;
+            new StringProto
+            {
+                Name = "引力钻头描述",
+                ZHCN = "借助黑洞本身的引力，引力钻头能够将物质从黑洞中取出，这还包括吸积盘中大量的单极磁石。借助谐振盘，黑洞原质将能够被解压并在星系内输送。",
+                ENUS
+                    = "The graviton drill can pull matter out of the black hole using the gravity of the black hole itself, which also includes the unipolar magnets in the accretion disk. With the help of the resonant disc, the matter from the black hole will be able to be decompressed and transported within the galaxy."
+            }.RegisterTranslation();
 
-            tr7.ID = 10616 + bias;
-            tr7.Name = "隧穿激发装置";
-            tr7.name = "隧穿激发装置";
-            tr7.ZHCN = "隧穿激发装置";
-            tr7.ENUS = "Tunneling exciter";
-            tr7.FRFR = tr7.ENUS;
+            new StringProto { Name = "隧穿激发装置", ZHCN = "隧穿激发装置", ENUS = "Tunneling exciter" }.RegisterTranslation();
 
-            tr8.ID = 10617 + bias;
-            tr8.Name = "隧穿激发装置描述";
-            tr8.name = "隧穿激发装置描述";
-            tr8.ZHCN = "隧穿激发装置可以完美地掌控量子隧穿效应，常被用来强化量子芯片的处理能力和纠错能力。通过量子隧穿效应还能够轻易突破弯曲空间的能量势垒，使得在任意远的空间打开裂口成为可能。";
-            tr8.ENUS = "Tunneling exciters can perfectly control the quantum tunneling effect, and are often used to enhance the processing and error correction capabilities of quantum chips. The quantum tunneling effect can also easily break through the energy barrier of the curved space, making it possible to open the warp crack in any space far away.";
-            tr8.FRFR = tr8.ENUS;
+            new StringProto
+            {
+                Name = "隧穿激发装置描述",
+                ZHCN = "隧穿激发装置可以完美地掌控量子隧穿效应，常被用来强化量子芯片的处理能力和纠错能力。通过量子隧穿效应还能够轻易突破弯曲空间的能量势垒，使得在任意远的空间打开裂口成为可能。",
+                ENUS
+                    = "Tunneling exciters can perfectly control the quantum tunneling effect, and are often used to enhance the processing and error correction capabilities of quantum chips. The quantum tunneling effect can also easily break through the energy barrier of the curved space, making it possible to open the warp crack in any space far away."
+            }.RegisterTranslation();
 
-            tr9.ID = 10618 + bias;
-            tr9.Name = "谐振盘";
-            tr9.name = "谐振盘";
-            tr9.ZHCN = "谐振盘";
-            tr9.ENUS = "Resonant disc";
-            tr9.FRFR = tr9.ENUS;
+            new StringProto { Name = "谐振盘", ZHCN = "谐振盘", ENUS = "Resonant disc" }.RegisterTranslation();
 
-            tr10.ID = 10619 + bias;
-            tr10.Name = "谐振盘描述";
-            tr10.name = "谐振盘描述";
-            tr10.ZHCN = "谐振盘仅通过恒星级别的能量就可以产生跨越恒星系的空间波动能量束。如果将谐振盘组成阵列，理论上可以形成覆盖全宇宙的折跃能量场。";
-            tr10.ENUS = "The resonant disc can generate interstellar-scale space-wave energy beams from only stellar-scale energy. If the resonant discs are formed into an array, a warp field covering the entire universe can theoretically be formed.";
-            tr10.FRFR = tr10.ENUS;
+            new StringProto
+            {
+                Name = "谐振盘描述",
+                ZHCN = "谐振盘仅通过恒星级别的能量就可以产生跨越恒星系的空间波动能量束。如果将谐振盘组成阵列，理论上可以形成覆盖全宇宙的折跃能量场。",
+                ENUS
+                    = "The resonant disc can generate interstellar-scale space-wave energy beams from only stellar-scale energy. If the resonant discs are formed into an array, a warp field covering the entire universe can theoretically be formed."
+            }.RegisterTranslation();
 
-            tr11.ID = 10620 + bias;
-            tr11.Name = "光子探针";
-            tr11.name = "光子探针";
-            tr11.ZHCN = "光子探针";
-            tr11.ENUS = "Photon probe";
-            tr11.FRFR = tr11.ENUS;
+            new StringProto { Name = "光子探针", ZHCN = "光子探针", ENUS = "Photon probe" }.RegisterTranslation();
 
-            tr12.ID = 10621 + bias;
-            tr12.Name = "光子探针描述";
-            tr12.name = "光子探针描述";
-            tr12.ZHCN = "将临界光子变频后发射并引导晶体重构，发射的光子还能被回收。";
-            tr12.ENUS = "The critical photons are frequency-converted and emitted, thereby guiding the crystal reconstruction. The photons can also be recovered.";
-            tr12.FRFR = tr12.ENUS;
+            new StringProto
+            {
+                Name = "光子探针描述",
+                ZHCN = "将临界光子变频后发射并引导晶体重构，发射的光子还能被回收。",
+                ENUS
+                    = "The critical photons are frequency-converted and emitted, thereby guiding the crystal reconstruction. The photons can also be recovered."
+            }.RegisterTranslation();
 
-            tr13.ID = 10622 + bias;
-            tr13.Name = "量子计算机";
-            tr13.name = "量子计算机";
-            tr13.ZHCN = "量子计算机";
-            tr13.ENUS = "Quantum computer";
-            tr13.FRFR = tr13.ENUS;
+            new StringProto { Name = "量子计算机", ZHCN = "量子计算机", ENUS = "Quantum computer" }.RegisterTranslation();
 
-            tr14.ID = 10623 + bias;
-            tr14.Name = "量子计算机描述";
-            tr14.name = "量子计算机描述";
-            tr14.ZHCN = "只要供给足够的能量，量子计算机的运算时钟能够无限逼近普朗克时间。通过量子比特协同，其潜在的单线程运算速率还能突破物理极限，并可以无限提升。现在，限制其计算速度的将只有能量输入水平。";
-            tr14.ENUS = "As long as enough energy is supplied, the computing clock of a quantum computer can approach Planck time indefinitely. Through the cooperation of qubits, its potential single-threaded operation rate can also break through the physical limit and can be infinitely improved. Now, it will only be the level of energy input that will limit its computational speed.";
-            tr14.FRFR = tr14.ENUS;
+            new StringProto
+            {
+                Name = "量子计算机描述",
+                ZHCN = "只要供给足够的能量，量子计算机的运算时钟能够无限逼近普朗克时间。通过量子比特协同，其潜在的单线程运算速率还能突破物理极限，并可以无限提升。现在，限制其计算速度的将只有能量输入水平。",
+                ENUS
+                    = "As long as enough energy is supplied, the computing clock of a quantum computer can approach Planck time indefinitely. Through the cooperation of qubits, its potential single-threaded operation rate can also break through the physical limit and can be infinitely improved. Now, it will only be the level of energy input that will limit its computational speed."
+            }.RegisterTranslation();
 
-            tr15.ID = 10624 + bias;
-            tr15.Name = "星际组装厂组件";
-            tr15.name = "星际组装厂组件";
-            tr15.ZHCN = "星际组装厂组件";
-            tr15.ENUS = "Interstellar assembly component";
-            tr15.FRFR = tr15.ENUS;
+            new StringProto { Name = "星际组装厂组件", ZHCN = "星际组装厂组件", ENUS = "Interstellar assembly component" }.RegisterTranslation();
 
-            tr16.ID = 10625 + bias;
-            tr16.Name = "星际组装厂组件描述";
-            tr16.name = "星际组装厂组件描述";
-            tr16.ZHCN = "使用微型火箭将组件运载到恒星附近并构建星际组装厂的节点和框架。";
-            tr16.ENUS = "Use a small carrier rocket to the planned Interstellar assembly to form the nodes and frames of Interstellar assembly.";
-            tr16.FRFR = tr16.ENUS;
+            new StringProto
+            {
+                Name = "星际组装厂组件描述",
+                ZHCN = "使用微型火箭将组件运载到恒星附近并构建星际组装厂的节点和框架。",
+                ENUS = "Use a small carrier rocket to the planned Interstellar assembly to form the nodes and frames of Interstellar assembly."
+            }.RegisterTranslation();
 
-            tr17.ID = 10626 + bias;
-            tr17.Name = "物质解压器运载火箭";
-            tr17.name = "物质解压器运载火箭";
-            tr17.ZHCN = "物质解压器运载火箭";
-            tr17.ENUS = "Matter decompressor carrier rocket";
-            tr17.FRFR = tr17.ENUS;
+            new StringProto { Name = "物质解压器运载火箭", ZHCN = "物质解压器运载火箭", ENUS = "Matter decompressor carrier rocket" }.RegisterTranslation();
 
-            tr18.ID = 10627 + bias;
-            tr18.Name = "物质解压器运载火箭描述";
-            tr18.name = "物质解压器运载火箭描述";
-            tr18.ZHCN = "物质解压器相关组件的运载工具。";
-            tr18.ENUS = "The delivery vehicle for the components of the Matter decompressor.";
-            tr18.FRFR = tr18.ENUS;
+            new StringProto
+            {
+                Name = "物质解压器运载火箭描述", ZHCN = "物质解压器相关组件的运载工具。", ENUS = "The delivery vehicle for the components of the Matter decompressor."
+            }.RegisterTranslation();
 
-            tr19.ID = 10628 + bias;
-            tr19.Name = "科学枢纽运载火箭";
-            tr19.name = "科学枢纽运载火箭";
-            tr19.ZHCN = "科学枢纽运载火箭";
-            tr19.ENUS = "Science nexus carrier rocket";
-            tr19.FRFR = tr19.ENUS;
+            new StringProto { Name = "科学枢纽运载火箭", ZHCN = "科学枢纽运载火箭", ENUS = "Science nexus carrier rocket" }.RegisterTranslation();
 
-            tr20.ID = 10629 + bias;
-            tr20.Name = "科学枢纽运载火箭描述";
-            tr20.name = "科学枢纽运载火箭描述";
-            tr20.ZHCN = "科学枢纽相关组件的运载工具。";
-            tr20.ENUS = "The delivery vehicle for the components of the Science nexus.";
-            tr20.FRFR = tr20.ENUS;
-
-            LDBTool.PreAddProto(tr1);
-            LDBTool.PreAddProto(tr2);
-            LDBTool.PreAddProto(tr3);
-            LDBTool.PreAddProto(tr4);
-            LDBTool.PreAddProto(tr5);
-            LDBTool.PreAddProto(tr6);
-            LDBTool.PreAddProto(tr7);
-            LDBTool.PreAddProto(tr8);
-            LDBTool.PreAddProto(tr9);
-            LDBTool.PreAddProto(tr10);
-            LDBTool.PreAddProto(tr11);
-            LDBTool.PreAddProto(tr12);
-            LDBTool.PreAddProto(tr13);
-            LDBTool.PreAddProto(tr14);
-            LDBTool.PreAddProto(tr15);
-            LDBTool.PreAddProto(tr16);
-            LDBTool.PreAddProto(tr17);
-            LDBTool.PreAddProto(tr18);
-            LDBTool.PreAddProto(tr19);
-            LDBTool.PreAddProto(tr20);
+            new StringProto { Name = "科学枢纽运载火箭描述", ZHCN = "科学枢纽相关组件的运载工具。", ENUS = "The delivery vehicle for the components of the Science nexus." }
+               .RegisterTranslation();
         }
 
         public static void AddTranslateProtoNames2()
         {
-            int bias = 60;
-            StringProto tr1 = new StringProto();
-            StringProto tr2 = new StringProto();
-            StringProto tr3 = new StringProto();
-            StringProto tr4 = new StringProto();
-            StringProto tr5 = new StringProto();
-            StringProto tr6 = new StringProto();
-            StringProto tr7 = new StringProto();
-            StringProto tr8 = new StringProto();
-            StringProto tr9 = new StringProto();
-            StringProto tr10 = new StringProto();
-            StringProto tr11 = new StringProto();
-            StringProto tr12 = new StringProto();
-            StringProto tr13 = new StringProto();
-            StringProto tr14 = new StringProto();
-            StringProto tr15 = new StringProto();
-            StringProto tr16 = new StringProto();
-            StringProto tr17 = new StringProto();
-            StringProto tr18 = new StringProto();
-            StringProto tr19 = new StringProto();
-            StringProto tr20 = new StringProto();
+            new StringProto { Name = "谐振发射器运载火箭", ZHCN = "谐振发射器运载火箭", ENUS = "Resonant generator carrier rocket" }.RegisterTranslation();
 
-            tr1.ID = 10610 + bias;
-            tr1.Name = "谐振发射器运载火箭";
-            tr1.name = "谐振发射器运载火箭";
-            tr1.ZHCN = "谐振发射器运载火箭";
-            tr1.ENUS = "Resonant generator carrier rocket";
-            tr1.FRFR = tr1.ENUS;
-
-            tr2.ID = 10611 + bias;
-            tr2.Name = "谐振发射器运载火箭描述";
-            tr2.name = "谐振发射器运载火箭描述";
-            tr2.ZHCN = "大量谐振发射器将组成阵列并向全星系广播折跃能量场。";
-            tr2.ENUS = "A large number of resonant generators will form an array and broadcast the warp energy field to the entire galaxy.";
-            tr2.FRFR = tr2.ENUS;
+            new StringProto
+            {
+                Name = "谐振发射器运载火箭描述",
+                ZHCN = "大量谐振发射器将组成阵列并向全星系广播折跃能量场。",
+                ENUS = "A large number of resonant generators will form an array and broadcast the warp energy field to the entire galaxy."
+            }.RegisterTranslation();
 
 
-            tr3.ID = 10612 + bias;
-            tr3.Name = "星际组装厂运载火箭";
-            tr3.name = "星际组装厂运载火箭";
-            tr3.ZHCN = "星际组装厂运载火箭";
-            tr3.ENUS = "Interstellar assembly carrier rocket";
-            tr3.FRFR = tr3.ENUS;
+            new StringProto { Name = "星际组装厂运载火箭", ZHCN = "星际组装厂运载火箭", ENUS = "Interstellar assembly carrier rocket" }.RegisterTranslation();
 
 
-            tr4.ID = 10613 + bias;
-            tr4.Name = "星际组装厂运载火箭描述";
-            tr4.name = "星际组装厂运载火箭描述";
-            tr4.ZHCN = "星际组装厂组件的运载工具。";
-            tr4.ENUS = "The delivery vehicle of Interstellar assembly components.";
-            tr4.FRFR = tr4.ENUS;
+            new StringProto { Name = "星际组装厂运载火箭描述", ZHCN = "星际组装厂组件的运载工具。", ENUS = "The delivery vehicle of Interstellar assembly components." }
+               .RegisterTranslation();
 
 
-            tr5.ID = 10614 + bias;
-            tr5.Name = "晶体重构器运载火箭";
-            tr5.name = "晶体重构器运载火箭";
-            tr5.ZHCN = "晶体重构器运载火箭";
-            tr5.ENUS = "Crystal reconstructor carrier rocket";
-            tr5.FRFR = tr5.ENUS;
+            new StringProto { Name = "晶体重构器运载火箭", ZHCN = "晶体重构器运载火箭", ENUS = "Crystal reconstructor carrier rocket" }.RegisterTranslation();
 
 
-            tr6.ID = 10615 + bias;
-            tr6.Name = "晶体重构器运载火箭描述";
-            tr6.name = "晶体重构器运载火箭描述";
-            tr6.ZHCN = "晶体重构器相关组件的运载工具。";
-            tr6.ENUS = "The delivery vehicle for the components of the Crystal reconstructor.";
-            tr6.FRFR = tr6.ENUS;
+            new StringProto
+            {
+                Name = "晶体重构器运载火箭描述", ZHCN = "晶体重构器相关组件的运载工具。", ENUS = "The delivery vehicle for the components of the Crystal reconstructor."
+            }.RegisterTranslation();
 
-            tr7.ID = 10616 + bias;
-            tr7.Name = "铁金属重构装置";
-            tr7.name = "铁金属重构装置";
-            tr7.ZHCN = "铁金属重构装置";
-            tr7.ENUS = "Iron reconstruct receiver";
-            tr7.FRFR = tr7.ENUS;
+            new StringProto { Name = "铁金属重构装置", ZHCN = "铁金属重构装置", ENUS = "Iron reconstruct receiver" }.RegisterTranslation();
 
-            tr8.ID = 10617 + bias;
-            tr8.Name = "铜金属重构装置";
-            tr8.name = "铜金属重构装置";
-            tr8.ZHCN = "铜金属重构装置";
-            tr8.ENUS = "Copper reconstruct receiver";
-            tr8.FRFR = tr8.ENUS;
+            new StringProto { Name = "铜金属重构装置", ZHCN = "铜金属重构装置", ENUS = "Copper reconstruct receiver" }.RegisterTranslation();
 
-            tr9.ID = 10618 + bias;
-            tr9.Name = "高纯硅重构装置";
-            tr9.name = "高纯硅重构装置";
-            tr9.ZHCN = "高纯硅重构装置";
-            tr9.ENUS = "Silicon reconstruct receiver";
-            tr9.FRFR = tr9.ENUS;
+            new StringProto { Name = "高纯硅重构装置", ZHCN = "高纯硅重构装置", ENUS = "Silicon reconstruct receiver" }.RegisterTranslation();
 
-            tr10.ID = 10619 + bias;
-            tr10.Name = "钛金属重构装置";
-            tr10.name = "钛金属重构装置";
-            tr10.ZHCN = "钛金属重构装置";
-            tr10.ENUS = "Titanium reconstruct receiver";
-            tr10.FRFR = tr10.ENUS;
+            new StringProto { Name = "钛金属重构装置", ZHCN = "钛金属重构装置", ENUS = "Titanium reconstruct receiver" }.RegisterTranslation();
 
-            tr11.ID = 10620 + bias;
-            tr11.Name = "单极磁石重构装置";
-            tr11.name = "单极磁石重构装置";
-            tr11.ZHCN = "单极磁石重构装置";
-            tr11.ENUS = "Unipolar magnet receiver";
-            tr11.FRFR = tr11.ENUS;
+            new StringProto { Name = "单极磁石重构装置", ZHCN = "单极磁石重构装置", ENUS = "Unipolar magnet receiver" }.RegisterTranslation();
 
-            tr12.ID = 10621 + bias;
-            tr12.Name = "接收重构装置描述";
-            tr12.name = "接收重构装置描述";
-            tr12.ZHCN = "从黑洞中解压出的亚稳态物质被接收后经过处理，重构为可直接使用的稳定材料。";
-            tr12.ENUS = "The metastable matter decompressed from the black hole is received, processed, and reconstructed into stable material that can be used directly.";
-            tr12.FRFR = tr12.ENUS;
+            new StringProto
+            {
+                Name = "接收重构装置描述",
+                ZHCN = "从黑洞中解压出的亚稳态物质被接收后经过处理，重构为可直接使用的稳定材料。",
+                ENUS
+                    = "The metastable matter decompressed from the black hole is received, processed, and reconstructed into stable material that can be used directly."
+            }.RegisterTranslation();
 
-            tr13.ID = 10622 + bias;
-            tr13.Name = "晶体接收器";
-            tr13.name = "晶体接收器";
-            tr13.ZHCN = "晶体接收器";
-            tr13.ENUS = "Crystal receiver";
-            tr13.FRFR = tr13.ENUS;
+            new StringProto { Name = "晶体接收器", ZHCN = "晶体接收器", ENUS = "Crystal receiver" }.RegisterTranslation();
 
-            tr14.ID = 10623 + bias;
-            tr14.Name = "晶体接收器描述";
-            tr14.name = "晶体接收器描述";
-            tr14.ZHCN = "从晶体重构器中合成的卡西米尔晶体前导微晶流将在此经过自发β衰变并形成完美的卡西米尔晶体。接收器也可以转而富集该过程的副产物——光栅石。";
-            tr14.ENUS = "The Casimir crystal precursor crystallite flow synthesized from the Crystal reconstructor will undergo spontaneous β decay here and form perfect casimir crystals. The receivers can also in turn enrich for optical grating crystals, the by-product of the process.";
-            tr14.FRFR = tr14.ENUS;
+            new StringProto
+            {
+                Name = "晶体接收器描述",
+                ZHCN = "从晶体重构器中合成的卡西米尔晶体前导微晶流将在此经过自发β衰变并形成完美的卡西米尔晶体。接收器也可以转而富集该过程的副产物——光栅石。",
+                ENUS
+                    = "The Casimir crystal precursor crystallite flow synthesized from the Crystal reconstructor will undergo spontaneous β decay here and form perfect casimir crystals. The receivers can also in turn enrich for optical grating crystals, the by-product of the process."
+            }.RegisterTranslation();
 
-            tr15.ID = 10624 + bias;
-            tr15.Name = "组件集成装置";
-            tr15.name = "组件集成装置";
-            tr15.ZHCN = "组件集成装置";
-            tr15.ENUS = "Component integration station";
-            tr15.FRFR = tr15.ENUS;
+            new StringProto { Name = "组件集成装置", ZHCN = "组件集成装置", ENUS = "Component integration station" }.RegisterTranslation();
 
-            tr16.ID = 10625 + bias;
-            tr16.Name = "组件集成装置描述";
-            tr16.name = "组件集成装置描述";
-            tr16.ZHCN = "将星际组装厂的高集成配件进行预解压，形成可被快速组装的多功能集成组件。";
-            tr16.ENUS = "Pre-decompress the high-integration parts from the Interstellar assembly, to form multi-functional integrated components that can be quickly assembled.";
-            tr16.FRFR = tr16.ENUS;
+            new StringProto
+            {
+                Name = "组件集成装置描述",
+                ZHCN = "将星际组装厂的高集成配件进行预解压，形成可被快速组装的多功能集成组件。",
+                ENUS
+                    = "Pre-decompress the high-integration parts from the Interstellar assembly, to form multi-functional integrated components that can be quickly assembled."
+            }.RegisterTranslation();
 
-            tr17.ID = 10626 + bias;
-            tr17.Name = "多功能集成组件";
-            tr17.name = "多功能集成组件";
-            tr17.ZHCN = "多功能集成组件";
-            tr17.ENUS = "Multi-functional integrated components";
-            tr17.FRFR = tr17.ENUS;
+            new StringProto { Name = "多功能集成组件", ZHCN = "多功能集成组件", ENUS = "Multi-functional integrated components" }.RegisterTranslation();
 
-            tr18.ID = 10627 + bias;
-            tr18.Name = "多功能集成组件描述";
-            tr18.name = "多功能集成组件描述";
-            tr18.ZHCN = "超高集成度使其可以迅速地组装成多种生产建筑和物流组件，却仅占用极小的空间。";
-            tr18.ENUS = "The high level of integration makes it possible to quickly assemble a variety of production building and logistics components, while occupying very little space.";
-            tr18.FRFR = tr18.ENUS;
+            new StringProto
+            {
+                Name = "多功能集成组件描述",
+                ZHCN = "超高集成度使其可以迅速地组装成多种生产建筑和物流组件，却仅占用极小的空间。",
+                ENUS
+                    = "The high level of integration makes it possible to quickly assemble a variety of production building and logistics components, while occupying very little space."
+            }.RegisterTranslation();
 
-            tr19.ID = 10628 + bias;
-            tr19.Name = "光栅晶体接收器";
-            tr19.name = "光栅晶体接收器";
-            tr19.ZHCN = "光栅晶体接收器";
-            tr19.ENUS = "Optical crystal receiver";
-            tr19.FRFR = tr19.ENUS;
+            new StringProto { Name = "光栅晶体接收器", ZHCN = "光栅晶体接收器", ENUS = "Optical crystal receiver" }.RegisterTranslation();
 
-            tr20.ID = 10629 + bias;
-            tr20.Name = "石墨提炼装置";
-            tr20.name = "石墨提炼装置";
-            tr20.ZHCN = "石墨提炼装置";
-            tr20.ENUS = "Graphite extraction receiver";
-            tr20.FRFR = tr20.ENUS;
-
-            LDBTool.PreAddProto(tr1);
-            LDBTool.PreAddProto(tr2);
-            LDBTool.PreAddProto(tr3);
-            LDBTool.PreAddProto(tr4);
-            LDBTool.PreAddProto(tr5);
-            LDBTool.PreAddProto(tr6);
-            LDBTool.PreAddProto(tr7);
-            LDBTool.PreAddProto(tr8);
-            LDBTool.PreAddProto(tr9);
-            LDBTool.PreAddProto(tr10);
-            LDBTool.PreAddProto(tr11);
-            LDBTool.PreAddProto(tr12);
-            LDBTool.PreAddProto(tr13);
-            LDBTool.PreAddProto(tr14);
-            LDBTool.PreAddProto(tr15);
-            LDBTool.PreAddProto(tr16);
-            LDBTool.PreAddProto(tr17);
-            LDBTool.PreAddProto(tr18);
-            LDBTool.PreAddProto(tr19);
-            LDBTool.PreAddProto(tr20);
+            new StringProto { Name = "石墨提炼装置", ZHCN = "石墨提炼装置", ENUS = "Graphite extraction receiver" }.RegisterTranslation();
         }
 
         public static void AddTranslateProtoNames3()
         {
-            int bias = 80;
-            StringProto tr1 = new StringProto();
-            StringProto tr2 = new StringProto();
-            StringProto tr3 = new StringProto();
-            StringProto tr4 = new StringProto();
-            StringProto tr5 = new StringProto();
-            StringProto tr6 = new StringProto();
-            StringProto tr7 = new StringProto();
-            StringProto tr8 = new StringProto();
-            StringProto tr9 = new StringProto();
-            StringProto tr10 = new StringProto();
-            StringProto tr11 = new StringProto();
-            StringProto tr12 = new StringProto();
-            StringProto tr13 = new StringProto();
-            //StringProto tr14 = new StringProto();
-            //StringProto tr15 = new StringProto();
-            //StringProto tr16 = new StringProto();
-            //StringProto tr17 = new StringProto();
-            //StringProto tr18 = new StringProto();
-            //StringProto tr19 = new StringProto();
-            //StringProto tr20 = new StringProto();
+            new StringProto { Name = "传送带 快速组装", ZHCN = "传送带 快速组装", ENUS = "Conveyor belt - quick assembly" }.RegisterTranslation();
 
-            tr1.ID = 10610 + bias;
-            tr1.Name = "传送带 快速组装";
-            tr1.name = "传送带 快速组装";
-            tr1.ZHCN = "传送带 快速组装";
-            tr1.ENUS = "Conveyor belt - quick assembly";
-            tr1.FRFR = tr1.ENUS;
-
-            tr2.ID = 10611 + bias;
-            tr2.Name = "分拣器 快速组装";
-            tr2.name = "分拣器 快速组装";
-            tr2.ZHCN = "分拣器 快速组装";
-            tr2.ENUS = "Sorter - quick assembly";
-            tr2.FRFR = tr2.ENUS;
+            new StringProto { Name = "分拣器 快速组装", ZHCN = "分拣器 快速组装", ENUS = "Sorter - quick assembly" }.RegisterTranslation();
 
 
-            tr3.ID = 10612 + bias;
-            tr3.Name = "配电站 快速组装";
-            tr3.name = "配电站 快速组装";
-            tr3.ZHCN = "配电站 快速组装";
-            tr3.ENUS = "Substation - quick assembly";
-            tr3.FRFR = tr3.ENUS;
+            new StringProto { Name = "配电站 快速组装", ZHCN = "配电站 快速组装", ENUS = "Substation - quick assembly" }.RegisterTranslation();
 
 
-            tr4.ID = 10613 + bias;
-            tr4.Name = "制造台 快速组装";
-            tr4.name = "制造台 快速组装";
-            tr4.ZHCN = "制造台 快速组装";
-            tr4.ENUS = "Assembling machine - quick assembly";
-            tr4.FRFR = tr4.ENUS;
+            new StringProto { Name = "制造台 快速组装", ZHCN = "制造台 快速组装", ENUS = "Assembling machine - quick assembly" }.RegisterTranslation();
 
 
-            tr5.ID = 10614 + bias;
-            tr5.Name = "位面熔炉 快速组装";
-            tr5.name = "位面熔炉 快速组装";
-            tr5.ZHCN = "位面熔炉 快速组装";
-            tr5.ENUS = "Plane smelter - quick assembly";
-            tr5.FRFR = tr5.ENUS;
+            new StringProto { Name = "位面熔炉 快速组装", ZHCN = "位面熔炉 快速组装", ENUS = "Plane smelter - quick assembly" }.RegisterTranslation();
 
 
-            tr6.ID = 10615 + bias;
-            tr6.Name = "化工厂 快速组装";
-            tr6.name = "化工厂 快速组装";
-            tr6.ZHCN = "化工厂 快速组装";
-            tr6.ENUS = "Chemical plant - quick assembly";
-            tr6.FRFR = tr6.ENUS;
+            new StringProto { Name = "化工厂 快速组装", ZHCN = "化工厂 快速组装", ENUS = "Chemical plant - quick assembly" }.RegisterTranslation();
 
-            tr7.ID = 10616 + bias;
-            tr7.Name = "精炼厂 快速组装";
-            tr7.name = "精炼厂 快速组装";
-            tr7.ZHCN = "精炼厂 快速组装";
-            tr7.ENUS = "Refinery - quick assembly";
-            tr7.FRFR = tr7.ENUS;
+            new StringProto { Name = "精炼厂 快速组装", ZHCN = "精炼厂 快速组装", ENUS = "Refinery - quick assembly" }.RegisterTranslation();
 
-            tr8.ID = 10617 + bias;
-            tr8.Name = "对撞机 快速组装";
-            tr8.name = "对撞机 快速组装";
-            tr8.ZHCN = "对撞机 快速组装";
-            tr8.ENUS = "Collider - quick assembly";
-            tr8.FRFR = tr8.ENUS;
+            new StringProto { Name = "对撞机 快速组装", ZHCN = "对撞机 快速组装", ENUS = "Collider - quick assembly" }.RegisterTranslation();
 
-            tr9.ID = 10618 + bias;
-            tr9.Name = "研究站 快速组装";
-            tr9.name = "研究站 快速组装";
-            tr9.ZHCN = "研究站 快速组装";
-            tr9.ENUS = "Lab - quick assembly";
-            tr9.FRFR = tr9.ENUS;
+            new StringProto { Name = "研究站 快速组装", ZHCN = "研究站 快速组装", ENUS = "Lab - quick assembly" }.RegisterTranslation();
 
-            tr10.ID = 10619 + bias;
-            tr10.Name = "人造恒星 快速组装";
-            tr10.name = "人造恒星 快速组装";
-            tr10.ZHCN = "人造恒星 快速组装";
-            tr10.ENUS = "Artificial star - quick assembly";
-            tr10.FRFR = tr10.ENUS;
+            new StringProto { Name = "人造恒星 快速组装", ZHCN = "人造恒星 快速组装", ENUS = "Artificial star - quick assembly" }.RegisterTranslation();
 
-            tr11.ID = 10620 + bias;
-            tr11.Name = "行星内物流 快速组装";
-            tr11.name = "行星内物流 快速组装";
-            tr11.ZHCN = "行星内物流 快速组装";
-            tr11.ENUS = "Planetary logistics - quick assembly";
-            tr11.FRFR = tr11.ENUS;
+            new StringProto { Name = "行星内物流 快速组装", ZHCN = "行星内物流 快速组装", ENUS = "Planetary logistics - quick assembly" }.RegisterTranslation();
 
-            tr12.ID = 10621 + bias;
-            tr12.Name = "星际物流 快速组装";
-            tr12.name = "星际物流 快速组装";
-            tr12.ZHCN = "星际物流 快速组装";
-            tr12.ENUS = "Interstellar logistics - quick assembly";
-            tr12.FRFR = tr12.ENUS;
+            new StringProto { Name = "星际物流 快速组装", ZHCN = "星际物流 快速组装", ENUS = "Interstellar logistics - quick assembly" }.RegisterTranslation();
 
-            tr13.ID = 10622 + bias;
-            tr13.Name = "快速组装描述";
-            tr13.name = "快速组装描述";
-            tr13.ZHCN = "使用多功能集成组件快速递组装成目标物品。";
-            tr13.ENUS = "Quickly assemble target items using multi-functional integrated components.";
-            tr13.FRFR = tr13.ENUS;
-
-            //tr14.ID = 10623 + bias;
-            //tr14.Name = "快速组装描述";
-            //tr14.name = "快速组装描述";
-            //tr14.ZHCN = "使用多功能集成组件快速递组装成目标物品。";
-            //tr14.ENUS = "Quickly assemble target items using multi-functional integrated components.";
-            //tr14.FRFR = tr14.ENUS;
-
-            //tr15.ID = 10624 + bias;
-            //tr15.Name = "组件集成装置";
-            //tr15.name = "组件集成装置";
-            //tr15.ZHCN = "组件集成装置";
-            //tr15.ENUS = "Component integration station";
-            //tr15.FRFR = tr15.ENUS;
-
-            //tr16.ID = 10625 + bias;
-            //tr16.Name = "组件集成装置描述";
-            //tr16.name = "组件集成装置描述";
-            //tr16.ZHCN = "将星际组装厂的高集成配件进行预解压，形成可被快速组装的多功能集成组件。";
-            //tr16.ENUS = "Pre-decompress the high-integration parts from the Interstellar assembly, to form multi-functional integrated components that can be quickly assembled.";
-            //tr16.FRFR = tr16.ENUS;
-
-            //tr17.ID = 10626 + bias;
-            //tr17.Name = "多功能集成组件";
-            //tr17.name = "多功能集成组件";
-            //tr17.ZHCN = "多功能集成组件";
-            //tr17.ENUS = "Multi-functional integrated components";
-            //tr17.FRFR = tr17.ENUS;
-
-            //tr18.ID = 10627 + bias;
-            //tr18.Name = "多功能集成组件描述";
-            //tr18.name = "多功能集成组件描述";
-            //tr18.ZHCN = "超高集成度使其可以迅速地组装成多种生产建筑和物流组件，却仅占用极小的空间。";
-            //tr18.ENUS = "The high level of integration makes it possible to quickly assemble a variety of production building and logistics components, while occupying very little space.";
-            //tr18.FRFR = tr18.ENUS;
-
-            //tr19.ID = 10628 + bias;
-            //tr19.Name = "科学枢纽运载火箭";
-            //tr19.name = "科学枢纽运载火箭";
-            //tr19.ZHCN = "科学枢纽运载火箭";
-            //tr19.ENUS = "Science nexus carrier rocket";
-            //tr19.FRFR = tr19.ENUS;
-
-            //tr20.ID = 10629 + bias;
-            //tr20.Name = "科学枢纽运载火箭描述";
-            //tr20.name = "科学枢纽运载火箭描述";
-            //tr20.ZHCN = "科学枢纽相关组件的运载工具。";
-            //tr20.ENUS = "The delivery vehicle for the components of the Science nexus.";
-            //tr20.FRFR = tr20.ENUS;
-
-            LDBTool.PreAddProto(tr1);
-            LDBTool.PreAddProto(tr2);
-            LDBTool.PreAddProto(tr3);
-            LDBTool.PreAddProto(tr4);
-            LDBTool.PreAddProto(tr5);
-            LDBTool.PreAddProto(tr6);
-            LDBTool.PreAddProto(tr7);
-            LDBTool.PreAddProto(tr8);
-            LDBTool.PreAddProto(tr9);
-            LDBTool.PreAddProto(tr10);
-            LDBTool.PreAddProto(tr11);
-            LDBTool.PreAddProto(tr12);
-            LDBTool.PreAddProto(tr13);
-            //LDBTool.PreAddProto(tr14);
-            //LDBTool.PreAddProto(tr15);
-            //LDBTool.PreAddProto(tr16);
-            //LDBTool.PreAddProto(tr17);
-            //LDBTool.PreAddProto(tr18);
-            //LDBTool.PreAddProto(tr19);
-            //LDBTool.PreAddProto(tr20);
+            new StringProto
+            {
+                Name = "快速组装描述",
+                ZHCN = "使用多功能集成组件快速递组装成目标物品。",
+                ENUS = "Quickly assemble target items using multi-functional integrated components."
+            }.RegisterTranslation();
         }
-
 
         public static void AddTranslateProtoNames4()
         {
-            ProtoRegistry.RegisterString("每秒伤害gm", "Damage per second", "每秒伤害");
-            ProtoRegistry.RegisterString("最大生产速度gm", "Production speed", "生产速度");
-            ProtoRegistry.RegisterString("阶段", "stage", "阶段");
-            ProtoRegistry.RegisterString("连续开火次数", "Maximum fire times per charging", "连续开火次数");
-            ProtoRegistry.RegisterString("最大射程", "Maximum fire range", "最大射程");
-            ProtoRegistry.RegisterString("伤害削减", "Damage reduction", "伤害削减");
-            ProtoRegistry.RegisterString("当前能量水平", "Current capacity", "当前能量水平");
-            ProtoRegistry.RegisterString("请拆除接收站", "Please remove all receivers", "请拆除本星系的接收站");
-            ProtoRegistry.RegisterString("下一阶段所需能量水平", "Next stage required capacity", "下一阶段所需能量水平");
-            ProtoRegistry.RegisterString("冷却及充能时间", "Cooldown & charge time", "冷却及充能时间");
-            ProtoRegistry.RegisterString("修建进度", "\nProgress to\nnext stage", "修建进度");
-            ProtoRegistry.RegisterString("最终阶段", "Final stage", "最终阶段");
-            ProtoRegistry.RegisterString("节点总数（已规划）gm", "Nodes in total(Planned)", "节点总数（已规划）");
-            ProtoRegistry.RegisterString("请求功率gm", "Requested power", "最终阶段");
-            ProtoRegistry.RegisterString("无限制gm", "Infinite", "无限制");
+            LocalizationModule.RegisterTranslation("每秒伤害gm", "Damage per second", "每秒伤害", "");
+            LocalizationModule.RegisterTranslation("最大生产速度gm", "Production speed", "生产速度", "");
+            LocalizationModule.RegisterTranslation("阶段", "stage", "阶段", "");
+            LocalizationModule.RegisterTranslation("连续开火次数", "Maximum fire times per charging", "连续开火次数", "");
+            LocalizationModule.RegisterTranslation("最大射程", "Maximum fire range", "最大射程", "");
+            LocalizationModule.RegisterTranslation("伤害削减", "Damage reduction", "伤害削减", "");
+            LocalizationModule.RegisterTranslation("当前能量水平", "Current capacity", "当前能量水平", "");
+            LocalizationModule.RegisterTranslation("请拆除接收站", "Please remove all receivers", "请拆除本星系的接收站", "");
+            LocalizationModule.RegisterTranslation("下一阶段所需能量水平", "Next stage required capacity", "下一阶段所需能量水平", "");
+            LocalizationModule.RegisterTranslation("冷却及充能时间", "Cooldown & charge time", "冷却及充能时间", "");
+            LocalizationModule.RegisterTranslation("修建进度", "\nProgress to\nnext stage", "修建进度", "");
+            LocalizationModule.RegisterTranslation("最终阶段", "Final stage", "最终阶段", "");
+            LocalizationModule.RegisterTranslation("节点总数（已规划）gm", "Nodes in total(Planned)", "节点总数（已规划）", "");
+            LocalizationModule.RegisterTranslation("请求功率gm", "Requested power", "最终阶段", "");
+            LocalizationModule.RegisterTranslation("无限制gm", "Infinite", "无限制", "");
 
-            ProtoRegistry.RegisterString("警告巨构科技未解锁", "You must unlock the corresponding technology first", "你必须先解锁对应巨构的科技");
+            LocalizationModule.RegisterTranslation("警告巨构科技未解锁", "You must unlock the corresponding technology first", "你必须先解锁对应巨构的科技", "");
 
-            ProtoRegistry.RegisterString("力场发生器", "Force field generator", "力场发生器");
-            ProtoRegistry.RegisterString("力场发生器描述", "With the help of the gravity generator, the force field generator can multiply the gravitational force in a fixed resonance field and give it a highly controllable directivity. If the energy supply is sufficient, the force field generator is able to deflects or even reverses the direction of the force field, making it possible to encode the resonant frequency of the force field.", 
-                "借助引力发生装置，力场发生器可以将引力在固定的谐振场域成倍放大，并赋予其高度可控的指向性。如果能量供应足够，力场发生器快速偏折甚至掉转力场方向，这使得对力场谐振频率进行编码成为可能。");
-            ProtoRegistry.RegisterString("复合态晶体", "Compound cyrstal", "复合态晶体");
-            ProtoRegistry.RegisterString("复合态晶体描述", "This single-molecule crystal has a normal density like ordinary matter, but can be reshaped into a material with extremely high hardness under the constraints of strong interaction force, so this material is also called strong interaction material (SIM).", 
-                "这种单分子晶体像普通物质一样拥有正常的密度，但能够在强相互作用力的束缚下，被重塑为硬度极高的物质，因此这种物质又被称为强相互作用力材料（SIM）。");
-            ProtoRegistry.RegisterString("电磁力抑制器", "Electromagnetic force suppressor", "电磁力抑制器");
-            ProtoRegistry.RegisterString("电磁力抑制器描述", "By eliminating the electromagnetic force between atomic nucleus, it allows the range of the strong interaction force to overflow the nucleus and expand to atom scope, providing the conditions for precise control of the strong interaction force. The suppressed electromagnetic force can also be redirected to create a vacuum Valsex field vortex ring.", 
-                "通过消除原子核之间的电磁力，允许强相互作用力的范围溢出原子核，并扩展到原子大小，为精确控制强力提供了条件。被抑制的电磁力还可以被引导至特定方向用以产生真空瓦尔塞克斯电场涡环。");
-            ProtoRegistry.RegisterString("胶子发生器", "Gluon generator", "胶子发生器");
-            ProtoRegistry.RegisterString("胶子发生器描述", "Generate controllable gluons to limit or expand the strength and scope of the strong interaction. The gluon generator must be controlled by quantum computers, so as to precisely control the arrangement of atoms on the quantum scale.", 
-                "产生可控胶子，以此限制或扩大强相互作用力的强度和作用范围。胶子发生器必须在量子计算机的协助下才能提高控制的精准程度，从而在量子尺度上精确控制原子排布。");
-            ProtoRegistry.RegisterString("强力过载装置", "Strong interaction overload device", "强力过载装置");
-            ProtoRegistry.RegisterString("强力过载装置描述", "The SIO device can make the repulsive and the attractive force peak to coincide precisely at a specific point, so that any deviation of the nucleus will be pulled back by the strong interaction force. If electromagnetic interference is removed, the nucleus will be fully anchored.", 
-                "强力过载装置可以使强力的排斥力峰值和吸引力峰值在特定的点精准重合，因而原子核的任何偏离都会被强力拉回。如果剔除了电磁力干扰，原子核将被完全锚定。");
-            ProtoRegistry.RegisterString("导流框架", "Flow guid frame", "导流框架");
-            ProtoRegistry.RegisterString("导流框架描述", "Storing, directing the energy of stars in a specific direction, creating a very high power output.", "将恒星的能量存储并引导、集中至特定方向，创造极高功率的能量输出。"); 
-            ProtoRegistry.RegisterString("恒星炮组件", "Star cannon component", "恒星炮组件");
-            ProtoRegistry.RegisterString("恒星炮组件描述", "The star cannon can store the energy of the star and guide it to the front of the muzzle through the frame. Nicoll-Dyson beam will continuously destabilize the wormhole, eventually closing the high-dimensional channel.", "恒星炮能够储存恒星的能量，并通过框架引导至炮口前方。尼科尔-戴森光束可以持续破坏虫洞的稳定性，最终关闭高维通道。");
-            ProtoRegistry.RegisterString("恒星炮运载火箭", "Star cannon carrier rocket", "恒星炮运载火箭");
-            ProtoRegistry.RegisterString("恒星炮运载火箭描述", "The delivery vehicle for the components of the Star cannon.", "恒星炮相关组件的运载工具。"); 
-            ProtoRegistry.RegisterString("水滴gm", "Droplet", "水滴");
-            ProtoRegistry.RegisterString("水滴描述gm", "If the battle is in the current galaxy, the droplets will leave the mecha and hit the enemy's key structures with its extremely hard surface. Since precise control of the propulsion and steering of the droplets requires powerful remote computing power, and the launch of droplets and manipulation require the remote supply of mecha energy, there is an upper limit to the number of droplets that the mecha can control at one time.", 
-                "如果战斗发生在当前星系，水滴将从机甲中离开，并使用极其坚硬的表面撞击敌人的关键结构。由于精确地控制水滴的推进和转向需要强大的远端运算能力，且发射水滴和操控均需要机甲能量的远程供给，机甲一次性能够操控的水滴数量是有上限的。");
+            LocalizationModule.RegisterTranslation("力场发生器", "Force field generator", "力场发生器", "");
+            LocalizationModule.RegisterTranslation(
+                "力场发生器描述",
+                "With the help of the gravity generator, the force field generator can multiply the gravitational force in a fixed resonance field and give it a highly controllable directivity. If the energy supply is sufficient, the force field generator is able to deflects or even reverses the direction of the force field, making it possible to encode the resonant frequency of the force field.",
+                "借助引力发生装置，力场发生器可以将引力在固定的谐振场域成倍放大，并赋予其高度可控的指向性。如果能量供应足够，力场发生器快速偏折甚至掉转力场方向，这使得对力场谐振频率进行编码成为可能。", "");
+            LocalizationModule.RegisterTranslation("复合态晶体", "Compound cyrstal", "复合态晶体", "");
+            LocalizationModule.RegisterTranslation(
+                "复合态晶体描述",
+                "This single-molecule crystal has a normal density like ordinary matter, but can be reshaped into a material with extremely high hardness under the constraints of strong interaction force, so this material is also called strong interaction material (SIM).",
+                "这种单分子晶体像普通物质一样拥有正常的密度，但能够在强相互作用力的束缚下，被重塑为硬度极高的物质，因此这种物质又被称为强相互作用力材料（SIM）。", "");
+            LocalizationModule.RegisterTranslation("电磁力抑制器", "Electromagnetic force suppressor", "电磁力抑制器", "");
+            LocalizationModule.RegisterTranslation(
+                "电磁力抑制器描述",
+                "By eliminating the electromagnetic force between atomic nucleus, it allows the range of the strong interaction force to overflow the nucleus and expand to atom scope, providing the conditions for precise control of the strong interaction force. The suppressed electromagnetic force can also be redirected to create a vacuum Valsex field vortex ring.",
+                "通过消除原子核之间的电磁力，允许强相互作用力的范围溢出原子核，并扩展到原子大小，为精确控制强力提供了条件。被抑制的电磁力还可以被引导至特定方向用以产生真空瓦尔塞克斯电场涡环。", "");
+            LocalizationModule.RegisterTranslation("胶子发生器", "Gluon generator", "胶子发生器", "");
+            LocalizationModule.RegisterTranslation(
+                "胶子发生器描述",
+                "Generate controllable gluons to limit or expand the strength and scope of the strong interaction. The gluon generator must be controlled by quantum computers, so as to precisely control the arrangement of atoms on the quantum scale.",
+                "产生可控胶子，以此限制或扩大强相互作用力的强度和作用范围。胶子发生器必须在量子计算机的协助下才能提高控制的精准程度，从而在量子尺度上精确控制原子排布。", "");
+            LocalizationModule.RegisterTranslation("强力过载装置", "Strong interaction overload device", "强力过载装置", "");
+            LocalizationModule.RegisterTranslation(
+                "强力过载装置描述",
+                "The SIO device can make the repulsive and the attractive force peak to coincide precisely at a specific point, so that any deviation of the nucleus will be pulled back by the strong interaction force. If electromagnetic interference is removed, the nucleus will be fully anchored.",
+                "强力过载装置可以使强力的排斥力峰值和吸引力峰值在特定的点精准重合，因而原子核的任何偏离都会被强力拉回。如果剔除了电磁力干扰，原子核将被完全锚定。", "");
+            LocalizationModule.RegisterTranslation("导流框架", "Flow guid frame", "导流框架", "");
+            LocalizationModule.RegisterTranslation(
+                "导流框架描述", "Storing, directing the energy of stars in a specific direction, creating a very high power output.",
+                "将恒星的能量存储并引导、集中至特定方向，创造极高功率的能量输出。", "");
+            LocalizationModule.RegisterTranslation("恒星炮组件", "Star cannon component", "恒星炮组件", "");
+            LocalizationModule.RegisterTranslation(
+                "恒星炮组件描述",
+                "The star cannon can store the energy of the star and guide it to the front of the muzzle through the frame. Nicoll-Dyson beam will continuously destabilize the wormhole, eventually closing the high-dimensional channel.",
+                "恒星炮能够储存恒星的能量，并通过框架引导至炮口前方。尼科尔-戴森光束可以持续破坏虫洞的稳定性，最终关闭高维通道。", "");
+            LocalizationModule.RegisterTranslation("恒星炮运载火箭", "Star cannon carrier rocket", "恒星炮运载火箭", "");
+            LocalizationModule.RegisterTranslation("恒星炮运载火箭描述", "The delivery vehicle for the components of the Star cannon.", "恒星炮相关组件的运载工具。", "");
+            LocalizationModule.RegisterTranslation("水滴gm", "Droplet", "水滴", "");
+            LocalizationModule.RegisterTranslation(
+                "水滴描述gm",
+                "If the battle is in the current galaxy, the droplets will leave the mecha and hit the enemy's key structures with its extremely hard surface. Since precise control of the propulsion and steering of the droplets requires powerful remote computing power, and the launch of droplets and manipulation require the remote supply of mecha energy, there is an upper limit to the number of droplets that the mecha can control at one time.",
+                "如果战斗发生在当前星系，水滴将从机甲中离开，并使用极其坚硬的表面撞击敌人的关键结构。由于精确地控制水滴的推进和转向需要强大的远端运算能力，且发射水滴和操控均需要机甲能量的远程供给，机甲一次性能够操控的水滴数量是有上限的。", "");
 
-            ProtoRegistry.RegisterString("恒星炮设计说明题目", "Design Instructions", "恒星炮设计说明");
-            ProtoRegistry.RegisterString("恒星炮设计说明文本",
-                "1. When the star cannon fires, the rotation axes of all layers will overlap, and the north pole will point to the target wormhole, so please design the north pole of each layer as the center of the muzzle (Note that if the orbital inclination and longitude of AN change, the North Pole rotates with it);\n"
-                + "2. When the star cannon fires, 12 random  nodes on the 1st layer will emit a laser to the muzzle. For aesthetic reasons, please try to make the first layer only contain up to 12 nodes, and try to make them symmetrical to each other"
-                + "\n3. The construction of the star cannon needs to go through multiple stages. And at the same time, the star cannon can increase its damage, max fire times per charging, and charging speed several times. After reaching the final stage, continue to build shells will continuously increase the damage.",
-                "1.恒星炮开火时所有层级的旋转轴将重叠，并且让北极指向目标开火，因此设计时请以各层自己的北极点为炮口中心（注意如果轨道倾角和升交点经度改变，北极点也会随之旋转）；\n2.恒星炮开火时，第1层的随机12个节点将发射出激光指向炮口，为美观考虑，请尽量使得第1层只包含12个（或更少的）节点，并使其相互对称。\n3.恒星炮建造需要经过多个阶段，随着各建造阶段完成，恒星炮能数次提高伤害、连续开火次数和充能速度等属性。在达到最终阶段后，继续修建壳层可以不断提高伤害。");
-            ProtoRegistry.RegisterString("功能说明题目","Function","功能");
-            ProtoRegistry.RegisterString("物质解压器功能文本", "Produce unipolar magnet and some basic resources such as iron ingot, which can be received by corresponding receivers.", "产出单极磁石和一些基础资源（例如铁块），可被对应的物质重构器接收。");
-            ProtoRegistry.RegisterString("科学枢纽功能文本", "Upload hash points for research without requiring any matrix.", "无需矩阵即可上传hash点数进行研究。");
-            ProtoRegistry.RegisterString("折跃场广播阵列功能文本", "Increase the warp speed of logistics vessels.", "提高物流运输船的曲速速度。");
-            ProtoRegistry.RegisterString("星际组装厂功能文本", "You can set up to four recipes, this megastructure will automatically obtain materials from the exchange logistic stations on the ground, produce products and transport them back to the ground. The production speed depends on the assignment of energy and the recipe's time cost. And you can use proliferator to get extra products without consuming extra energy, if the recipe allows extra production. In any cases, you can not choose the production speedup mode. Unused energy will automatically produce multi-functional integration components.\nIn addition to receive by the exchange logistic station, components can also be transmitted directly to the mecha (but only 10%efficiency). You can set this function in the mecha panel.", "可设定最多四个配方，从地表的物资交换站获取材料，生产产品并输送回物资交换站，生产速度取决于分配的能量水平。可以将原料喷涂增产剂来获取额外产出（如果配方允许），这不会占用额外能量，也不能切换为生产加速模式。未使用的能量会自动生产多功能集成组件。\n组件除了可以在物资交换站接收，还可以直接远程传输到机甲中（但只有10%效率）。你可以在机甲面板中设置此功能。");
-            ProtoRegistry.RegisterString("晶体重构器功能文本", "Produce Casimir crystals and optical grating crystals, which can be received by corresponding receivers.", "产出卡西米尔晶体和光栅石，可被对应的接收器接收。");
+            LocalizationModule.RegisterTranslation("恒星炮设计说明题目", "Design Instructions", "恒星炮设计说明", "");
+            LocalizationModule.RegisterTranslation("恒星炮设计说明文本",
+                                                   "1. When the star cannon fires, the rotation axes of all layers will overlap, and the north pole will point to the target wormhole, so please design the north pole of each layer as the center of the muzzle (Note that if the orbital inclination and longitude of AN change, the North Pole rotates with it);\n" +
+                                                   "2. When the star cannon fires, 12 random  nodes on the 1st layer will emit a laser to the muzzle. For aesthetic reasons, please try to make the first layer only contain up to 12 nodes, and try to make them symmetrical to each other" +
+                                                   "\n3. The construction of the star cannon needs to go through multiple stages. And at the same time, the star cannon can increase its damage, max fire times per charging, and charging speed several times. After reaching the final stage, continue to build shells will continuously increase the damage.",
+                                                   "1.恒星炮开火时所有层级的旋转轴将重叠，并且让北极指向目标开火，因此设计时请以各层自己的北极点为炮口中心（注意如果轨道倾角和升交点经度改变，北极点也会随之旋转）；\n2.恒星炮开火时，第1层的随机12个节点将发射出激光指向炮口，为美观考虑，请尽量使得第1层只包含12个（或更少的）节点，并使其相互对称。\n3.恒星炮建造需要经过多个阶段，随着各建造阶段完成，恒星炮能数次提高伤害、连续开火次数和充能速度等属性。在达到最终阶段后，继续修建壳层可以不断提高伤害。",
+                                                   "");
+            LocalizationModule.RegisterTranslation("功能说明题目", "Function", "功能", "");
+            LocalizationModule.RegisterTranslation(
+                "物质解压器功能文本", "Produce unipolar magnet and some basic resources such as iron ingot, which can be received by corresponding receivers.",
+                "产出单极磁石和一些基础资源（例如铁块），可被对应的物质重构器接收。", "");
+            LocalizationModule.RegisterTranslation("科学枢纽功能文本", "Upload hash points for research without requiring any matrix.", "无需矩阵即可上传hash点数进行研究。",
+                                                   "");
+            LocalizationModule.RegisterTranslation("折跃场广播阵列功能文本", "Increase the warp speed of logistics vessels.", "提高物流运输船的曲速速度。", "");
+            LocalizationModule.RegisterTranslation(
+                "星际组装厂功能文本",
+                "You can set up to four recipes, this megastructure will automatically obtain materials from the exchange logistic stations on the ground, produce products and transport them back to the ground. The production speed depends on the assignment of energy and the recipe's time cost. And you can use proliferator to get extra products without consuming extra energy, if the recipe allows extra production. In any cases, you can not choose the production speedup mode. Unused energy will automatically produce multi-functional integration components.\nIn addition to receive by the exchange logistic station, components can also be transmitted directly to the mecha (but only 10%efficiency). You can set this function in the mecha panel.",
+                "可设定最多四个配方，从地表的物资交换站获取材料，生产产品并输送回物资交换站，生产速度取决于分配的能量水平。可以将原料喷涂增产剂来获取额外产出（如果配方允许），这不会占用额外能量，也不能切换为生产加速模式。未使用的能量会自动生产多功能集成组件。\n组件除了可以在物资交换站接收，还可以直接远程传输到机甲中（但只有10%效率）。你可以在机甲面板中设置此功能。",
+                "");
+            LocalizationModule.RegisterTranslation(
+                "晶体重构器功能文本", "Produce Casimir crystals and optical grating crystals, which can be received by corresponding receivers.",
+                "产出卡西米尔晶体和光栅石，可被对应的接收器接收。", "");
 
-            ProtoRegistry.RegisterString("远程折跃多功能组件限制", "Remote-Teleport Multifunction Component Upper Limit", "远程输送多功能组件限制");
-            ProtoRegistry.RegisterString("远程接收关闭gm", "Off", "关闭");
-            ProtoRegistry.RegisterString("上限1000", "Max 1000", "上限1000");
-            ProtoRegistry.RegisterString("上限2000", "Max 2000", "上限2000");
-            ProtoRegistry.RegisterString("组件无限制", "No limit", "无限制");
-            ProtoRegistry.RegisterString("已开启优先传输至机甲", "Remote-Teleport To Mecha Enabled", "已开启优先输送至机甲");
+            LocalizationModule.RegisterTranslation("远程折跃多功能组件限制", "Remote-Teleport Multifunction Component Upper Limit", "远程输送多功能组件限制", "");
+            LocalizationModule.RegisterTranslation("远程接收关闭gm", "Off", "关闭", "");
+            LocalizationModule.RegisterTranslation("上限1000", "Max 1000", "上限1000", "");
+            LocalizationModule.RegisterTranslation("上限2000", "Max 2000", "上限2000", "");
+            LocalizationModule.RegisterTranslation("组件无限制", "No limit", "无限制", "");
+            LocalizationModule.RegisterTranslation("已开启优先传输至机甲", "Remote-Teleport To Mecha Enabled", "已开启优先输送至机甲", "");
 
-            ProtoRegistry.RegisterString("鼠标触碰左侧黄条以规划巨构", "Touch the left bar to plan the megastructure", "鼠标触碰左侧线条以规划巨构");
+            LocalizationModule.RegisterTranslation("鼠标触碰左侧黄条以规划巨构", "Touch the left bar to plan the megastructure", "鼠标触碰左侧线条以规划巨构", "");
 
-            ProtoRegistry.RegisterString("物资交换器", "Exchange Logistic Station", "物资交换物流站");
-            ProtoRegistry.RegisterString("物资交换器描述", "Exchange Logistic Station can transport materials like Interstellar Logistics Station. In addition, the interstellar assembly also needs this building to obtain raw materials from the ground, or to transport the product to the ground.", "物资交换物流站可以像星际物流站一样运输物资，除此之外，星际组装厂还需要此建筑来从地面获取原材料，或将产物输送至地表。");
-            ProtoRegistry.RegisterString("理论最大速度", "max", "最大");
-            ProtoRegistry.RegisterString("能量分配", "Energy Allocation", "能量分配"); 
-            ProtoRegistry.RegisterString("剩余能量", "Residual Energy", "剩余能量");
-            ProtoRegistry.RegisterString("警告巨构不支持恒星系数量大于100个", "Warning! This MegaStructure does not support the galaxy with more than 100 star systems. Please find a star system with StarIndex lower than 100, or try to edit config file to remove this restriction.", "警告！此巨构不支持恒星系数量大于100个！请寻找序号小于100的恒星系，或在config文件中修改设置来解除此限制。");
-            ProtoRegistry.RegisterString("警告巨构不支持恒星系数量大于1000个", "Warning! This MegaStructure does not support the galaxy with more than 1000 star systems.  Please find another star system with StarIndex lower than 1000", "警告！此巨构不支持恒星系数量大于1000个！请寻找一个序号小于1000的恒星系。");
-            ProtoRegistry.RegisterString("警告选择了重复的配方", "Please don't select repeated recipes.", "请不要选择重复的配方。");
-            ProtoRegistry.RegisterString("主产物巨构内部仓储", "Internal Storage (Primary Product)", "主产物内部仓储");
-            ProtoRegistry.RegisterString("巨构内部仓储", "Internal Storage", "内部仓储");
-            ProtoRegistry.RegisterString("显示/隐藏星际组装厂配置", "Show/Hide Star Assembly Recipes", "显示/隐藏 星际组装厂配置");
-            ProtoRegistry.RegisterString("组装厂槽位解锁于", "Locked. Unlock at {0}x speed", "已锁定，解锁于 {0}x 速度");
-            ProtoRegistry.RegisterString("星际组装厂槽位未解锁警告", "This slot is locked!", "此栏位尚未解锁！");
+            LocalizationModule.RegisterTranslation("物资交换器", "Exchange Logistic Station", "物资交换物流站", "");
+            LocalizationModule.RegisterTranslation(
+                "物资交换器描述",
+                "Exchange Logistic Station can transport materials like Interstellar Logistics Station. In addition, the interstellar assembly also needs this building to obtain raw materials from the ground, or to transport the product to the ground.",
+                "物资交换物流站可以像星际物流站一样运输物资，除此之外，星际组装厂还需要此建筑来从地面获取原材料，或将产物输送至地表。", "");
+            LocalizationModule.RegisterTranslation("理论最大速度", "max", "最大", "");
+            LocalizationModule.RegisterTranslation("能量分配", "Energy Allocation", "能量分配", "");
+            LocalizationModule.RegisterTranslation("剩余能量", "Residual Energy", "剩余能量", "");
+            LocalizationModule.RegisterTranslation("警告巨构不支持恒星系数量大于100个",
+                                                   "Warning! This MegaStructure does not support the galaxy with more than 100 star systems. Please find a star system with StarIndex lower than 100, or try to edit config file to remove this restriction.",
+                                                   "警告！此巨构不支持恒星系数量大于100个！请寻找序号小于100的恒星系，或在config文件中修改设置来解除此限制。", "");
+            LocalizationModule.RegisterTranslation("警告巨构不支持恒星系数量大于1000个",
+                                                   "Warning! This MegaStructure does not support the galaxy with more than 1000 star systems.  Please find another star system with StarIndex lower than 1000",
+                                                   "警告！此巨构不支持恒星系数量大于1000个！请寻找一个序号小于1000的恒星系。", "");
+            LocalizationModule.RegisterTranslation("警告选择了重复的配方", "Please don't select repeated recipes.", "请不要选择重复的配方。", "");
+            LocalizationModule.RegisterTranslation("主产物巨构内部仓储", "Internal Storage (Primary Product)", "主产物内部仓储", "");
+            LocalizationModule.RegisterTranslation("巨构内部仓储", "Internal Storage", "内部仓储", "");
+            LocalizationModule.RegisterTranslation("显示/隐藏星际组装厂配置", "Show/Hide Star Assembly Recipes", "显示/隐藏 星际组装厂配置", "");
+            LocalizationModule.RegisterTranslation("组装厂槽位解锁于", "Locked. Unlock at {0}x speed", "已锁定，解锁于 {0}x 速度", "");
+            LocalizationModule.RegisterTranslation("星际组装厂槽位未解锁警告", "This slot is locked!", "此栏位尚未解锁！", "");
 
-            ProtoRegistry.RegisterString("警告巨构不支持此类配方", "Interstellar Assembly is not able to process this recipe.", "星际组装厂无法处理此配方。");
-            ProtoRegistry.RegisterString("钨重构装置", "Tungsten Reconstructor", "钨重构装置");
-            ProtoRegistry.RegisterString("巨建快速组装描述", "Quickly assemble constructions using multi-functional integrated components", "使用多功能集成组件快速递组装成目标巨建。");
+            LocalizationModule.RegisterTranslation("警告巨构不支持此类配方", "Interstellar Assembly is not able to process this recipe.", "星际组装厂无法处理此配方。", "");
+            LocalizationModule.RegisterTranslation("钨重构装置", "Tungsten Reconstructor", "钨重构装置", "");
+            LocalizationModule.RegisterTranslation("巨建快速组装描述", "Quickly assemble constructions using multi-functional integrated components",
+                                                   "使用多功能集成组件快速递组装成目标巨建。", "");
 
 
-            ProtoRegistry.RegisterString("巨构状态", "Mega structure status", "巨构状态");
-            ProtoRegistry.RegisterString("巨构类型不符", "type not match", "巨构不符");
-            ProtoRegistry.RegisterString("模式错误", "wrong mode", "模式错误");
+            LocalizationModule.RegisterTranslation("巨构状态", "Mega structure status", "巨构状态", "");
+            LocalizationModule.RegisterTranslation("巨构类型不符", "type not match", "巨构不符", "");
+            LocalizationModule.RegisterTranslation("模式错误", "wrong mode", "模式错误", "");
 
             // 特化
-            ProtoRegistry.RegisterString("星际组装厂特化名称0", "Interstellar Assembly Specilization", "星际组装厂 - 特化");
-            ProtoRegistry.RegisterString("星际组装厂特化名称1", "Stellar Forge", "恒星熔炉");
-            ProtoRegistry.RegisterString("星际组装厂特化名称2", "Stellar reactor", "恒星反应釜");
-            ProtoRegistry.RegisterString("星际组装厂特化名称3", "Ring-star Particle Accelerator", "星环粒子加速器");
-            ProtoRegistry.RegisterString("星际组装厂特化名称4", "Hyper-precision Assembly", "超精密装配厂");
-            ProtoRegistry.RegisterString("星际组装厂特化名称5", "Mega Assembly", "巨型装配厂");
-            ProtoRegistry.RegisterString("特化0介绍标题", "Interstellar Assembly Specilization", "星际组装厂 - 特化");
-            ProtoRegistry.RegisterString("特化1介绍标题", "Stellar Forge", "恒星熔炉");
-            ProtoRegistry.RegisterString("特化2介绍标题", "Stellar Reactor", "恒星反应釜");
-            ProtoRegistry.RegisterString("特化3介绍标题", "Ring-star Particle Accelerator", "星环粒子加速器");
-            ProtoRegistry.RegisterString("特化4介绍标题", "Hyper-precision Assembly", "超精密装配厂");
-            ProtoRegistry.RegisterString("特化5介绍标题", "Mega Assembly", "巨型装配厂");
-            ProtoRegistry.RegisterString("特化0介绍内容", "Interstellar Assembly Specilize", "一旦满足某种特化的<color=#30bb30>要求</color>，星际组装厂的特化进程将开始，<color=#30bb30>保持要求10分钟</color>后可以将星际组装厂转化为该<color=\"#61D8FFc0\">特化模式</color>。\n不同的特化模式将对不同的配方提供<color=\"#61D8FFc0\">加成效果</color>。\n一旦特化进程完成，你可以<color=#30bb30>不再保持特化的要求</color>，<color=#30bb30><i>除非你转而开始满足另一种不同特化的转化要求</i></color>，这将使你的星际组装厂向新的特化开始转变。");
-            ProtoRegistry.RegisterString("特化1介绍内容", "Requirement: ", "要求：分配了至少5个<color=#30bb30>冶炼</color>配方，且无其他类型的配方。\n\n特化效果：所有<color=#30bb30>冶炼</color>配方<color=\"#61D8FFc0\">允许增产</color>，且<color=\"#61D8FFc0\">速度+200%</color>。但无法产出多功能集成组件。\n\n<color=\"#61D8FFc0\">允许增产</color>：配方的原料喷涂增产剂后，在星际组装厂中生产的产物一定可以获得<color=\"#61D8FFc0\">额外产出</color>效果，无论该配方是否禁止额外产出效果。");
-            ProtoRegistry.RegisterString("特化2介绍内容", "Stellar reactor", "要求：分配了至少3个<color=#30bb30>化工</color>、<color=#30bb30>石油</color>或<color=#30bb30>增产剂</color>配方，且无其他类型的配方。\n\n特化效果：为所有<color=#30bb30>化工</color>、<color=#30bb30>石油</color>和<color=#30bb30>增产剂</color>配方的原料和产物<color=\"#61D8FFc0\">免费喷涂增产剂</color>，并<color=\"#61D8FFc0\">允许增产</color>，他们的<color=\"#61D8FFc0\">速度+100%</color>。\n\n<color=\"#61D8FFc0\">允许增产</color>：配方的原料喷涂增产剂后，在星际组装厂中生产的产物一定可以获得<color=\"#61D8FFc0\">额外产出</color>效果，无论该配方是否禁止额外产出效果。");
-            ProtoRegistry.RegisterString("特化3介绍内容", "Ring-star Particle Accelerator", "要求：分配了至少3个与<color=#30bb30>反物质</color>或<color=#30bb30>重氢</color><color=#30bb30><i>相关</i></color>的配方，且没有不<color=#30bb30><i>相关</i></color>的配方。\n\n特化效果：所有与<color=#30bb30>反物质</color>或<color=#30bb30>重氢</color><color=#30bb30><i>相关</i></color>的配方<color=\"#61D8FFc0\">允许增产</color>，并获得<color=\"#61D8FFc0\">+25%额外产出</color>。\n\n<color=#30bb30><i>相关</i></color>：配方的原材料或者产物中包含某个物品\n\n<color=\"#61D8FFc0\">允许增产</color>：配方的原料喷涂增产剂后，在星际组装厂中生产的产物一定可以获得<color=\"#61D8FFc0\">额外产出</color>效果，无论该配方是否禁止额外产出效果。");
-            ProtoRegistry.RegisterString("特化4介绍内容", "Hyper-precision Assembly", "要求：分配了至少5个与<color=#30bb30>处理器</color>、<color=#30bb30>量子芯片</color>、<color=#30bb30>量子计算机</color><color=#30bb30><i>相关</i></color>的配方，且没有不<color=#30bb30><i>相关</i></color>的配方\n\n特化效果：所有<color=#30bb30>使用处理器</color>、<color=#30bb30>量子芯片</color>、<color=#30bb30>量子计算机</color>作为输入的配方<color=\"#61D8FFc0\">允许增产</color>，并获得<color=\"#61D8FFc0\">+25%额外产出</color>；\n<color=#30bb30>生产处理器</color>、<color=#30bb30>量子芯片</color>、<color=#30bb30>量子计算机</color>的配方则转而<color=\"#61D8FFc0\">+50%额外产出</color>。\n\n<color=#30bb30><i>相关</i></color>：配方的原材料或者产物中包含某个物品\n\n<color=\"#61D8FFc0\">允许增产</color>：配方的原料喷涂增产剂后，在星际组装厂中生产的产物一定可以获得<color=\"#61D8FFc0\">额外产出</color>效果，无论该配方是否禁止额外产出效果。");
-            ProtoRegistry.RegisterString("特化5介绍内容", "Hyper-heavy Assembly", "要求：分配了至少4个<color=#30bb30>运载火箭<color=#969696>或</color>太阳帆</color>的配方，且无其他类型的配方。\n\n特化效果：各类<color=#30bb30>运载火箭</color>和<color=#30bb30>太阳帆</color>的配方<color=\"#61D8FFc0\">允许增产</color>，并获得<color=\"#61D8FFc0\">+50%额外产出。</color>\n\n<color=\"#61D8FFc0\">允许增产</color>：配方的原料喷涂增产剂后，在星际组装厂中生产的产物一定可以获得<color=\"#61D8FFc0\">额外产出</color>效果，无论该配方是否禁止额外产出效果。");
+            LocalizationModule.RegisterTranslation("星际组装厂特化名称0", "Interstellar Assembly Specilization", "星际组装厂 - 特化", "");
+            LocalizationModule.RegisterTranslation("星际组装厂特化名称1", "Stellar Forge", "恒星熔炉", "");
+            LocalizationModule.RegisterTranslation("星际组装厂特化名称2", "Stellar reactor", "恒星反应釜", "");
+            LocalizationModule.RegisterTranslation("星际组装厂特化名称3", "Ring-star Particle Accelerator", "星环粒子加速器", "");
+            LocalizationModule.RegisterTranslation("星际组装厂特化名称4", "Hyper-precision Assembly", "超精密装配厂", "");
+            LocalizationModule.RegisterTranslation("星际组装厂特化名称5", "Mega Assembly", "巨型装配厂", "");
+            LocalizationModule.RegisterTranslation("特化0介绍标题", "Interstellar Assembly Specilization", "星际组装厂 - 特化", "");
+            LocalizationModule.RegisterTranslation("特化1介绍标题", "Stellar Forge", "恒星熔炉", "");
+            LocalizationModule.RegisterTranslation("特化2介绍标题", "Stellar Reactor", "恒星反应釜", "");
+            LocalizationModule.RegisterTranslation("特化3介绍标题", "Ring-star Particle Accelerator", "星环粒子加速器", "");
+            LocalizationModule.RegisterTranslation("特化4介绍标题", "Hyper-precision Assembly", "超精密装配厂", "");
+            LocalizationModule.RegisterTranslation("特化5介绍标题", "Mega Assembly", "巨型装配厂", "");
+            LocalizationModule.RegisterTranslation("特化0介绍内容", "Interstellar Assembly Specilize",
+                                                   "一旦满足某种特化的<color=#30bb30>要求</color>，星际组装厂的特化进程将开始，<color=#30bb30>保持要求10分钟</color>后可以将星际组装厂转化为该<color=\"#61D8FFc0\">特化模式</color>。\n不同的特化模式将对不同的配方提供<color=\"#61D8FFc0\">加成效果</color>。\n一旦特化进程完成，你可以<color=#30bb30>不再保持特化的要求</color>，<color=#30bb30><i>除非你转而开始满足另一种不同特化的转化要求</i></color>，这将使你的星际组装厂向新的特化开始转变。",
+                                                   "");
+            LocalizationModule.RegisterTranslation("特化1介绍内容", "Requirement: ",
+                                                   "要求：分配了至少5个<color=#30bb30>冶炼</color>配方，且无其他类型的配方。\n\n特化效果：所有<color=#30bb30>冶炼</color>配方<color=\"#61D8FFc0\">允许增产</color>，且<color=\"#61D8FFc0\">速度+200%</color>。但无法产出多功能集成组件。\n\n<color=\"#61D8FFc0\">允许增产</color>：配方的原料喷涂增产剂后，在星际组装厂中生产的产物一定可以获得<color=\"#61D8FFc0\">额外产出</color>效果，无论该配方是否禁止额外产出效果。",
+                                                   "");
+            LocalizationModule.RegisterTranslation("特化2介绍内容", "Stellar reactor",
+                                                   "要求：分配了至少3个<color=#30bb30>化工</color>、<color=#30bb30>石油</color>或<color=#30bb30>增产剂</color>配方，且无其他类型的配方。\n\n特化效果：为所有<color=#30bb30>化工</color>、<color=#30bb30>石油</color>和<color=#30bb30>增产剂</color>配方的原料和产物<color=\"#61D8FFc0\">免费喷涂增产剂</color>，并<color=\"#61D8FFc0\">允许增产</color>，他们的<color=\"#61D8FFc0\">速度+100%</color>。\n\n<color=\"#61D8FFc0\">允许增产</color>：配方的原料喷涂增产剂后，在星际组装厂中生产的产物一定可以获得<color=\"#61D8FFc0\">额外产出</color>效果，无论该配方是否禁止额外产出效果。",
+                                                   "");
+            LocalizationModule.RegisterTranslation("特化3介绍内容", "Ring-star Particle Accelerator",
+                                                   "要求：分配了至少3个与<color=#30bb30>反物质</color>或<color=#30bb30>重氢</color><color=#30bb30><i>相关</i></color>的配方，且没有不<color=#30bb30><i>相关</i></color>的配方。\n\n特化效果：所有与<color=#30bb30>反物质</color>或<color=#30bb30>重氢</color><color=#30bb30><i>相关</i></color>的配方<color=\"#61D8FFc0\">允许增产</color>，并获得<color=\"#61D8FFc0\">+25%额外产出</color>。\n\n<color=#30bb30><i>相关</i></color>：配方的原材料或者产物中包含某个物品\n\n<color=\"#61D8FFc0\">允许增产</color>：配方的原料喷涂增产剂后，在星际组装厂中生产的产物一定可以获得<color=\"#61D8FFc0\">额外产出</color>效果，无论该配方是否禁止额外产出效果。",
+                                                   "");
+            LocalizationModule.RegisterTranslation("特化4介绍内容", "Hyper-precision Assembly",
+                                                   "要求：分配了至少5个与<color=#30bb30>处理器</color>、<color=#30bb30>量子芯片</color>、<color=#30bb30>量子计算机</color><color=#30bb30><i>相关</i></color>的配方，且没有不<color=#30bb30><i>相关</i></color>的配方\n\n特化效果：所有<color=#30bb30>使用处理器</color>、<color=#30bb30>量子芯片</color>、<color=#30bb30>量子计算机</color>作为输入的配方<color=\"#61D8FFc0\">允许增产</color>，并获得<color=\"#61D8FFc0\">+25%额外产出</color>；\n<color=#30bb30>生产处理器</color>、<color=#30bb30>量子芯片</color>、<color=#30bb30>量子计算机</color>的配方则转而<color=\"#61D8FFc0\">+50%额外产出</color>。\n\n<color=#30bb30><i>相关</i></color>：配方的原材料或者产物中包含某个物品\n\n<color=\"#61D8FFc0\">允许增产</color>：配方的原料喷涂增产剂后，在星际组装厂中生产的产物一定可以获得<color=\"#61D8FFc0\">额外产出</color>效果，无论该配方是否禁止额外产出效果。",
+                                                   "");
+            LocalizationModule.RegisterTranslation("特化5介绍内容", "Hyper-heavy Assembly",
+                                                   "要求：分配了至少4个<color=#30bb30>运载火箭<color=#969696>或</color>太阳帆</color>的配方，且无其他类型的配方。\n\n特化效果：各类<color=#30bb30>运载火箭</color>和<color=#30bb30>太阳帆</color>的配方<color=\"#61D8FFc0\">允许增产</color>，并获得<color=\"#61D8FFc0\">+50%额外产出。</color>\n\n<color=\"#61D8FFc0\">允许增产</color>：配方的原料喷涂增产剂后，在星际组装厂中生产的产物一定可以获得<color=\"#61D8FFc0\">额外产出</color>效果，无论该配方是否禁止额外产出效果。",
+                                                   "");
 
-            ProtoRegistry.RegisterString("特化已激活", "Specialization Activated", "特化已激活");
-            ProtoRegistry.RegisterString("特化即将被取代", "Specialization is about to be replaced", "特化即将被取代");
-            ProtoRegistry.RegisterString("特化进程", "Specialize in progress {0}%", "特化进程 {0}%");
-            ProtoRegistry.RegisterString("特化进程消退中", "Progress fading {0}%", "特化进程消退中 {0}%");
-            ProtoRegistry.RegisterString("等待其他特化进程消退", "Stand by", "等待进程开始");
-            ProtoRegistry.RegisterString("特化条件未满足", "Requirements not satisfied", "特化条件未满足");
+            LocalizationModule.RegisterTranslation("特化已激活", "Specialization Activated", "特化已激活", "");
+            LocalizationModule.RegisterTranslation("特化即将被取代", "Specialization is about to be replaced", "特化即将被取代", "");
+            LocalizationModule.RegisterTranslation("特化进程", "Specialize in progress {0}%", "特化进程 {0}%", "");
+            LocalizationModule.RegisterTranslation("特化进程消退中", "Progress fading {0}%", "特化进程消退中 {0}%", "");
+            LocalizationModule.RegisterTranslation("等待其他特化进程消退", "Stand by", "等待进程开始", "");
+            LocalizationModule.RegisterTranslation("特化条件未满足", "Requirements not satisfied", "特化条件未满足", "");
         }
 
         /// <summary>
         /// 用于在接收器面板显示的文本修正，因为并非总是生成光子
         /// </summary>
         /// <param name="proto"></param>
-        public static void ChangeReceiverRelatedStringProto(Proto proto)
+        internal static void ChangeReceiverRelatedStringProto()
         {
-            if (proto is StringProto) //光子生成
+            new StringProto { Name = "光子生成", ZHCN = "物质合成", ENUS = "Substance generation" }.RegisterTranslation();
+
+            new StringProto
             {
-                if (((StringProto)proto).Name == "光子生成")
-                {
-                    var item = proto as StringProto;
-                    item.ZHCN = "物质合成";
-                    item.ENUS = "Substance generation";
-                    item.FRFR = "Substance generation";
-                }
-                else if (((StringProto)proto).Name == "光子生成描述")
-                {
-                    var item = proto as StringProto;
-                    item.ZHCN = "在物质合成模式下，接收站将允许接收巨构建筑的输出，并将其转换为对应物质。";
-                    item.ENUS = "In Substance generation mode, the receiver will receive product delivered by the megastructure and convert it into the corresponding item.";
-                    item.FRFR = "In Substance generation mode, the receiver will receive product delivered by the megastructure and convert it into the corresponding item.";
-                }
-                if (((StringProto)proto).Name == "戴森球统计页签")
-                {
-                    var item = proto as StringProto;
-                    item.ZHCN = "巨构建筑";
-                    item.ENUS = "Megastructure";
-                    item.FRFR = "Megastructure";
-                }
-                else if (((StringProto)proto).Name == "戴森球类")
-                {
-                    var item = proto as StringProto;
-                    item.ZHCN = "巨构建筑 (8)";
-                    item.ENUS = "Megastructure (8)";
-                    item.FRFR = "Megastructure (8)";
-                }
-                else if (((StringProto)proto).Name == "戴森球面板提示")
-                {
-                    var item = proto as StringProto;
-                    item.ZHCN = "打开巨构建筑面板，制定巨构建筑的建造规划。";
-                    item.ENUS = "Turn on the Megastructure editor, and make a build plan.";
-                    item.FRFR = "Turn on the Megastructure editor, and make a build plan.";
-                }
-
-                else if (((StringProto)proto).Name == "戴森球面板") //左下角戴森球编辑器按钮
-                {
-                    var item = proto as StringProto;
-                    item.ZHCN = "巨构建筑 (Y)";
-                    item.ENUS = "Megastructure (Y)";
-                    item.FRFR = "Megastructure (Y)";
-                }
-                //else if (proto.ID == 7346) //修建时的tooltip
-                else if(((StringProto)proto).Name == "修建节点标题")
-                {
-                    var item = proto as StringProto;
-                    item.ZHCN = "巨构节点";
-                    item.ENUS = "Megastructure Node";
-                    item.FRFR = "Megastructure Node";
-                }
-                //else if (proto.ID == 7347) //修建时的tooltip
-                else if (((StringProto)proto).Name == "修建节点描述")
-                {
-                    var item = proto as StringProto;
-                    item.ZHCN = "规划修建巨构建筑节点，点击该按钮可以选择节点的样式。";
-                    item.ENUS = "Plan and build the Megastructure Node, click this button to choose the node style.";
-                    item.FRFR = "Plan and build the Megastructure Node, click this button to choose the node style.";
-                }
-                //else if (proto.ID == 7348) //修建时的tooltip
-                else if (((StringProto)proto).Name == "修建壳面标题")
-                {
-                    var item = proto as StringProto;
-                    item.ZHCN = "巨构壳面";
-                    item.ENUS = "Megastructure Shell";
-                    item.FRFR = "Megastructure Shell";
-                }
-                //else if (proto.ID == 7349) //修建时的tooltip
-                else if (((StringProto)proto).Name == "修建壳面描述")
-                {
-                    var item = proto as StringProto;
-                    item.ZHCN = "若要规划一个巨构壳面，需要将相应的壳面用节点和框架规划成一个闭合的多边形。\n点击该按钮可以选择巨构壳面的样式进行修建规划。";
-                    item.ENUS = "In order to Plan a Megastructure Shell, it is necessary to plan the corresponding shell as a closed polygon with nodes and frames.\nClick this button to choose the Megastructure Shell style.";
-                    item.FRFR = item.ENUS;
-                }
-                else if (((StringProto)proto).Name == "经纬线框架描述" || ((StringProto)proto).Name == "测地线框架描述")
-                {
-                    var item = proto as StringProto;
-                    item.ENUS = item.ENUS.Replace("Dyson","Megastructure");
-                    item.FRFR = item.ENUS;
-                }
-                else if (((StringProto)proto).Name == "戴森球节点号") //规划完在球上点击时的显示，由于太长把英文的Megastructure改成了Structure
-                {
-                    var item = proto as StringProto;
-                    item.ZHCN = "巨构节点 # {0}-{1}";
-                    item.ENUS = "Structure Node # {0}-{1}"; //Megastructure Node # {0}-{1}
-                    item.FRFR = item.ENUS;
-                }
-
-                else if (((StringProto)proto).Name == "戴森球框架号") //
-                {
-                    var item = proto as StringProto;
-                    item.ZHCN = "巨构框架 # {0}-{1}";
-                    item.ENUS = "Structure Frame # {0}-{1}"; //Megastructure Frame # {0}-{1}
-                    item.FRFR = item.ENUS;
-                }
-
-                else if (((StringProto)proto).Name == "戴森球壳面号") //
-                {
-                    var item = proto as StringProto;
-                    item.ZHCN = "巨构壳面 # {0}-{1}";
-                    item.ENUS = "Structure Shell # {0}-{1}"; //Megastructure Shell # {0}-{1}
-                    item.FRFR = item.ENUS;
-                }
+                Name = "光子生成描述",
+                ZHCN = "在物质合成模式下，接收站将允许接收巨构建筑的输出，并将其转换为对应物质。",
+                ENUS
+                    = "In Substance generation mode, the receiver will receive product delivered by the megastructure and convert it into the corresponding item."
+            }.RegisterTranslation();
 
 
-                /*
-                if (((StringProto)proto).ZHCN.Length >= 5 && ((StringProto)proto).ZHCN.Substring(0,5) == "戴森球节点")
-                {
-                    Console.WriteLine($"戴森球节点id={proto.ID},name={proto.name}, eng = {((StringProto)proto).ENUS}");
-                }
-                */
-                
-                
-            }
+            new StringProto { Name = "戴森球统计页签", ZHCN = "巨构建筑", ENUS = "Megastructure" }.RegisterTranslation();
+            new StringProto { Name = "戴森球类", ZHCN = "巨构建筑 (8)", ENUS = "Megastructure (8)" }.RegisterTranslation();
+            new StringProto { Name = "戴森球面板提示", ZHCN = "打开巨构建筑面板，制定巨构建筑的建造规划。", ENUS = "Turn on the Megastructure editor, and make a build plan." }
+               .RegisterTranslation();
 
+            new StringProto { Name = "戴森球面板", ZHCN = "巨构建筑 (Y)", ENUS = "Megastructure (Y)" }.RegisterTranslation();
+            new StringProto { Name = "修建节点标题", ZHCN = "巨构节点", ENUS = "Megastructure Node" }.RegisterTranslation();
+            new StringProto
+            {
+                Name = "修建节点描述",
+                ZHCN = "规划修建巨构建筑节点，点击该按钮可以选择节点的样式。",
+                ENUS = "Plan and build the Megastructure Node, click this button to choose the node style."
+            }.RegisterTranslation();
+            new StringProto { Name = "修建壳面标题", ZHCN = "巨构壳面", ENUS = "Megastructure Shell" }.RegisterTranslation();
+            new StringProto
+            {
+                Name = "修建壳面描述",
+                ZHCN = "若要规划一个巨构壳面，需要将相应的壳面用节点和框架规划成一个闭合的多边形。\n点击该按钮可以选择巨构壳面的样式进行修建规划。",
+                ENUS
+                    = "In order to Plan a Megastructure Shell, it is necessary to plan the corresponding shell as a closed polygon with nodes and frames.\nClick this button to choose the Megastructure Shell style."
+            }.RegisterTranslation();
+
+            new StringProto
+            {
+                Name = "戴森球节点号", ZHCN = "巨构节点 # {0}-{1}", ENUS = "Structure Node # {0}-{1}" //Megastructure Node # {0}-{1}
+            }.RegisterTranslation();
+
+            new StringProto
+            {
+                Name = "戴森球框架号", ZHCN = "巨构框架 # {0}-{1}", ENUS = "Structure Frame # {0}-{1}" //Megastructure Frame # {0}-{1}
+            }.RegisterTranslation();
+
+            new StringProto
+            {
+                Name = "戴森球壳面号", ZHCN = "巨构壳面 # {0}-{1}", ENUS = "Structure Shell # {0}-{1}" //Megastructure Shell # {0}-{1}
+            }.RegisterTranslation();
         }
-
     }
 }
