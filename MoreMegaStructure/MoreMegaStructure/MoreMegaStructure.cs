@@ -10,6 +10,7 @@ using CommonAPI.Systems.ModLocalization;
 using crecheng.DSPModSave;
 using HarmonyLib;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using xiaoye97;
 
@@ -19,7 +20,7 @@ namespace MoreMegaStructure
     [BepInDependency(CommonAPIPlugin.GUID)]
     [BepInDependency(DSPModSavePlugin.MODGUID)]
     [CommonAPISubmoduleDependency(nameof(ProtoRegistry), nameof(TabSystem), nameof(LocalizationModule))]
-    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.1")]
+    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.2")]
     public class MoreMegaStructure : BaseUnityPlugin, IModCanSave
     {
         /// <summary>
@@ -276,7 +277,7 @@ namespace MoreMegaStructure
             Harmony.CreateAndPatchAll(typeof(EffectRenderer));
             Harmony.CreateAndPatchAll(typeof(ReceiverPatchers));
             Harmony.CreateAndPatchAll(typeof(UIReceiverPatchers));
-           // if (UIStatisticsPatcher.active) Harmony.CreateAndPatchAll(typeof(UIStatisticsPatcher));
+            //if (UIStatisticsPatcher.active) Harmony.CreateAndPatchAll(typeof(UIStatisticsPatcher));
 
             MMSProtos.ChangeReceiverRelatedStringProto();
             MMSProtos.AddTranslateUILabel();
@@ -732,12 +733,23 @@ namespace MoreMegaStructure
         public static void LateInitOtherUI()
         {
             if (selectAutoReceiveGearLimitObj != null) return;
-            selectAutoReceiveGearLimitObj = new GameObject();
+            Utils.Check(0);
+            selectAutoReceiveGearLimitObj 
+                = Instantiate(
+                    GameObject.Find(
+                        "UI Root/Overlay Canvas/In Game/Windows/Mecha Window/information/movement-panel"));
             selectAutoReceiveGearLimitObj.name = "gear-max-num";
-            selectAutoReceiveGearLimitObj.transform.SetParent(GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Mecha Window").transform);
+            selectAutoReceiveGearLimitObj.transform.SetParent(GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Mecha Window/information").transform);
             selectAutoReceiveGearLimitObj.transform.localScale = new Vector3(1, 1, 1);
-            selectAutoReceiveGearLimitObj.transform.localPosition = new Vector3(-120, 190, 0);
+            selectAutoReceiveGearLimitObj.transform.localPosition = new Vector3(-240, -372, 0);
             selectAutoReceiveGearLimitObj.SetActive(true);
+            Utils.Check(1);
+            GameObject.Destroy(selectAutoReceiveGearLimitObj.transform.Find("title").gameObject);
+            Utils.Check(2);
+            GameObject.Destroy(selectAutoReceiveGearLimitObj.transform.Find("value-1").gameObject);
+            Utils.Check(3);
+            GameObject.Destroy(selectAutoReceiveGearLimitObj.transform.Find("label-2").gameObject);
+            Utils.Check(4);
 
             selectAutoReceiveGearLimitLabelObj
                 = Instantiate(
@@ -746,19 +758,27 @@ namespace MoreMegaStructure
                     selectAutoReceiveGearLimitObj.transform);
             Text oriNarrowText = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Mecha Window/information/construction-panel/label-1")
                                            .GetComponent<Text>();
-            selectAutoReceiveGearLimitLabelObj.name = "label";
+            Text oriAlphaText = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Mecha Window/information/construction-panel/title")
+                                           .GetComponent<Text>();
+
+            selectAutoReceiveGearLimitObj.GetComponent<RectTransform>().sizeDelta = new Vector2(0, 63);
+            DestroyImmediate(selectAutoReceiveGearLimitObj.GetComponent<EventTrigger>()); // 这个是为了阻止：因为鼠标悬停此Object，导致原本的（作为instantiate的源）Object里面的问号标志被触发显示。
+
+            selectAutoReceiveGearLimitLabelObj.name = "title";
             selectAutoReceiveGearLimitLabelObj.SetActive(true);
-            selectAutoReceiveGearLimitLabelObj.transform.localPosition = new Vector3(0, 0, 0);
+            selectAutoReceiveGearLimitLabelObj.transform.localPosition = new Vector3(10, -6, 0);
             selectAutoReceiveGearLimitLabelObj.GetComponent<Text>().font = oriNarrowText.font;
-            selectAutoReceiveGearLimitLabelObj.GetComponent<Text>().fontSize = 14;
+            selectAutoReceiveGearLimitLabelObj.GetComponent<Text>().fontSize = 13;
             selectAutoReceiveGearLimitLabelObj.GetComponent<Text>().text = "远程折跃多功能组件限制".Translate();
+            selectAutoReceiveGearLimitLabelObj.GetComponent<Text>().material = oriAlphaText.material;
+            selectAutoReceiveGearLimitLabelObj.GetComponent<Text>().color = oriAlphaText.color;
 
             selectAutoReceiveGearLimitComboBoxObj
                 = Instantiate(GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Statistics Window/dyson-bg/top/TimeComboBox"),
                                          selectAutoReceiveGearLimitObj.transform);
             selectAutoReceiveGearLimitComboBoxObj.name = "combo-box";
             selectAutoReceiveGearLimitComboBoxObj.SetActive(true);
-            selectAutoReceiveGearLimitComboBoxObj.transform.localPosition = new Vector3(120, -20, 0);
+            selectAutoReceiveGearLimitComboBoxObj.transform.localPosition = new Vector3(130, -30, 0);
             selectAutoReceiveGearLimitComboBoxObj.transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
 
             selectAutoReceiveGearLimitComboBox = selectAutoReceiveGearLimitComboBoxObj.GetComponent<UIComboBox>();
@@ -805,7 +825,7 @@ namespace MoreMegaStructure
             }
 
             //否则，只计算壳面的效果，忽略游戏本体所谓戴森云的效果（也就是发电量）
-            __instance.energyGenCurrentTick -= __instance.swarm.energyGenCurrentTick;
+            __instance.energyGenCurrentTick -= (long)((double)__instance.swarm.energyGenCurrentTick * __instance.energyDFHivesDebuffCoef);
         }
 
         /// <summary>

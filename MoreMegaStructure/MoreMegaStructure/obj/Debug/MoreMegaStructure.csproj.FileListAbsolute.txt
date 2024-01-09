@@ -18,3 +18,10 @@ F:\GitHubRepository\DSPmod_MoreMegaStructures\MoreMegaStructure\MoreMegaStructur
 F:\GitHubRepository\DSPmod_MoreMegaStructures\MoreMegaStructure\MoreMegaStructure\obj\Debug\MoreMegaStructure.dll
 F:\GitHubRepository\DSPmod_MoreMegaStructures\MoreMegaStructure\MoreMegaStructure\obj\Debug\MoreMegaStructure.pdb
 F:\GitHubRepository\DSPmod_MoreMegaStructures\MoreMegaStructure\MoreMegaStructure\obj\Debug\MoreMegaStructure.csproj.AssemblyReference.cache
+F:\GitHubRepository\DSPmod_MoreMegaStructures\MoreMegaStructure\MoreMegaStructure\bin\Debug\MoreMegaStructure.dll
+F:\GitHubRepository\DSPmod_MoreMegaStructures\MoreMegaStructure\MoreMegaStructure\bin\Debug\MoreMegaStructure.pdb
+F:\GitHubRepository\DSPmod_MoreMegaStructures\MoreMegaStructure\MoreMegaStructure\bin\Debug\CommonAPI.dll
+F:\GitHubRepository\DSPmod_MoreMegaStructures\MoreMegaStructure\MoreMegaStructure\bin\Debug\DSPModSave.dll
+F:\GitHubRepository\DSPmod_MoreMegaStructures\MoreMegaStructure\MoreMegaStructure\bin\Debug\LDBTool.dll
+F:\GitHubRepository\DSPmod_MoreMegaStructures\MoreMegaStructure\MoreMegaStructure\bin\Debug\Assembly-CSharp-publicized.dll
+F:\GitHubRepository\DSPmod_MoreMegaStructures\MoreMegaStructure\MoreMegaStructure\obj\Debug\MoreMegaStructure.csproj.CopyComplete

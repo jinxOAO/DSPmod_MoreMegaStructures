@@ -1577,7 +1577,7 @@ namespace MoreMegaStructure
                 "晶体重构器功能文本", "Produce Casimir crystals and optical grating crystals, which can be received by corresponding receivers.",
                 "产出卡西米尔晶体和光栅石，可被对应的接收器接收。", "");
 
-            LocalizationModule.RegisterTranslation("远程折跃多功能组件限制", "Remote-Teleport Multifunction Component Upper Limit", "远程输送多功能组件限制", "");
+            LocalizationModule.RegisterTranslation("远程折跃多功能组件限制", "Remote receive [Multifunc-Compo] Upper Limit", "远程输送多功能组件限制", "");
             LocalizationModule.RegisterTranslation("远程接收关闭gm", "Off", "关闭", "");
             LocalizationModule.RegisterTranslation("上限1000", "Max 1000", "上限1000", "");
             LocalizationModule.RegisterTranslation("上限2000", "Max 2000", "上限2000", "");

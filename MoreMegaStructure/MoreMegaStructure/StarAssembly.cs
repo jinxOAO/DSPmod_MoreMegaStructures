@@ -536,7 +536,6 @@ namespace MoreMegaStructure
                 CheckSpecializeState(__instance);
 
             UpdateSpecializeState(__instance);
-
             //Utils.Log("internal updating " + __instance.starData.displayName);
             int starIndex = __instance.starData.index;
             long energy = __instance.energyGenCurrentTick - __instance.energyReqCurrentTick;
@@ -555,7 +554,6 @@ namespace MoreMegaStructure
                         {
                             //FactoryProductionStat factoryProductionStat = GameMain.statistics.production.factoryStatPool[factory.index];
                             FactoryProductionStat factoryProductionStat = GameMain.statistics.production.factoryStatPool[GameMain.data.factories.Length + GameMain.galaxy.starCount - starIndex - 1];
-                            
                             productRegister = factoryProductionStat.productRegister;
                             consumeRegister = factoryProductionStat.consumeRegister;
                             break;
@@ -563,7 +561,6 @@ namespace MoreMegaStructure
                     }
                 }
             }
-
             // 生产进度计算
             for (int i = 1; i < maxSlotCount; i++)
             {

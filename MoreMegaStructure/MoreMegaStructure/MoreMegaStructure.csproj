@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <Import Project="DefaultPath.props"/>
+  <Import Project="DefaultPath.props" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -19,7 +19,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>D:\SteamLibrary\steamapps\common\Dyson Sphere Program\BepInEx\plugins\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -47,7 +47,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\dependencies\DSP_Battle.dll</HintPath>
       <Private>False</Private>
-    </Reference> 
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -103,10 +103,10 @@
     <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="BepInEx.Core" Version="5.4.17"/>
-    <PackageReference Include="DysonSphereProgram.Modding.CommonAPI" Version="1.6.2"/>
-    <PackageReference Include="DysonSphereProgram.Modding.DSPModSave" Version="1.2.0"/>
-    <PackageReference Include="DysonSphereProgram.Modding.LDBTool" Version="3.0.0"/>
+    <PackageReference Include="BepInEx.Core" Version="5.4.17" />
+    <PackageReference Include="DysonSphereProgram.Modding.CommonAPI" Version="1.6.2" />
+    <PackageReference Include="DysonSphereProgram.Modding.DSPModSave" Version="1.2.0" />
+    <PackageReference Include="DysonSphereProgram.Modding.LDBTool" Version="3.0.0" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="DefaultPath.props" />
