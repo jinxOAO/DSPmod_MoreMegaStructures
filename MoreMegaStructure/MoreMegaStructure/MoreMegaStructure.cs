@@ -13,6 +13,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using xiaoye97;
+using static UnityEngine.EventSystems.EventTrigger;
 
 namespace MoreMegaStructure
 {
@@ -277,7 +278,7 @@ namespace MoreMegaStructure
             Harmony.CreateAndPatchAll(typeof(EffectRenderer));
             Harmony.CreateAndPatchAll(typeof(ReceiverPatchers));
             Harmony.CreateAndPatchAll(typeof(UIReceiverPatchers));
-            //if (UIStatisticsPatcher.active) Harmony.CreateAndPatchAll(typeof(UIStatisticsPatcher));
+            if (UIStatisticsPatcher.active) Harmony.CreateAndPatchAll(typeof(UIStatisticsPatcher));
 
             MMSProtos.ChangeReceiverRelatedStringProto();
             MMSProtos.AddTranslateUILabel();
@@ -733,7 +734,6 @@ namespace MoreMegaStructure
         public static void LateInitOtherUI()
         {
             if (selectAutoReceiveGearLimitObj != null) return;
-            Utils.Check(0);
             selectAutoReceiveGearLimitObj 
                 = Instantiate(
                     GameObject.Find(
@@ -743,13 +743,9 @@ namespace MoreMegaStructure
             selectAutoReceiveGearLimitObj.transform.localScale = new Vector3(1, 1, 1);
             selectAutoReceiveGearLimitObj.transform.localPosition = new Vector3(-240, -372, 0);
             selectAutoReceiveGearLimitObj.SetActive(true);
-            Utils.Check(1);
             GameObject.Destroy(selectAutoReceiveGearLimitObj.transform.Find("title").gameObject);
-            Utils.Check(2);
             GameObject.Destroy(selectAutoReceiveGearLimitObj.transform.Find("value-1").gameObject);
-            Utils.Check(3);
             GameObject.Destroy(selectAutoReceiveGearLimitObj.transform.Find("label-2").gameObject);
-            Utils.Check(4);
 
             selectAutoReceiveGearLimitLabelObj
                 = Instantiate(

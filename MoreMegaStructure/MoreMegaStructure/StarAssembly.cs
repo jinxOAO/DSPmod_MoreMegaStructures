@@ -61,7 +61,7 @@ namespace MoreMegaStructure
         public static bool lockSliderListener = false;
 
         // 以下是固定参数
-        public static int tickEnergyForFullSpeed = 20000; // 每相当于1.0倍速的产量需要的tick能量
+        public static int tickEnergyForFullSpeed = 20000; // 每相当于1.0倍速的产量需要的tick能量。注意这个会在进入游戏后受到MoreMegaStructure.IASpdFactor.Value作为反系数修改
         public static int matrixTimeSpendRatio = 100; // 用星际组装厂生产矩阵的速度修正倍率，这是为了不让该巨构部分替代科学枢纽
         public static int recipeType1213TimeSpendRatio = 20; // 用星际组装厂生产创世之书特定配方的速度修正
         public static List<long> speedNeededToUnlockSlot = new List<long> { 0, 0, 0, 0, 0, 10, 20, 30, 50, 100, 200, 500, 1000, 5000, 10000, 100000 }; // 星际组装厂解锁对应slot所需速度倍率
@@ -71,7 +71,7 @@ namespace MoreMegaStructure
         public static Color UITextRed = new Color(1.0f, 0.12f, 0.12f, 0.744f);
         public static Color UITextGray = new Color(0.5f, 0.5f, 0.5f, 0.5f);
         public static List<int> specializeRequirements = new List<int> { 0, 5, 3, 3, 5, 4 };
-        public static int specializeTimeNeed = 3600;
+        public static int specializeTimeNeed = 36000;
 
         public static void InitAll()
         {
@@ -164,6 +164,7 @@ namespace MoreMegaStructure
                     produceSpeedTxtObj.GetComponent<Text>().text = "理论最大速度".Translate() + " --/min";
                     produceSpeedTxtObj.GetComponent<Text>().alignment = TextAnchor.LowerLeft;
                     produceSpeedTxtObj.GetComponent<Text>().supportRichText = true;
+                    produceSpeedTxtObj.GetComponent<Text>().color = new Color(0.992f, 0.588f, 0.3686f, 0.8384f);
                     speedTextObjs.Add(produceSpeedTxtObj);
 
                     GameObject incIconObj = GameObject.Instantiate(oriIncIconObj, slotObj.transform);
@@ -535,10 +536,12 @@ namespace MoreMegaStructure
             if (GameMain.instance.timei % 60 == 0)
                 CheckSpecializeState(__instance);
 
-            UpdateSpecializeState(__instance);
-            //Utils.Log("internal updating " + __instance.starData.displayName);
             int starIndex = __instance.starData.index;
             long energy = __instance.energyGenCurrentTick - __instance.energyReqCurrentTick;
+            int div = (int)(Math.Log10(energy / tickEnergyForFullSpeed / 100) * 4); // 从100x开始，特化所需时间由10min开始增加，最多到100kx的规模需要2小时特化完成
+            div = Utils.Limit(div, 1, 12);
+            UpdateSpecializeState(__instance, div);
+            //Utils.Log("internal updating " + __instance.starData.displayName);
             int[] productRegister = null;
             int[] consumeRegister = null;
             int maxSlotCount = CalcMaxSlotIndex(__instance) + 1;
@@ -1102,7 +1105,7 @@ namespace MoreMegaStructure
                 else
                     specTypeFlag[5] = -9999;
 
-                // 存储该slot是否收到加成影响，且设定影响等级
+                // 存储该slot是否受到加成影响，且设定影响等级
                 specBuffLevel[starIndex][slot] = slotSpecBuffLvl;
                 if (slotSpecBuffLvl == 0) // 未能享受特化加成的配方，若不允许其增产，必须还原其禁止增产的标志，即incProgress为负数
                 {
@@ -1127,37 +1130,44 @@ namespace MoreMegaStructure
                 satisfiedSpecType[starIndex] = 0;
         }
 
-        public static void UpdateSpecializeState(DysonSphere sphere)
+        /// <summary>
+        /// 计算特化进程，div正向取决于巨构能量水平，只有在tick整除div时才修改进度点
+        /// </summary>
+        /// <param name="sphere"></param>
+        /// <param name="div"></param>
+        public static void UpdateSpecializeState(DysonSphere sphere, int div)
         {
             int starIndex = sphere.starData.index;
             if (starIndex >= 1000) return;
-            if (specProgress[starIndex] <= 0)
+            if (GameMain.instance.timei % div == 0) // 受div影响，决定特化速度
             {
-                if (satisfiedSpecType[starIndex] > 0 && satisfiedSpecType[starIndex] != curSpecType[starIndex])
+                if (specProgress[starIndex] <= 0)
                 {
-                    inProgressSpecType[starIndex] = satisfiedSpecType[starIndex];
-                    specProgress[starIndex]++;
+                    if (satisfiedSpecType[starIndex] > 0 && satisfiedSpecType[starIndex] != curSpecType[starIndex])
+                    {
+                        inProgressSpecType[starIndex] = satisfiedSpecType[starIndex];
+                        specProgress[starIndex]++;
+                    }
+                }
+                else
+                {
+                    if (satisfiedSpecType[starIndex] == inProgressSpecType[starIndex])
+                        specProgress[starIndex]++;
+                    else
+                        specProgress[starIndex]--;
+                }
+
+                if (specProgress[starIndex] >= specializeTimeNeed)
+                {
+                    specProgress[starIndex] = 0;
+                    curSpecType[starIndex] = inProgressSpecType[starIndex];
+                }
+                else if (specProgress[starIndex] <= 0)
+                {
+                    inProgressSpecType[starIndex] = 0;
+                    specProgress[starIndex] = 0;
                 }
             }
-            else
-            {
-                if (satisfiedSpecType[starIndex] == inProgressSpecType[starIndex])
-                    specProgress[starIndex]++;
-                else
-                    specProgress[starIndex]--;
-            }
-
-            if (specProgress[starIndex] >= specializeTimeNeed)
-            {
-                specProgress[starIndex] = 0;
-                curSpecType[starIndex] = inProgressSpecType[starIndex];
-            }
-            else if (specProgress[starIndex] <= 0)
-            {
-                inProgressSpecType[starIndex] = 0;
-                specProgress[starIndex] = 0;
-            }
-
         }
 
         // 刷新全部UI
@@ -1250,7 +1260,8 @@ namespace MoreMegaStructure
                     double extraProductRatio = GetFullIncMilli(starIndex, i, currentStarIncs[i] > 10 ? 10 : currentStarIncs[i]);
                     if (extraProductRatio > 0)
                     {
-                        incStr = $"<color=#FD965EE0>  +{extraProductRatio * 100} %</color>";
+                        //incStr = $"<color=#FD965EE0>  +{extraProductRatio * 100} %</color>";
+                        incStr = $"<color=#61D8FFC8>  +{extraProductRatio * 100} %</color>";
                     }
                     
                     

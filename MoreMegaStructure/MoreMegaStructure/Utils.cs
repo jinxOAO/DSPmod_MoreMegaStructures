@@ -140,5 +140,15 @@ namespace MoreMegaStructure
                     return "戴森球jinx".Translate();
             }
         }
+
+        public static int Limit(int ori, int min, int max)
+        {
+            if (ori < min)
+                return min;
+            else if (ori > max)
+                return max;
+            else return ori;
+        }
     }
+
 }

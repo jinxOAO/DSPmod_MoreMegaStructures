@@ -36,7 +36,11 @@ namespace MoreMegaStructure
                     items.Add("统计当前星球".Translate());
                     itemsData.Add(0);
                 }
-
+                if (_this.isKillTab)
+                {
+                    items.Add("统计玩家".Translate());
+                    itemsData.Add(-2);
+                }
                 int factoryCount = _this.gameData.factoryCount;
                 for (int i = 0; i < factoryCount; i++)
                 {
@@ -205,7 +209,7 @@ namespace MoreMegaStructure
         /// <param name="__instance"></param>
         /// <returns></returns>
         [HarmonyPrefix]
-        [HarmonyPatch(typeof(UIStatisticsWindow), "ComputeDisplayEntries")]
+        [HarmonyPatch(typeof(UIStatisticsWindow), "ComputeDisplayProductEntries")]
         public static bool ComputeDisplayEntriesPrePatch(ref UIStatisticsWindow __instance)
         {
             __instance.productEntryList.PrepareDisplayEntries(__instance.lastListCursor);

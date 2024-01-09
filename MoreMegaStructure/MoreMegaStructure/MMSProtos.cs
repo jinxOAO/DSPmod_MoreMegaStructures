@@ -1631,7 +1631,7 @@ namespace MoreMegaStructure
             LocalizationModule.RegisterTranslation("特化4介绍标题", "Hyper-precision Assembly", "超精密装配厂", "");
             LocalizationModule.RegisterTranslation("特化5介绍标题", "Mega Assembly", "巨型装配厂", "");
             LocalizationModule.RegisterTranslation("特化0介绍内容", "Interstellar Assembly Specilize",
-                                                   "一旦满足某种特化的<color=#30bb30>要求</color>，星际组装厂的特化进程将开始，<color=#30bb30>保持要求10分钟</color>后可以将星际组装厂转化为该<color=\"#61D8FFc0\">特化模式</color>。\n不同的特化模式将对不同的配方提供<color=\"#61D8FFc0\">加成效果</color>。\n一旦特化进程完成，你可以<color=#30bb30>不再保持特化的要求</color>，<color=#30bb30><i>除非你转而开始满足另一种不同特化的转化要求</i></color>，这将使你的星际组装厂向新的特化开始转变。",
+                                                   "一旦满足某种特化的<color=#30bb30>要求</color>，星际组装厂的特化进程将开始，<color=#30bb30>保持要求10-120分钟</color>后可以将星际组装厂转化为该<color=\"#61D8FFc0\">特化模式</color>。星际组装厂的当前规模越大，转化过程所需时间越长。\n不同的特化模式将对不同的配方提供<color=\"#61D8FFc0\">加成效果</color>。\n一旦特化进程完成，你可以<color=#30bb30>不再保持特化的要求</color>，<color=#30bb30><i>除非你转而开始满足另一种不同特化的转化要求</i></color>，这将使你的星际组装厂向新的特化开始转变。",
                                                    "");
             LocalizationModule.RegisterTranslation("特化1介绍内容", "Requirement: ",
                                                    "要求：分配了至少5个<color=#30bb30>冶炼</color>配方，且无其他类型的配方。\n\n特化效果：所有<color=#30bb30>冶炼</color>配方<color=\"#61D8FFc0\">允许增产</color>，且<color=\"#61D8FFc0\">速度+200%</color>。但无法产出多功能集成组件。\n\n<color=\"#61D8FFc0\">允许增产</color>：配方的原料喷涂增产剂后，在星际组装厂中生产的产物一定可以获得<color=\"#61D8FFc0\">额外产出</color>效果，无论该配方是否禁止额外产出效果。",
