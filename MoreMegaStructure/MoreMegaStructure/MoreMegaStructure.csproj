@@ -48,6 +48,7 @@
       <HintPath>..\dependencies\DSP_Battle.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -98,6 +99,7 @@
     <Compile Include="RendererSphere.cs" />
     <Compile Include="StarAssembly.cs" />
     <Compile Include="StarCannon.cs" />
+    <Compile Include="UIBuildMenuPatcher.cs" />
     <Compile Include="UIReceiverPatchers.cs" />
     <Compile Include="UIStatisticsPatcher.cs" />
     <Compile Include="Utils.cs" />

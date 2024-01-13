@@ -70,8 +70,8 @@ namespace MoreMegaStructure
         public static Color UITextGreen = new Color(0.225f, 1f, 0.179f, 0.744f);
         public static Color UITextRed = new Color(1.0f, 0.12f, 0.12f, 0.744f);
         public static Color UITextGray = new Color(0.5f, 0.5f, 0.5f, 0.5f);
-        public static List<int> specializeRequirements = new List<int> { 0, 5, 3, 3, 5, 4 };
-        public static int specializeTimeNeed = 36000;
+        public static List<int> specializeRequirements = new List<int> { 0, 5, 3, 3, 5, 5 };
+        public static int specializeTimeNeed = 36000; // 特化进程需要的基础时间，随着星际组装厂总能量水平的增加，特化完成需要的时间可能成倍增加
 
         public static void InitAll()
         {
@@ -989,7 +989,7 @@ namespace MoreMegaStructure
                 }
                 else if (curSpecType[starIndex] == 5)
                 {
-                    incBySpecialization = 0.5;
+                    incBySpecialization = 0.25 * specBuffLevel[starIndex][slotNum];
                 }
             }
             return incByProliferator + incBySpecialization;
@@ -1095,15 +1095,30 @@ namespace MoreMegaStructure
                     specTypeFlag[4] = -9999;
 
                 // 5
-                int p0Id = products[starIndex][slot][0];
-                if (p0Id >= 9488 && p0Id <= 9492 || p0Id >= 8037 && p0Id <= 8039 || p0Id == 9510 || p0Id == 1503 || p0Id == 1501)
+                int flag5Lvl = 0;
+                for (int i = 0; i < products[starIndex][slot].Count; i++) // 遍历产物 是否有弹药或防御、舰队等
+                {
+                    int pId = products[starIndex][slot][i];
+                    ItemProto pItem = LDB.items.Select(pId);
+                    if (pItem.isAmmo) // 要加||isBomb? 没发现有符合的，可能后续会需要改动
+                    {
+                        flag5Lvl = 4;
+                        break;
+                    }
+                    else if (pItem.Type == EItemType.Defense || pItem.Type == EItemType.Turret || pItem.isCraft) // isFighter等是冗余的？ 类似上面可能后续需要改动
+                    {
+                        flag5Lvl = 2; // 不要break是万一产物既有弹药又有防御，按高的算（这合理吗？）反正目前没有这种recipe无所谓啦
+                    }
+                }
+                if (flag5Lvl > 0)
                 {
                     specTypeFlag[5] += 1;
                     if (curSpecType[starIndex] == 5)
-                        slotSpecBuffLvl = 1;
+                        slotSpecBuffLvl = flag5Lvl;
                 }
                 else
                     specTypeFlag[5] = -9999;
+                
 
                 // 存储该slot是否受到加成影响，且设定影响等级
                 specBuffLevel[starIndex][slot] = slotSpecBuffLvl;

@@ -18,7 +18,6 @@ namespace MoreMegaStructure
             {
                 return true;
             }
-
             var _this = __instance;
 
             // 原方法逻辑：看但凡有在GameData.factories这个列表里的工厂，但是又没在 this.astroBox.Items;和this.astroBox.ItemsData;里面的，将其planetId插入到正确位置（如果是整个星系的第一个插入的工厂，则额外先pushback一个（注意星系在这个ItemsData列表里是不按id排序的，而是按加入顺序排序的，所以说pushback，不是插入）该星系的总统计(starId*100)，然后再add该行星工厂的planetId）。
@@ -31,6 +30,7 @@ namespace MoreMegaStructure
                 itemsData.Clear();
                 items.Add("统计全星系".Translate());
                 itemsData.Add(-1);
+
                 if (!_this.isDysonTab && _this.gameData.localPlanet != null)
                 {
                     items.Add("统计当前星球".Translate());
@@ -41,6 +41,7 @@ namespace MoreMegaStructure
                     items.Add("统计玩家".Translate());
                     itemsData.Add(-2);
                 }
+
                 int factoryCount = _this.gameData.factoryCount;
                 for (int i = 0; i < factoryCount; i++)
                 {
@@ -159,6 +160,17 @@ namespace MoreMegaStructure
                     GameMain.data.statistics.production.factoryStatPool[i].Init();
                 }
             }
+            else // 修复了加载旧存档时ProductionStatisticsPrepareTickPostPatch报null的错误（虽然我不知道为啥null，大概吧）
+            {
+                for (int i = GameMain.data.factories.Length; i < GameMain.data.statistics.production.factoryStatPool.Length; i++)
+                {
+                    if (GameMain.data.statistics.production.factoryStatPool[i] == null)
+                    {
+                        GameMain.data.statistics.production.factoryStatPool[i] = new FactoryProductionStat();
+                        GameMain.data.statistics.production.factoryStatPool[i].Init();
+                    }
+                }
+            }
         }
 
         // 需要在调用PlanetId=指示巨构生产统计的虚空行星的时候返回一个factoryIndex正确的planetData，而非null
@@ -166,15 +178,16 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(GalaxyData), "PlanetById")]
         public static void PlanetByIdPostPatch(GalaxyData __instance, int planetId, ref PlanetData __result)
         {
-            if (__result == null)
+            if (__result != null) // 已经找到的planetData不拦截
+                return;
+            int num = planetId / 100 - 1; // starIndex
+            if (num < 0 || num >= __instance.stars.Length)
             {
-                int num = planetId / 100 - 1;
-                int num2 = planetId % 100 - 1;
-                if (num < 0 || num >= __instance.stars.Length)
-                {
-                    return;
-                }
-
+                return;
+            }
+            int num2 = planetId % 100 - 1; // planet index in star system
+            if (num2 >= __instance.stars[num].planets.Length)
+            {
                 if (__instance.stars[num] == null)
                 {
                     return;
@@ -185,11 +198,17 @@ namespace MoreMegaStructure
                     PlanetData planet = new PlanetData();
                     for (int i = num * 100 + 1; i < planetId; i++) // 这里是为了，bottleneck会用工厂信息，随便找一个不是null的factory搪塞一下，防止他报错。反正后面大概也许把需要处理的数据还得都覆盖一遍
                     {
-                        PlanetData pd = GameMain.galaxy.PlanetById(i);
+                        int index = i - num * 100 - 1;
+                        PlanetData pd = __instance.stars[num].planets[index];
                         if (pd != null && pd.factory != null)
                         {
                             planet.factory = pd.factory;
                             break;
+                        }
+
+                        if (i == planetId - 1)
+                        {
+                            Utils.Log("planetById Postfix found no factory to replace null, now returning new PlanetData() as result");
                         }
                     }
 
@@ -456,5 +475,98 @@ namespace MoreMegaStructure
         {
             RearrangeStatisticLists();
         }
+
+
+        // 以下为测试用
+        /*
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(UIStatisticsWindow), "_OnCreate")]
+        public static bool OnCreatePrePatch()
+        {
+            Utils.Log("before on create");
+            return true;
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(UIStatisticsWindow), "_OnCreate")]
+        public static void OnCreatePostPatch()
+        {
+            Utils.Log("after on create");
+        }
+
+
+
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(UIStatisticsWindow), "RefreshAll")]
+        public static bool RefreshAllPatch(ref UIStatisticsWindow __instance)
+        {
+            return true;
+            var _this = __instance;
+            _this.TabButtonHighlighted();
+            _this.TabPanelActive();
+            _this.FavoriteButtonHighlighted();
+            _this.KillFavoriteButtonHighlighted();
+            _this.ValueToSortBox();
+            _this.ValueToTimeBox();
+            _this.RefreshAstroBox();
+            _this.ValueToAstroBox();
+            _this.detailUpdateTick = 0L;
+            _this.lastListCursor = 0;
+            _this.lastBeginIndex = -1;
+            _this.productEntryList.ResetListStatus();
+            _this.killEntryList.ResetListStatus();
+            return false;
+        }
+
+
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(UIStatisticsWindow), "_OnOpen")]
+        public static bool OnOpenPrePatch(ref UIStatisticsWindow __instance)
+        {
+            return true;
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(UIStatisticsWindow), "_OnOpen")]
+        public static void OnOpenPostPatch()
+        {
+            Utils.Log("after on open");
+        }
+
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(UIStatisticsWindow), "_OnUpdate")]
+        public static bool OnUpdatePrePatch()
+        {
+            Utils.Log("before on update");
+            return true;
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(UIStatisticsWindow), "_OnUpdate")]
+        public static void OnUpdatePostPatch()
+        {
+            Utils.Log("after on update");
+        }
+
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(UIStatisticsWindow), "_OnInit")]
+        public static bool OnInitPrePatch()
+        {
+            Utils.Log("before on init");
+            return true;
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(UIStatisticsWindow), "_OnInit")]
+        public static void OnInitPostPatch()
+        {
+            Utils.Log("after on init");
+        }*/
+
     }
 }

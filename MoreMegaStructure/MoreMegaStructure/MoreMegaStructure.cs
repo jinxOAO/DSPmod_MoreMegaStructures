@@ -279,6 +279,7 @@ namespace MoreMegaStructure
             Harmony.CreateAndPatchAll(typeof(ReceiverPatchers));
             Harmony.CreateAndPatchAll(typeof(UIReceiverPatchers));
             if (UIStatisticsPatcher.active) Harmony.CreateAndPatchAll(typeof(UIStatisticsPatcher));
+            Harmony.CreateAndPatchAll(typeof(UIBuildMenuPatcher));
 
             MMSProtos.ChangeReceiverRelatedStringProto();
             MMSProtos.AddTranslateUILabel();
@@ -312,6 +313,7 @@ namespace MoreMegaStructure
             StarAssembly.InitAll();
             ReceiverPatchers.InitRawData();
             UIReceiverPatchers.InitAll();
+            UIBuildMenuPatcher.InitAll();
 
             if (isBattleActive)
             {
@@ -1891,6 +1893,7 @@ namespace MoreMegaStructure
             }
             
             UIStatisticsPatcher.Import(r);
+            UIBuildMenuPatcher.InitDataWhenLoad();
         }
 
         public void Export(BinaryWriter w)
@@ -1926,6 +1929,7 @@ namespace MoreMegaStructure
             InitResolutionWhenLoad();
             EffectRenderer.InitAll();
             UIStatisticsPatcher.IntoOtherSave();
+            UIBuildMenuPatcher.InitDataWhenLoad();
         }
 
         private static string Capacity2Str(double capacityPerSecond)

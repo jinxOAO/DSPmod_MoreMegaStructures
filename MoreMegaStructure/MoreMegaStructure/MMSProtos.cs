@@ -280,7 +280,7 @@ namespace MoreMegaStructure
             rocketSNRecipe.GridIndex = 202 + pagePlus;
             rocketSNRecipe.preTech = LDB.techs.Select(1508); //最终胜利科技
             if (MoreMegaStructure.isBattleActive) rocketSNRecipe.preTech = LDB.techs.Select(1924);
-            if (MoreMegaStructure.GenesisCompatibility) rocketSNRecipe.preTech = LDB.techs.Select(1152);
+            if (MoreMegaStructure.GenesisCompatibility) rocketSNRecipe.preTech = LDB.techs.Select(1508);
             Traverse.Create(rocketSNRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconRocketScieN);
             ProtoRegistry.RegisterItem(9489, "科学枢纽运载火箭".Translate(), "科学枢纽运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketScience",
                                        202 + pagePlus, 20, EItemType.Product,
@@ -453,6 +453,7 @@ namespace MoreMegaStructure
             quickChemicalRecipe.ResultCounts = new int[] { 1 };
             quickChemicalRecipe.GridIndex = 406 + pagePlus;
             quickChemicalRecipe.TimeSpend = 6;
+            quickChemicalRecipe.preTech = LDB.techs.Select(1305);
             Traverse.Create(quickChemicalRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconQuickChemical);
             //精炼厂 快速组装
             var quickRefineryRecipe = oriRecipe5.Copy();
@@ -643,13 +644,13 @@ namespace MoreMegaStructure
 
             if (true)
             {
-                LDBTool.SetBuildBar(8, 5, 9493);
-                LDBTool.SetBuildBar(8, 6, 9494);
-                LDBTool.SetBuildBar(8, 7, 9495);
-                LDBTool.SetBuildBar(8, 8, 9496);
-                LDBTool.SetBuildBar(8, 9, 9497);
-                LDBTool.SetBuildBar(8, 10, 9498);
-                LDBTool.SetBuildBar(6, 6, 9512);
+                //LDBTool.SetBuildBar(13, 1, 9493);
+                //LDBTool.SetBuildBar(13, 2, 9494);
+                //LDBTool.SetBuildBar(13, 3, 9495);
+                //LDBTool.SetBuildBar(13, 4, 9496);
+                //LDBTool.SetBuildBar(13, 5, 9497);
+                //LDBTool.SetBuildBar(13, 6, 9498);
+                LDBTool.SetBuildBar(6, 8, 9512);
                 //LDBTool.SetBuildBar(4, 4, 9499);
             }
         }
@@ -717,17 +718,17 @@ namespace MoreMegaStructure
 
             int pagePlus = MoreMegaStructure.pagenum * 1000;
             var recipe376 = ProtoRegistry.RegisterRecipe(376, (ERecipeType)10, 6, new int[] { 9500 }, new int[] { 25 }, new int[] { 6257 },
-                                                         new int[] { 1 }, "巨建快速组装描述", 1823, 403 + pagePlus, "Assets/MegaStructureTab/quick6257");
+                                                         new int[] { 1 }, "巨建快速组装描述", 1923, 403 + pagePlus, "Assets/MegaStructureTab/quick6257");
             var recipe377 = ProtoRegistry.RegisterRecipe(377, (ERecipeType)10, 6, new int[] { 9500 }, new int[] { 25 }, new int[] { 6258 },
-                                                         new int[] { 1 }, "巨建快速组装描述", 1824, 404 + pagePlus, "Assets/MegaStructureTab/quick6258");
+                                                         new int[] { 1 }, "巨建快速组装描述", 1924, 404 + pagePlus, "Assets/MegaStructureTab/quick6258");
             var recipe378 = ProtoRegistry.RegisterRecipe(378, (ERecipeType)10, 6, new int[] { 9500 }, new int[] { 25 }, new int[] { 6259 },
-                                                         new int[] { 1 }, "巨建快速组装描述", 1825, 405 + pagePlus, "Assets/MegaStructureTab/quick6259");
+                                                         new int[] { 1 }, "巨建快速组装描述", 1925, 405 + pagePlus, "Assets/MegaStructureTab/quick6259");
             var recipe379 = ProtoRegistry.RegisterRecipe(379, (ERecipeType)10, 6, new int[] { 9500 }, new int[] { 25 }, new int[] { 6260 },
-                                                         new int[] { 1 }, "巨建快速组装描述", 1826, 406 + pagePlus, "Assets/MegaStructureTab/quick6260");
+                                                         new int[] { 1 }, "巨建快速组装描述", 1926, 406 + pagePlus, "Assets/MegaStructureTab/quick6260");
             var recipe380 = ProtoRegistry.RegisterRecipe(380, (ERecipeType)10, 6, new int[] { 9500 }, new int[] { 25 }, new int[] { 6264 },
-                                                         new int[] { 1 }, "巨建快速组装描述", 1831, 407 + pagePlus, "Assets/MegaStructureTab/quick6264");
+                                                         new int[] { 1 }, "巨建快速组装描述", 1931, 407 + pagePlus, "Assets/MegaStructureTab/quick6264");
             var recipe381 = ProtoRegistry.RegisterRecipe(381, (ERecipeType)10, 6, new int[] { 9500 }, new int[] { 25 }, new int[] { 6265 },
-                                                         new int[] { 1 }, "巨建快速组装描述", 1827, 408 + pagePlus, "Assets/MegaStructureTab/quick6265");
+                                                         new int[] { 1 }, "巨建快速组装描述", 1927, 408 + pagePlus, "Assets/MegaStructureTab/quick6265");
 
             recipe376._iconSprite = Resources.Load<Sprite>("Assets/MegaStructureTab/quick6257");
             recipe377._iconSprite = Resources.Load<Sprite>("Assets/MegaStructureTab/quick6258");
@@ -1112,8 +1113,9 @@ namespace MoreMegaStructure
             ReceiverICRecipe.GridIndex = 9902 + pagePlus;
             ReceiverICRecipe.TimeSpend = 480;
             Traverse.Create(ReceiverICRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverIC);
-            ReceiverICRecipe.preTech = LDB.techs.Select(1141); //射线接收站科技 
+            ReceiverICRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技 
             if (MoreMegaStructure.isBattleActive) ReceiverICRecipe.preTech = LDB.techs.Select(1922);
+            if (MoreMegaStructure.GenesisCompatibility) ReceiverICRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技 
             ReceiverIC.ID = 9499;
             ReceiverIC.Name = "组件集成装置";
             ReceiverIC.name = "组件集成装置".Translate();
@@ -1217,6 +1219,8 @@ namespace MoreMegaStructure
             new StringProto { Name = "锚定结构工作效率", ZHCN = "锚定结构工作效率", ENUS = "Generation of Anchored Structure" }.RegisterTranslation();
             new StringProto { Name = "研究效率", ZHCN = "研究效率", ENUS = "Research Capacity" }.RegisterTranslation();
             new StringProto { Name = "折跃场加速", ZHCN = "折跃场加速", ENUS = "Warp Acceleration" }.RegisterTranslation();
+
+            new StringProto { Name = "切换快捷键", ZHCN = "CapsLock\n↑快捷键切换↓", ENUS = "CapsLock\n↑ Hotkey Row ↓" }.RegisterTranslation();
         }
 
         public static void AddTranslateStructureName()
@@ -1507,7 +1511,7 @@ namespace MoreMegaStructure
             LocalizationModule.RegisterTranslation("修建进度", "\nProgress to\nnext stage", "修建进度", "");
             LocalizationModule.RegisterTranslation("最终阶段", "Final stage", "最终阶段", "");
             LocalizationModule.RegisterTranslation("节点总数（已规划）gm", "Nodes in total(Planned)", "节点总数（已规划）", "");
-            LocalizationModule.RegisterTranslation("请求功率gm", "Requested power", "最终阶段", "");
+            LocalizationModule.RegisterTranslation("请求功率gm", "Requested power", "请求功率", "");
             LocalizationModule.RegisterTranslation("无限制gm", "Infinite", "无限制", "");
 
             LocalizationModule.RegisterTranslation("警告巨构科技未解锁", "You must unlock the corresponding technology first", "你必须先解锁对应巨构的科技", "");
@@ -1623,30 +1627,30 @@ namespace MoreMegaStructure
             LocalizationModule.RegisterTranslation("星际组装厂特化名称2", "Stellar reactor", "恒星反应釜", "");
             LocalizationModule.RegisterTranslation("星际组装厂特化名称3", "Ring-star Particle Accelerator", "星环粒子加速器", "");
             LocalizationModule.RegisterTranslation("星际组装厂特化名称4", "Hyper-precision Assembly", "超精密装配厂", "");
-            LocalizationModule.RegisterTranslation("星际组装厂特化名称5", "Mega Assembly", "巨型装配厂", "");
+            LocalizationModule.RegisterTranslation("星际组装厂特化名称5", "Cybrex War Forge", "赛博勒克斯战争工厂", "");
             LocalizationModule.RegisterTranslation("特化0介绍标题", "Interstellar Assembly Specilization", "星际组装厂 - 特化", "");
             LocalizationModule.RegisterTranslation("特化1介绍标题", "Stellar Forge", "恒星熔炉", "");
             LocalizationModule.RegisterTranslation("特化2介绍标题", "Stellar Reactor", "恒星反应釜", "");
             LocalizationModule.RegisterTranslation("特化3介绍标题", "Ring-star Particle Accelerator", "星环粒子加速器", "");
             LocalizationModule.RegisterTranslation("特化4介绍标题", "Hyper-precision Assembly", "超精密装配厂", "");
-            LocalizationModule.RegisterTranslation("特化5介绍标题", "Mega Assembly", "巨型装配厂", "");
-            LocalizationModule.RegisterTranslation("特化0介绍内容", "Interstellar Assembly Specilize",
-                                                   "一旦满足某种特化的<color=#30bb30>要求</color>，星际组装厂的特化进程将开始，<color=#30bb30>保持要求10-120分钟</color>后可以将星际组装厂转化为该<color=\"#61D8FFc0\">特化模式</color>。星际组装厂的当前规模越大，转化过程所需时间越长。\n不同的特化模式将对不同的配方提供<color=\"#61D8FFc0\">加成效果</color>。\n一旦特化进程完成，你可以<color=#30bb30>不再保持特化的要求</color>，<color=#30bb30><i>除非你转而开始满足另一种不同特化的转化要求</i></color>，这将使你的星际组装厂向新的特化开始转变。",
+            LocalizationModule.RegisterTranslation("特化5介绍标题", "Cybrex War Forge", "赛博勒克斯战争工厂", "");
+            LocalizationModule.RegisterTranslation("特化0介绍内容", "\"Once certain specialization <color=#30bb30>requirements</color> are met, the specialization process of the Interstellar Assembly will begin. After <color=#30bb30>maintaining the requirements for 10-120 minutes</color>, the interstellar Assembly can be converted to this <color=#61d8ffc0>Specialization Mode</color>. The larger the current scale of the Interstellar Assembly, the longer the specialization process will take.\nDifferent specialization modes will provide different  <color=#61d8ffc0>bonus effects</color> on different recipes.\nOnce the specialization process is completed, you can <color=#30bb30>no longer maintain the specialization requirements</color>,<color=#30bb30><i>Unless you start meeting the requirements for a different specialization mode</i></color>, which will cause it to start converting to the new specialization.",
+                                                   "一旦满足某种特化的<color=#30bb30>要求</color>，星际组装厂的特化进程将开始，<color=#30bb30>保持要求10-120分钟</color>后可以将星际组装厂转化为该<color=#61d8ffc0>特化模式</color>。星际组装厂的当前规模越大，转化过程所需时间越长。\n不同的特化模式将对不同的配方提供<color=#61d8ffc0>加成效果</color>。\n一旦特化进程完成，你可以<color=#30bb30>不再保持特化的要求</color>，<color=#30bb30><i>除非你转而开始满足另一种不同特化的转化要求</i></color>，这将使你的星际组装厂向新的特化开始转变。",
                                                    "");
-            LocalizationModule.RegisterTranslation("特化1介绍内容", "Requirement: ",
-                                                   "要求：分配了至少5个<color=#30bb30>冶炼</color>配方，且无其他类型的配方。\n\n特化效果：所有<color=#30bb30>冶炼</color>配方<color=\"#61D8FFc0\">允许增产</color>，且<color=\"#61D8FFc0\">速度+200%</color>。但无法产出多功能集成组件。\n\n<color=\"#61D8FFc0\">允许增产</color>：配方的原料喷涂增产剂后，在星际组装厂中生产的产物一定可以获得<color=\"#61D8FFc0\">额外产出</color>效果，无论该配方是否禁止额外产出效果。",
+            LocalizationModule.RegisterTranslation("特化1介绍内容", "Requirement: At least 5 <color=#30bb30>smelting</color> recipes are assigned, and no other types of recipes assigned. \n\nSpecialized effect: All <color=#30bb30>smelting</color> recipes have <color=#61d8ffc0>extra-output-enabled</color>, and <color=#61d8ffc0>production speed +200%</color>. But it cannot produce multi-functional integrated components. \n\n<color=#61d8ffc0>Extra-output-enabled</color>: After all raw materials of the recipe are sprayed with proliferators, this recipe will definitely gain the <color=#61d8ffc0>extra product</color> effect in the Interstellar Assembly, regardless of whether the recipe prohibits extra output effects. ",
+                                                   "要求：分配了至少5个<color=#30bb30>冶炼</color>配方，且无其他类型的配方。\n\n特化效果：所有<color=#30bb30>冶炼</color>配方<color=#61d8ffc0>允许增产</color>，且<color=#61d8ffc0>速度+200%</color>。但无法产出多功能集成组件。\n\n<color=#61d8ffc0>允许增产</color>：配方的原料喷涂增产剂后，在星际组装厂中生产的产物一定可以获得<color=#61d8ffc0>额外产出</color>效果，无论该配方是否禁止额外产出效果。",
                                                    "");
-            LocalizationModule.RegisterTranslation("特化2介绍内容", "Stellar reactor",
-                                                   "要求：分配了至少3个<color=#30bb30>化工</color>、<color=#30bb30>石油</color>或<color=#30bb30>增产剂</color>配方，且无其他类型的配方。\n\n特化效果：为所有<color=#30bb30>化工</color>、<color=#30bb30>石油</color>和<color=#30bb30>增产剂</color>配方的原料和产物<color=\"#61D8FFc0\">免费喷涂增产剂</color>，并<color=\"#61D8FFc0\">允许增产</color>，他们的<color=\"#61D8FFc0\">速度+100%</color>。\n\n<color=\"#61D8FFc0\">允许增产</color>：配方的原料喷涂增产剂后，在星际组装厂中生产的产物一定可以获得<color=\"#61D8FFc0\">额外产出</color>效果，无论该配方是否禁止额外产出效果。",
+            LocalizationModule.RegisterTranslation("特化2介绍内容", "Requirements: At least 3 <color=#30bb30>Chemical</color>, <color=#30bb30>Petroleum</color> or <color=#30bb30>Production Enhancer</color> recipes are assigned, and no other types of recipes assigned.\n\nSpecialized effect: raw materials and products for all <color=#30bb30>chemical</color>, <color=#30bb30>petroleum</color> and <color=#30bb30>proliferator</color> recipes will be automatically <color=#61d8ffc0>sprayed with proliferator for free</color>, and have <color=#61d8ffc0>extra-output-enabled</color>, besides, their <color=#61d8ffc0>production speed +100%</color>.\n\n<color=#61d8ffc0>Extra-output-enabled</color>: After all raw materials of the recipe are sprayed with proliferators, this recipe will definitely gain the <color=#61d8ffc0>extra product</color> effect in the Interstellar Assembly, regardless of whether the recipe prohibits extra output effects. ",
+                                                   "要求：分配了至少3个<color=#30bb30>化工</color>、<color=#30bb30>石油</color>或<color=#30bb30>增产剂</color>配方，且无其他类型的配方。\n\n特化效果：为所有<color=#30bb30>化工</color>、<color=#30bb30>石油</color>和<color=#30bb30>增产剂</color>配方的原料和产物<color=#61d8ffc0>免费喷涂增产剂</color>，并<color=#61d8ffc0>允许增产</color>，且他们的<color=#61d8ffc0>速度+100%</color>。\n\n<color=#61d8ffc0>允许增产</color>：配方的原料喷涂增产剂后，在星际组装厂中生产的产物一定可以获得<color=#61d8ffc0>额外产出</color>效果，无论该配方是否禁止额外产出效果。",
                                                    "");
-            LocalizationModule.RegisterTranslation("特化3介绍内容", "Ring-star Particle Accelerator",
-                                                   "要求：分配了至少3个与<color=#30bb30>反物质</color>或<color=#30bb30>重氢</color><color=#30bb30><i>相关</i></color>的配方，且没有不<color=#30bb30><i>相关</i></color>的配方。\n\n特化效果：所有与<color=#30bb30>反物质</color>或<color=#30bb30>重氢</color><color=#30bb30><i>相关</i></color>的配方<color=\"#61D8FFc0\">允许增产</color>，并获得<color=\"#61D8FFc0\">+25%额外产出</color>。\n\n<color=#30bb30><i>相关</i></color>：配方的原材料或者产物中包含某个物品\n\n<color=\"#61D8FFc0\">允许增产</color>：配方的原料喷涂增产剂后，在星际组装厂中生产的产物一定可以获得<color=\"#61D8FFc0\">额外产出</color>效果，无论该配方是否禁止额外产出效果。",
+            LocalizationModule.RegisterTranslation("特化3介绍内容", "Requirements: At least 3 recipes <color=#30bb30><i>related to</i></color> <color=#30bb30>Antimatter</color> or <color=#30bb30>Deuterium</color> are assigned, and no other types of recipes assigned. \n\nSpecialization effects: All recipes <color=#30bb30><i>related to</i></color> <color=#30bb30>antimatter</color> or <color=#30bb30>deuterium</color> have <color=#61d8ffc0>extra-output-enabled</color> and gain <color=#61d8ffc0>+25% additional output</color>. \n\n<color=#30bb30><i>Related</i></color> : The raw materials or products of the recipe contain an item.\n\n<color=#61d8ffc0>Extra-output-enabled</color>: After all raw materials of the recipe are sprayed with proliferators, this recipe will definitely gain the <color=#61d8ffc0>extra product</color> effect in the Interstellar Assembly, regardless of whether the recipe prohibits extra output effects.",
+                                                   "要求：分配了至少3个与<color=#30bb30>反物质</color>或<color=#30bb30>重氢</color><color=#30bb30><i>相关</i></color>的配方，且没有不<color=#30bb30><i>相关</i></color>的配方。\n\n特化效果：所有与<color=#30bb30>反物质</color>或<color=#30bb30>重氢</color><color=#30bb30><i>相关</i></color>的配方<color=#61d8ffc0>允许增产</color>，并获得<color=#61d8ffc0>+25%额外产出</color>。\n\n<color=#30bb30><i>相关</i></color>：配方的原材料或者产物中包含某个物品。\n\n<color=#61d8ffc0>允许增产</color>：配方的原料喷涂增产剂后，在星际组装厂中生产的产物一定可以获得<color=#61d8ffc0>额外产出</color>效果，无论该配方是否禁止额外产出效果。",
                                                    "");
-            LocalizationModule.RegisterTranslation("特化4介绍内容", "Hyper-precision Assembly",
-                                                   "要求：分配了至少5个与<color=#30bb30>处理器</color>、<color=#30bb30>量子芯片</color>、<color=#30bb30>量子计算机</color><color=#30bb30><i>相关</i></color>的配方，且没有不<color=#30bb30><i>相关</i></color>的配方\n\n特化效果：所有<color=#30bb30>使用处理器</color>、<color=#30bb30>量子芯片</color>、<color=#30bb30>量子计算机</color>作为输入的配方<color=\"#61D8FFc0\">允许增产</color>，并获得<color=\"#61D8FFc0\">+25%额外产出</color>；\n<color=#30bb30>生产处理器</color>、<color=#30bb30>量子芯片</color>、<color=#30bb30>量子计算机</color>的配方则转而<color=\"#61D8FFc0\">+50%额外产出</color>。\n\n<color=#30bb30><i>相关</i></color>：配方的原材料或者产物中包含某个物品\n\n<color=\"#61D8FFc0\">允许增产</color>：配方的原料喷涂增产剂后，在星际组装厂中生产的产物一定可以获得<color=\"#61D8FFc0\">额外产出</color>效果，无论该配方是否禁止额外产出效果。",
+            LocalizationModule.RegisterTranslation("特化4介绍内容", "Requirements: At least 5 recipes <color=#30bb30><i>related to</i></color> <color=#30bb30>processor</color>, <color=#30bb30>quantum chip</color> or <color=#30bb30>quantum computer</color> are assigned, and no other types of recipes assigned.\n\nSpecialized effects: All recipes that <color=#30bb30>use processors</color>, <color=#30bb30>quantum chips</color> or <color=#30bb30>quantum computers</color> as inputs have <color=#61d8ffc0>extra-output-enabled</color>, and gain <color=#61d8ffc0>+25% additional output</color>; \n<color=#30bb30>Production processor</color>, <color=#30bb30>Quantum chip</color> and <color=#30bb30>Quantum Computer</color>'s recipe itself will gain <color=#61d8ffc0>+50% additional output</color> instead.\n\n<color=#30bb30><i>Related</i></color> : The raw materials or products of the recipe contain an item.\n\n<color=#61d8ffc0>Extra-output-enabled</color>: After all raw materials of the recipe are sprayed with proliferators, this recipe will definitely gain the <color=#61d8ffc0>extra product</color> effect in the Interstellar Assembly, regardless of whether the recipe prohibits extra output effects.",
+                                                   "要求：分配了至少5个与<color=#30bb30>处理器</color>、<color=#30bb30>量子芯片</color>、<color=#30bb30>量子计算机</color><color=#30bb30><i>相关</i></color>的配方，且没有不<color=#30bb30><i>相关</i></color>的配方\n\n特化效果：所有<color=#30bb30>使用处理器</color>、<color=#30bb30>量子芯片</color>、<color=#30bb30>量子计算机</color>作为输入的配方<color=#61d8ffc0>允许增产</color>，并获得<color=#61d8ffc0>+25%额外产出</color>；\n<color=#30bb30>生产处理器</color>、<color=#30bb30>量子芯片</color>、<color=#30bb30>量子计算机</color>的配方则转而<color=#61d8ffc0>+50%额外产出</color>。\n\n<color=#30bb30><i>相关</i></color>：配方的原材料或者产物中包含某个物品。\n\n<color=#61d8ffc0>允许增产</color>：配方的原料喷涂增产剂后，在星际组装厂中生产的产物一定可以获得<color=#61d8ffc0>额外产出</color>效果，无论该配方是否禁止额外产出效果。",
                                                    "");
-            LocalizationModule.RegisterTranslation("特化5介绍内容", "Hyper-heavy Assembly",
-                                                   "要求：分配了至少4个<color=#30bb30>运载火箭<color=#969696>或</color>太阳帆</color>的配方，且无其他类型的配方。\n\n特化效果：各类<color=#30bb30>运载火箭</color>和<color=#30bb30>太阳帆</color>的配方<color=\"#61D8FFc0\">允许增产</color>，并获得<color=\"#61D8FFc0\">+50%额外产出。</color>\n\n<color=\"#61D8FFc0\">允许增产</color>：配方的原料喷涂增产剂后，在星际组装厂中生产的产物一定可以获得<color=\"#61D8FFc0\">额外产出</color>效果，无论该配方是否禁止额外产出效果。",
+            LocalizationModule.RegisterTranslation("特化5介绍内容", "Requirements: At least 5 recipes <color=#30bb30><i>related to</i></color> <color=#30bb30>combat drones</color>, <color=#30bb30>warships</color>, <color=#30bb30>ammo</color> or <color=#30bb30>defense facilities</color> are assigned, and no other types of recipes assigned.\n\nSpecialized effects: All recipes of <color=#30bb30>attack drones</color>, <color=#30bb30>warships</color> and <color=#30bb30>defense facilities</color> have <color=#61d8ffc0>extra-output-enabled</color> and gain <color=#61d8ffc0>+50% additional output</color>; the recipes of <color=#30bb30>ammo</color> gain <color=#61d8ffc0>+100% additional output</color> instead.\n\n<color=#61d8ffc0>Extra-output-enabled</color>: After all raw materials of the recipe are sprayed with proliferators, this recipe will definitely gain the <color=#61d8ffc0>extra product</color> effect in the Interstellar Assembly, regardless of whether the recipe prohibits extra output effects.",
+                                                   "要求：分配了至少5个<color=#30bb30>攻击型无人机</color>、<color=#30bb30>战舰</color>、<color=#30bb30>弹药</color>或<color=#30bb30>防御设施</color>的配方，且无其他类型的配方。\n\n特化效果：各类<color=#30bb30>攻击型无人机</color>、<color=#30bb30>战舰</color>和<color=#30bb30>防御设施</color>的配方<color=#61d8ffc0>允许增产</color>，并获得<color=#61d8ffc0>+50%额外产出</color>；<color=#30bb30>弹药</color>的配方则转而获得<color=#61d8ffc0>+100%额外产出</color>。\n\n<color=#61d8ffc0>允许增产</color>：配方的原料喷涂增产剂后，在星际组装厂中生产的产物一定可以获得<color=#61d8ffc0>额外产出</color>效果，无论该配方是否禁止额外产出效果。",
                                                    "");
 
             LocalizationModule.RegisterTranslation("特化已激活", "Specialization Activated", "特化已激活", "");
