@@ -650,7 +650,7 @@ namespace MoreMegaStructure
                 //LDBTool.SetBuildBar(13, 4, 9496);
                 //LDBTool.SetBuildBar(13, 5, 9497);
                 //LDBTool.SetBuildBar(13, 6, 9498);
-                LDBTool.SetBuildBar(6, 8, 9512);
+                LDBTool.SetBuildBar(6, 9, 9512);
                 //LDBTool.SetBuildBar(4, 4, 9499);
             }
         }

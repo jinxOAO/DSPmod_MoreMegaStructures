@@ -63,7 +63,7 @@
 
 ### Change log
 v1.2.0: Updated to work with game version 0.10.28.21247.  
-&emsp;&emsp;&emsp;The number of recipes for all Interstellar Assembly has increased from 4 to 15, but the recipe slots will gradually be unlocked as the total speed of the Interstellar Assembly increases. 
+&emsp;&emsp;&emsp;The number of recipes for all Interstellar Assembly has increased from 4 to 15, but the recipe slots will gradually be unlocked as the total speed of the Interstellar Assembly increases.   
 &emsp;&emsp;&emsp;The Interstellar Assembly now can be specialized to different types, to gain additional buffs (speed buff or productive buff). Specialization progress requires certain conditions to be met before it begins, and you have to maintain a period of time to complete the specialization conversion process in order to obtain the buffs. Different specializations can switch between each other, but it also takes time.  
 &emsp;&emsp;&emsp;Add an increase in production indicator to the recipes of the Interstellar Assembly. If the input raw materials have been sprayed by proliferator, you can see the increase in production symbol and statistical information in the UI.  
 &emsp;&emsp;&emsp;Now the Interstellar Assembly has it's own statistics panel page. Press P and select your Interstellar Assembly at the top right corner to see its statistics. Compatible with bottleneck.  
@@ -176,7 +176,7 @@ v0.2.0: The basic research speed of the Science Nexus has been reduced to 1/10;
 - 引导光子从中子星或白矮星中剥离微晶，并送至地表。你需要在地表建造 [晶体接收器] ![Ccrystal.png](https://s2.loli.net/2022/02/25/LNuyO1efinJdAE7.png)  来产出卡西米尔晶体（必须设置成物质合成模式）。 或建造 ![Cgrating.png](https://s2.loli.net/2022/02/28/fcuTWr4d3iR9jeX.png) 来接收光栅石。   
 - 只能在中子星或白矮星上建造。   
 
-<--!## 尼科尔·戴森光束（恒星炮） 暂不可用
+<!--## 尼科尔·戴森光束（恒星炮） 暂不可用
 
 - 你必须安装了另一个mod  [TheyComeFromVoid](https://dsp.thunderstore.io/package/ckcz123/TheyComeFromVoid/) 的2.0.0以上版本才能使用这个巨构。   
 - 恒星炮能够摧毁虫洞，从而削弱即将到来的进攻的强度。   
@@ -205,7 +205,7 @@ v1.2.0: 更新以适配游戏版本0.10.28.21247。
 &emsp;&emsp;&emsp;现在，星际组装厂的产出统计在统计面板中具有专门的选项页，就像一个独立的行星一样，并且支持bottleneck。  
 &emsp;&emsp;&emsp;为星际组装厂的配方增加增产指示，如果输入的原材料已喷涂了增产剂，你可以在UI中看到已增产的标志和统计信息。  
 &emsp;&emsp;&emsp;现在巨构接收器具有独立的一行快捷建造栏。    
-&emsp;&emsp;&emsp;修复一个戴森就编辑器界面的文本错误。  
+&emsp;&emsp;&emsp;修复一个巨构编辑器界面的文本错误。  
 &emsp;&emsp;&emsp;修复一个增产的配方统计产出数量错误的bug。  
 &emsp;&emsp;&emsp;更新了火箭图标，该图标由创世之书1群群友L提供。  
 
@@ -222,7 +222,7 @@ v1.1.8: 修复了一个bug，该bug曾导致如果你安装了深空来敌mod，
 v1.1.7: 对发射井逻辑的微小修复。  
 
 v1.1.6: 现在此mod支持1000个星系，但这需要你在配置文件中将Support1000Stars设置为true。（你需要先运行一次游戏才能在配置文件中更改此项设定）  
-&emsp;&emsp;&emsp;现在星际组装厂不再会浪费原材料。你也可以通过修改配置未见将这个设定改回之前的版本。  
+&emsp;&emsp;&emsp;现在星际组装厂不再会浪费原材料。你也可以通过修改配置文件将这个设定改回之前的版本。  
 
 v1.1.5: 完成对创世之书mod的兼容，现在如果你同时安装了此mod和创世之书mod，部分合成配方、科技路线将会适当修改以避免不兼容的问题。    
 &emsp;&emsp;&emsp;修复了一个星际组装厂在工作时除以0的bug。  

@@ -72,3 +72,4 @@ MoreMegaStructure/MoreMegaStructure/obj/Debug/
 *.vsidx
 *.cache
 .suo
+*.pdb
