@@ -383,7 +383,9 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(ProductionStatistics), "PrepareTick")]
         public static void ProductionStatisticsPrepareTickPostPatch(ref ProductionStatistics __instance)
         {
-            for (int i = __instance.gameData.factories.Length; i < __instance.gameData.factories.Length + GameMain.galaxy.starCount; i++)
+            int maxLen = __instance.gameData.factories.Length + GameMain.galaxy.starCount;
+            maxLen = maxLen < __instance.factoryStatPool.Length ? maxLen : __instance.factoryStatPool.Length;
+            for (int i = __instance.gameData.factories.Length; i < maxLen; i++)
             {
                 __instance.factoryStatPool[i].PrepareTick();
             }

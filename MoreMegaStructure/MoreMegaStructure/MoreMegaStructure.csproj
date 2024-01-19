@@ -99,6 +99,8 @@
     <Compile Include="RendererSphere.cs" />
     <Compile Include="StarAssembly.cs" />
     <Compile Include="StarCannon.cs" />
+    <Compile Include="UIMechaWindowPatcher.cs" />
+    <Compile Include="UIStarCannon.cs" />
     <Compile Include="UIBuildMenuPatcher.cs" />
     <Compile Include="UIReceiverPatchers.cs" />
     <Compile Include="UIStatisticsPatcher.cs" />

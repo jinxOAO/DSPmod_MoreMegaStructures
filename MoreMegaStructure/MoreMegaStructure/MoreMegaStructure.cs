@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Windows;
 using BepInEx;
 using BepInEx.Configuration;
 using CommonAPI;
@@ -38,7 +39,7 @@ namespace MoreMegaStructure
 
         public static int megaNum = 7; // 巨构类型的数量
 
-        public static bool developerMode = false; // 发布前修改！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
+        public static bool developerMode = true; // 发布前修改！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
 
         //private static Sprite iconAntiInject;
         public static List<int> RelatedGammas;
@@ -171,6 +172,8 @@ namespace MoreMegaStructure
         public static Transform set2CrystalMinerButtonTextTrans;
         public static Transform set2StarCannonButtonTextTrans;
         public static UIComboBox selectAutoReceiveGearLimitComboBox;
+        public static Material setButtonTextNormMat;
+        public static Material setButtonTextAlphaMat;
 
         public static Text SetMegaStructureLabelText;
         public static Text SetMegaStructureWarningText;
@@ -184,6 +187,7 @@ namespace MoreMegaStructure
         public static long hashGenByAllSN;        //每帧计算，所有科学枢纽生成的hash总和，用于提供元数据
         public static int resolutionY = 1080;
         //public static bool inLogged = false;
+        public static System.Random randSeed = new System.Random();
 
         /// <summary>
         /// 下面的数据为游戏运行时的关键数据，且会进行存档
@@ -194,6 +198,10 @@ namespace MoreMegaStructure
         public static long autoReceiveGearProgress;
 
         public static int pilerLvl = 1;
+
+        // 测试用
+        public static bool KeyQPressTime = false;
+        public static int testHitIndex = 0;
 
         public void Awake()
         {
@@ -280,6 +288,8 @@ namespace MoreMegaStructure
             Harmony.CreateAndPatchAll(typeof(UIReceiverPatchers));
             if (UIStatisticsPatcher.active) Harmony.CreateAndPatchAll(typeof(UIStatisticsPatcher));
             Harmony.CreateAndPatchAll(typeof(UIBuildMenuPatcher));
+            Harmony.CreateAndPatchAll(typeof(UIStarCannon));
+            Harmony.CreateAndPatchAll(typeof(UIMechaWindowPatcher));
 
             MMSProtos.ChangeReceiverRelatedStringProto();
             MMSProtos.AddTranslateUILabel();
@@ -314,6 +324,7 @@ namespace MoreMegaStructure
             ReceiverPatchers.InitRawData();
             UIReceiverPatchers.InitAll();
             UIBuildMenuPatcher.InitAll();
+            UIStarCannon.InitAll();
 
             if (isBattleActive)
             {
@@ -342,6 +353,30 @@ namespace MoreMegaStructure
             catch (Exception)
             {
                 pilerLvl = 1;
+            }
+
+            // test
+            if (developerMode)
+            {
+                if (Input.GetKeyDown(KeyCode.Q))
+                {
+                    KeyQPressTime = !KeyQPressTime;
+                    if (KeyQPressTime == false)
+                        testHitIndex += 1;
+                }
+                if (KeyQPressTime)
+                {
+                    StarCannon.TestShootLaser();
+                }
+                else if (Input.GetKeyDown(KeyCode.R))
+                {
+                    StarCannon.TestShootLaser(true);
+                }
+                if(Input.GetKeyDown(KeyCode.N))
+                {
+                    StarCannon.SearchTarget(true);
+                }
+
             }
         }
 
@@ -698,7 +733,7 @@ namespace MoreMegaStructure
                 set2CrystalMinerButtonObj.GetComponent<UIButton>().tips.offset = new Vector2(130, 50);
 
                 set2StarCannonButtonObj = Instantiate(addNewLayerButton);
-                set2StarCannonButtonObj.SetActive(isBattleActive);
+                set2StarCannonButtonObj.SetActive(true);
                 set2StarCannonButtonObj.name = "set-mega-6"; //名字
                 set2StarCannonButtonObj.transform.SetParent(setMegaGroupObj.transform, false);
                 set2StarCannonButtonObj.transform.localPosition = new Vector3(30, -215, 0);             //位置
@@ -760,7 +795,7 @@ namespace MoreMegaStructure
                                            .GetComponent<Text>();
 
             selectAutoReceiveGearLimitObj.GetComponent<RectTransform>().sizeDelta = new Vector2(0, 63);
-            DestroyImmediate(selectAutoReceiveGearLimitObj.GetComponent<EventTrigger>()); // 这个是为了阻止：因为鼠标悬停此Object，导致原本的（作为instantiate的源）Object里面的问号标志被触发显示。
+            DestroyImmediate(selectAutoReceiveGearLimitObj.GetComponent<UnityEngine.EventSystems.EventTrigger>()); // 这个是为了阻止：因为鼠标悬停此Object，导致原本的（作为instantiate的源）Object里面的问号标志被触发显示。
 
             selectAutoReceiveGearLimitLabelObj.name = "title";
             selectAutoReceiveGearLimitLabelObj.SetActive(true);

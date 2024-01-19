@@ -14,6 +14,25 @@ namespace MoreMegaStructure
             return new VectorLF3(RandSeed.NextDouble() - 0.5, RandSeed.NextDouble() - 0.5, RandSeed.NextDouble() - 0.5);
         }
 
+        public static VectorLF3 RandVerticalPosDelta(VectorLF3 normal)
+        {
+            //if (normal.x == 0 && normal.y == 0)
+            //    return new VectorLF3(RandSeed.NextDouble() - 0.5, RandSeed.NextDouble() - 0.5, 0);
+            //else if (normal.y == 0 && normal.z == 0)
+            //    return new VectorLF3(0, RandSeed.NextDouble() - 0.5, RandSeed.NextDouble() - 0.5);
+            //else if (normal.x == 0 && normal.z == 0)
+            //    return new VectorLF3(RandSeed.NextDouble() - 0.5, 0, RandSeed.NextDouble() - 0.5);
+           
+            try
+            {
+                return VectorLF3.Cross(normal, RandPosDelta()).normalized * (RandSeed.NextDouble() - 0.5);
+            }
+            catch (System.Exception)
+            {
+                return VectorLF3.zero;
+            }
+        }
+
         public static int RandInt(int min, int max)
         {
             return RandSeed.Next(min, max);
