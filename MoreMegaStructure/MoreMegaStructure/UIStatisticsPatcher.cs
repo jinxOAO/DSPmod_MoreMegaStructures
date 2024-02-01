@@ -451,8 +451,8 @@ namespace MoreMegaStructure
         public static void Export(BinaryWriter w)
         {
             w.Write(0);
-            w.Write(GameMain.galaxy.starCount);
-            for (int i = GameMain.data.factories.Length; i < GameMain.data.factories.Length + GameMain.galaxy.starCount; i++)
+            w.Write(GameMain.statistics.production.factoryStatPool.Length - GameMain.data.factories.Length);
+            for (int i = GameMain.data.factories.Length; i < GameMain.statistics.production.factoryStatPool.Length; i++)
             {
                 GameMain.statistics.production.factoryStatPool[i].Export(w.BaseStream, w);
             }
@@ -466,7 +466,8 @@ namespace MoreMegaStructure
                 r.ReadInt32();
                 int num = r.ReadInt32();
                 Debug.Log($"datafactorylenis {GameMain.data.factories.Length}");
-                for (int i = GameMain.data.factories.Length; i < GameMain.data.factories.Length + num; i++)
+                int count = Math.Min(GameMain.statistics.production.factoryStatPool.Length, GameMain.data.factories.Length + num);
+                for (int i = GameMain.data.factories.Length; i < count; i++)
                 {
                     GameMain.statistics.production.factoryStatPool[i].Import(r.BaseStream, r);
                 }

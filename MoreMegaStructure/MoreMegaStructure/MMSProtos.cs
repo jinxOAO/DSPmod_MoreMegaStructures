@@ -13,6 +13,8 @@ namespace MoreMegaStructure
 {
     internal static class MMSProtos
     {
+        static int StarCannonTechId = 1918;
+
         internal static void RefreshInitAll()
         {
             ItemProto.InitFluids();
@@ -37,9 +39,9 @@ namespace MoreMegaStructure
         {
             int pagePlus = MoreMegaStructure.pagenum * 1000;
             int linePlus = 0;
-            if (MoreMegaStructure.isBattleActive)
+            if (true || MoreMegaStructure.isBattleActive)
             {
-                pagePlus = MoreMegaStructure.battlePagenum * 1000 + 100;
+                pagePlus = MoreMegaStructure.pagenum * 1000 + 100;
                 linePlus = -100;
             }
 
@@ -657,9 +659,9 @@ namespace MoreMegaStructure
 
         public static void AddNewItems2()
         {
-            if (!MoreMegaStructure.isBattleActive) return;
+            //if (!MoreMegaStructure.isBattleActive) return;
 
-            int pagePlus = MoreMegaStructure.battlePagenum * 1000;
+            int pagePlus = MoreMegaStructure.pagenum * 1000;
             //itemId 9513 available
             //recipeId 576 available
 
@@ -685,7 +687,7 @@ namespace MoreMegaStructure
             dropletItem.DescFields = new int[] { 50, 51, 56, 54, 55, 1 };
 
             ProtoRegistry.RegisterRecipe(565, ERecipeType.Assemble, 240, new int[] { 9480, 9484 }, new int[] { 2, 2 }, new int[] { 9503 },
-                                         new int[] { 1 }, "力场发生器描述", 1916, 201 + pagePlus, "Assets/MegaStructureTab/forceGen");
+                                         new int[] { 1 }, "力场发生器描述", StarCannonTechId, 201 + pagePlus, "Assets/MegaStructureTab/forceGen");
             RecipeProto SIMRecipe = ProtoRegistry.RegisterRecipe(566, ERecipeType.Particle, 600, new int[] { 1014, 1126, 1124, 1118, 1120 },
                                                                  new int[] { 1, 1, 1, 1, 1 }, new int[] { 9504 }, new int[] { 1 }, "复合态晶体描述", 1919,
                                                                  202 + pagePlus, "Assets/MegaStructureTab/compoCrystal");
@@ -697,19 +699,33 @@ namespace MoreMegaStructure
             RecipeProto strIntOverloaderRecipe = ProtoRegistry.RegisterRecipe(569, ERecipeType.Assemble, 1200, new int[] { 9506, 9486 },
                                                                               new int[] { 2, 2 }, new int[] { 9507 }, new int[] { 1 }, "强力过载装置描述",
                                                                               1919, 205 + pagePlus, "Assets/MegaStructureTab/strIntOverloader");
-            ProtoRegistry.RegisterRecipe(570, ERecipeType.Assemble, 180, new int[] { 1125, 9481 }, new int[] { 3, 2 }, new int[] { 9508 },
-                                         new int[] { 1 }, "导流框架描述", 1918, 206 + pagePlus, "Assets/MegaStructureTab/starcannonframe");
-            ProtoRegistry.RegisterRecipe(571, ERecipeType.Assemble, 480, new int[] { 1209, 9508, 9484 }, new int[] { 3, 2, 1 }, new int[] { 9509 },
-                                         new int[] { 1 }, "恒星炮组件描述", 1918, 207 + pagePlus, "Assets/MegaStructureTab/starcannoncompo");
+            ProtoRegistry.RegisterRecipe(570, ERecipeType.Assemble, 180, new int[] { 1125, 9481, 9503 }, new int[] { 3, 2, 4 }, new int[] { 9508 },
+                                         new int[] { 1 }, "导流框架描述", StarCannonTechId, 206 + pagePlus, "Assets/MegaStructureTab/starcannonframe");
+            ProtoRegistry.RegisterRecipe(571, ERecipeType.Assemble, 480, new int[] { 1209, 9508, 9486 }, new int[] { 3, 2, 1 }, new int[] { 9509 },
+                                         new int[] { 1 }, "恒星炮组件描述", StarCannonTechId, 207 + pagePlus, "Assets/MegaStructureTab/starcannoncompo");
             ProtoRegistry.RegisterRecipe(572, ERecipeType.Assemble, 360, new int[] { 9509, 1802, 1305 }, new int[] { 2, 2, 2 }, new int[] { 9510 },
-                                         new int[] { 1 }, "恒星炮运载火箭描述", 1918, 306 + pagePlus, "Assets/MegaStructureTab/rocketStarcannon");
+                                         new int[] { 1 }, "恒星炮运载火箭描述", StarCannonTechId, 306 + pagePlus, "Assets/MegaStructureTab/rocketStarcannon");
             RecipeProto dropRecipe = ProtoRegistry.RegisterRecipe(573, ERecipeType.Assemble, 3600, new int[] { 9505, 9507, 9504 },
                                                                   new int[] { 20, 20, 100 }, new int[] { 9511 }, new int[] { 1 }, "水滴描述", 1919,
                                                                   707 + pagePlus, "Assets/MegaStructureTab/drop1");
+
+            TechProto techStarCannon = ProtoRegistry.RegisterTech(StarCannonTechId, "尼科尔戴森光束", "尼科尔戴森光束描述", "尼科尔戴森光束结论", "Assets/MegaStructureTab/starcannontech", new int[] { }, new int[] { 5201 }, new int[] { 200 }, 36000, new int[] { 570, 571, 572, 565, 823 }, new Vector2(65, -3));
+
+
             SIMRecipe.Handcraft = false;
             gluonGenRecipe.Handcraft = false;
             strIntOverloaderRecipe.Handcraft = false;
             dropRecipe.Handcraft = false;
+        }
+
+        public static void EditOriRR(Proto proto)
+        {            
+            if (proto is ItemProto && proto.ID == 2208)
+            {
+                var rr = proto as ItemProto;
+                rr.Upgrades = new int[] { 2208, 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502 };
+                rr.Grade = 1;
+            }
         }
 
         public static void AddGenesisRecipes()
@@ -748,7 +764,7 @@ namespace MoreMegaStructure
         public static void AddReceivers()
         {
             int pagePlus = MoreMegaStructure.pagenum * 1000;
-            if (MoreMegaStructure.isBattleActive)
+            if (true || MoreMegaStructure.isBattleActive)
             {
                 pagePlus = MoreMegaStructure.battlePagenum * 1000 + 100;
             }
@@ -800,8 +816,8 @@ namespace MoreMegaStructure
             ReceiverIron.handcrafts = new List<RecipeProto> { ReceiverIronRecipe };
             ReceiverIron.maincraft = ReceiverIronRecipe;
             ReceiverIron.recipes = new List<RecipeProto> { ReceiverIronRecipe };
-            ReceiverIron.Grade = 1;
-            ReceiverIron.Upgrades = new int[] { 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502 };
+            ReceiverIron.Grade = 2;
+            ReceiverIron.Upgrades = new int[] { 2208, 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502 };
             //ReceiverIron.makes = new List<RecipeProto> { ReceiverIronRecipe };
             Traverse.Create(ReceiverIron).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverIron);
             //Copper
@@ -841,8 +857,8 @@ namespace MoreMegaStructure
             ReceiverCopper.handcrafts = new List<RecipeProto> { ReceiverCopperRecipe };
             ReceiverCopper.maincraft = ReceiverCopperRecipe;
             ReceiverCopper.recipes = new List<RecipeProto> { ReceiverCopperRecipe };
-            ReceiverCopper.Grade = 2;
-            ReceiverCopper.Upgrades = new int[] { 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502 };
+            ReceiverCopper.Grade = 3;
+            ReceiverCopper.Upgrades = new int[] { 2208, 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502 };
             //ReceiverCopper.makes = new List<RecipeProto> { ReceiverCopperRecipe };
             Traverse.Create(ReceiverCopper).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverCopper);
             //Silicon
@@ -882,8 +898,8 @@ namespace MoreMegaStructure
             ReceiverSilicon.handcrafts = new List<RecipeProto> { ReceiverSiliconRecipe };
             ReceiverSilicon.maincraft = ReceiverSiliconRecipe;
             ReceiverSilicon.recipes = new List<RecipeProto> { ReceiverSiliconRecipe };
-            ReceiverSilicon.Grade = 3;
-            ReceiverSilicon.Upgrades = new int[] { 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502 };
+            ReceiverSilicon.Grade = 4;
+            ReceiverSilicon.Upgrades = new int[] { 2208, 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502 };
             //ReceiverSilicon.makes = new List<RecipeProto> { ReceiverSiliconRecipe };
             Traverse.Create(ReceiverSilicon).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverSilicon);
             //Titanium
@@ -923,8 +939,8 @@ namespace MoreMegaStructure
             ReceiverTitanium.handcrafts = new List<RecipeProto> { ReceiverTitaniumRecipe };
             ReceiverTitanium.maincraft = ReceiverTitaniumRecipe;
             ReceiverTitanium.recipes = new List<RecipeProto> { ReceiverTitaniumRecipe };
-            ReceiverTitanium.Grade = 4;
-            ReceiverTitanium.Upgrades = new int[] { 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502 };
+            ReceiverTitanium.Grade = 5;
+            ReceiverTitanium.Upgrades = new int[] { 2208, 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502 };
             //ReceiverTitanium.makes = new List<RecipeProto> { ReceiverTitaniumRecipe };
             Traverse.Create(ReceiverTitanium).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverTitanium);
             //Magore
@@ -964,8 +980,8 @@ namespace MoreMegaStructure
             ReceiverMagore.handcrafts = new List<RecipeProto> { ReceiverMagoreRecipe };
             ReceiverMagore.maincraft = ReceiverMagoreRecipe;
             ReceiverMagore.recipes = new List<RecipeProto> { ReceiverMagoreRecipe };
-            ReceiverMagore.Grade = 5;
-            ReceiverMagore.Upgrades = new int[] { 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502 };
+            ReceiverMagore.Grade = 6;
+            ReceiverMagore.Upgrades = new int[] { 2208, 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502 };
             //ReceiverMagore.makes = new List<RecipeProto> { ReceiverMagoreRecipe };
             Traverse.Create(ReceiverMagore).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverMagore);
             //Coal
@@ -1005,8 +1021,8 @@ namespace MoreMegaStructure
             ReceiverCoal.handcrafts = new List<RecipeProto> { ReceiverCoalRecipe };
             ReceiverCoal.maincraft = ReceiverCoalRecipe;
             ReceiverCoal.recipes = new List<RecipeProto> { ReceiverCoalRecipe };
-            ReceiverCoal.Grade = 6;
-            ReceiverCoal.Upgrades = new int[] { 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502 };
+            ReceiverCoal.Grade = 7;
+            ReceiverCoal.Upgrades = new int[] { 2208, 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502 };
             //ReceiverCoal.makes = new List<RecipeProto> { ReceiverCoalRecipe };
             Traverse.Create(ReceiverCoal).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverCoal);
             //Casimir
@@ -1046,8 +1062,8 @@ namespace MoreMegaStructure
             ReceiverCasimir.handcrafts = new List<RecipeProto> { ReceiverCasimirRecipe };
             ReceiverCasimir.maincraft = ReceiverCasimirRecipe;
             ReceiverCasimir.recipes = new List<RecipeProto> { ReceiverCasimirRecipe };
-            ReceiverCasimir.Grade = 7;
-            ReceiverCasimir.Upgrades = new int[] { 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502 };
+            ReceiverCasimir.Grade = 8;
+            ReceiverCasimir.Upgrades = new int[] { 2208, 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502 };
             //ReceiverCasimir.makes = new List<RecipeProto> { ReceiverCasimirRecipe };
             Traverse.Create(ReceiverCasimir).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverCasimir);
             //Grating
@@ -1087,8 +1103,8 @@ namespace MoreMegaStructure
             ReceiverGrating.handcrafts = new List<RecipeProto> { ReceiverGratingRecipe };
             ReceiverGrating.maincraft = ReceiverGratingRecipe;
             ReceiverGrating.recipes = new List<RecipeProto> { ReceiverGratingRecipe };
-            ReceiverGrating.Grade = 8;
-            ReceiverGrating.Upgrades = new int[] { 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502 };
+            ReceiverGrating.Grade = 9;
+            ReceiverGrating.Upgrades = new int[] { 2208, 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502 };
             //ReceiverGrating.makes = new List<RecipeProto> { ReceiverGratingRecipe };
             Traverse.Create(ReceiverGrating).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverGrating);
 
@@ -1498,16 +1514,16 @@ namespace MoreMegaStructure
 
         public static void AddTranslateProtoNames4()
         {
-            LocalizationModule.RegisterTranslation("每秒伤害gm", "Damage per second", "每秒伤害", "");
+            LocalizationModule.RegisterTranslation("每秒伤害gm", "Base Damage", "基础伤害", "");
             LocalizationModule.RegisterTranslation("最大生产速度gm", "Production speed", "生产速度", "");
             LocalizationModule.RegisterTranslation("阶段", "stage", "阶段", "");
-            LocalizationModule.RegisterTranslation("连续开火次数", "Maximum fire times per charging", "连续开火次数", "");
+            LocalizationModule.RegisterTranslation("连续开火次数", "Aim targets", "射击目标数", "");
             LocalizationModule.RegisterTranslation("最大射程", "Maximum fire range", "最大射程", "");
             LocalizationModule.RegisterTranslation("伤害削减", "Damage reduction", "伤害削减", "");
             LocalizationModule.RegisterTranslation("当前能量水平", "Current capacity", "当前能量水平", "");
             LocalizationModule.RegisterTranslation("请拆除接收站", "Please remove all receivers", "请拆除本星系的接收站", "");
             LocalizationModule.RegisterTranslation("下一阶段所需能量水平", "Next stage required capacity", "下一阶段所需能量水平", "");
-            LocalizationModule.RegisterTranslation("冷却及充能时间", "Cooldown & charge time", "冷却及充能时间", "");
+            LocalizationModule.RegisterTranslation("冷却及充能时间", "Charge duration", "充能时间", "");
             LocalizationModule.RegisterTranslation("修建进度", "\nProgress to\nnext stage", "修建进度", "");
             LocalizationModule.RegisterTranslation("最终阶段", "Final stage", "最终阶段", "");
             LocalizationModule.RegisterTranslation("节点总数（已规划）gm", "Nodes in total(Planned)", "节点总数（已规划）", "");
@@ -1565,13 +1581,16 @@ namespace MoreMegaStructure
                                                    "\n3. The construction of the star cannon needs to go through multiple stages. And at the same time, the star cannon can increase its damage, max fire times per charging, and charging speed several times. After reaching the final stage, continue to build shells will continuously increase the damage.",
                                                    "1.恒星炮开火时所有层级的旋转轴将重叠，并且让北极指向目标开火，因此设计时请以各层网格自身的北极点为炮口中心；\n2.恒星炮开火时，第1层的随机12个节点将发射出激光指向炮口，为美观考虑，请尽量使得第1层只包含12个（或更少的）节点，并使其相互对称。\n3.恒星炮建造需要经过多个阶段，随着各建造阶段完成，恒星炮能数次提高伤害、连续开火次数和充能速度等属性。在达到最终阶段后，继续修建壳层可以不断提高伤害。",
                                                    "");
-            LocalizationModule.RegisterTranslation("恒星炮开火", "Design Instructions", "启动恒星炮", "");
+            LocalizationModule.RegisterTranslation("恒星炮开火", "Launch Star Cannon (R)", " 启动恒星炮 (R)", "");
             LocalizationModule.RegisterTranslation("恒星炮开火标题", "Design Instructions", "启动恒星炮", "");
             LocalizationModule.RegisterTranslation("恒星炮开火描述", "Design Instructions", "使用恒星炮射击该星系内的太空黑雾巢穴", "");
             LocalizationModule.RegisterTranslation("选中黑屋巢穴时的恒星炮开火描述", "Design Instructions", "使用恒星炮向该黑雾巢穴开火，而后继续射击该星系的其他太空黑雾巢穴", "");
-            LocalizationModule.RegisterTranslation("优先射击", "Design Instructions", "优先射击", "");
+            LocalizationModule.RegisterTranslation("优先射击", "Design Instructions", " 优先射击 (R)", "");
             LocalizationModule.RegisterTranslation("优先射击标题", "Design Instructions", "优先射击", "");
             LocalizationModule.RegisterTranslation("优先射击描述", "Design Instructions", "恒星炮将立刻开始瞄准选中的黑雾巢穴以进行攻击，更换锁定的目标可能需要时间", "");
+            LocalizationModule.RegisterTranslation("恒星炮已充能完毕", "Star Cannon fully charged", "恒星炮已充能完毕", "");
+            LocalizationModule.RegisterTranslation("目标无法定位警告", "Star Cannon fully charged", "无法定位任何目标！请至少前往该星系一次，并确认该星系有存活的黑雾巢穴。", "");
+            LocalizationModule.RegisterTranslation("恒星炮不能向自身所在星系开火！", "", "恒星炮无法向自身所在星系开火！", "");
             LocalizationModule.RegisterTranslation("功能说明题目", "Function", "功能", "");
             LocalizationModule.RegisterTranslation(
                 "物质解压器功能文本", "Produce unipolar magnet and some basic resources such as iron ingot, which can be received by corresponding receivers.",

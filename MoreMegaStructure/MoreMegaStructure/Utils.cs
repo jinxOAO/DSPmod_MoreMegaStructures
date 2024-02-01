@@ -38,6 +38,11 @@ namespace MoreMegaStructure
             return RandSeed.Next(min, max);
         }
 
+        public static float RandF()
+        { 
+            return (float)RandSeed.NextDouble();
+        }
+
         public static void Check(int num, string str = "Check ")
         {
             Debug.Log(str + num.ToString());

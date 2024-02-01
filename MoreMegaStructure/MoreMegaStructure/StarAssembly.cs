@@ -555,7 +555,8 @@ namespace MoreMegaStructure
                     PlanetFactory factory = planet.factory;
                     if (factory != null)
                     {
-                        if (GameMain.statistics.production.factoryStatPool.Length > factory.index)
+                        if (GameMain.statistics.production.factoryStatPool.Length > factory.index 
+                            && GameMain.data.factories.Length + GameMain.galaxy.starCount - starIndex - 1 < GameMain.statistics.production.factoryStatPool.Length)
                         {
                             //FactoryProductionStat factoryProductionStat = GameMain.statistics.production.factoryStatPool[factory.index];
                             FactoryProductionStat factoryProductionStat = GameMain.statistics.production.factoryStatPool[GameMain.data.factories.Length + GameMain.galaxy.starCount - starIndex - 1];

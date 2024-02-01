@@ -28,7 +28,7 @@ namespace MoreMegaStructure
         /// <summary>
         /// mod版本会进行存档
         /// </summary>
-        public static int modVersion = 120;
+        public static int modVersion = 130;
 
         public static int savedModVersion = 119;
 
@@ -200,7 +200,7 @@ namespace MoreMegaStructure
         public static int pilerLvl = 1;
 
         // 测试用
-        public static bool KeyQPressTime = false;
+        public static bool KeyNPressTime = false;
         public static int testHitIndex = 0;
 
         public void Awake()
@@ -304,6 +304,7 @@ namespace MoreMegaStructure
             LDBTool.PostAddDataAction += MMSProtos.AddGenesisRecipes;
             LDBTool.PostAddDataAction += MMSProtos.AddReceivers;
             LDBTool.PostAddDataAction += MMSProtos.RefreshInitAll;
+            LDBTool.EditDataAction += MMSProtos.EditOriRR;
 
             if (CompatibilityPatchUnlocked)
             {
@@ -355,26 +356,30 @@ namespace MoreMegaStructure
                 pilerLvl = 1;
             }
 
+            if (Input.GetKeyDown(KeyCode.R) && UIRoot.instance.uiGame.starmap.active)
+            {
+                StarCannon.OnFireButtonClick();
+            }
+
             // test
             if (developerMode)
             {
                 if (Input.GetKeyDown(KeyCode.Q))
                 {
-                    KeyQPressTime = !KeyQPressTime;
-                    if (KeyQPressTime == false)
-                        testHitIndex += 1;
-                }
-                if (KeyQPressTime)
-                {
-                    StarCannon.TestShootLaser();
+                    
                 }
                 else if (Input.GetKeyDown(KeyCode.R))
                 {
-                    StarCannon.TestShootLaser(true);
+                    //StarCannon.TestShootLaser(true);
                 }
                 if(Input.GetKeyDown(KeyCode.N))
                 {
-                    StarCannon.SearchTarget(true);
+                    //KeyNPressTime = !KeyNPressTime;
+                    //if (KeyNPressTime == false)
+                    //    testHitIndex += 1;
+                    //StarCannon.SearchTarget(true);
+                    var starmap = UIRoot.instance.uiGame.starmap;
+                    //Utils.Log($"Is not null? star {starmap.focusStar != null} / planet {starmap.focusPlanet != null} / hive {starmap.focusHive != null} / hover {starmap.mouseHoverStar != null}&{starmap.mouseHoverPlanet != null}&{starmap.mouseHoverHive != null}");
                 }
 
             }
@@ -858,8 +863,31 @@ namespace MoreMegaStructure
             }
 
             //否则，只计算壳面的效果，忽略游戏本体所谓戴森云的效果（也就是发电量）
-            __instance.energyGenCurrentTick -= (long)((double)__instance.swarm.energyGenCurrentTick * __instance.energyDFHivesDebuffCoef);
+            // __instance.energyGenOriginalCurrentTick -= __instance.swarm.energyGenCurrentTick; // 防止显示的黑雾截取能量不正常（指算上截取了全部的戴森云能量），但是这样更改会影响EnemyDFHiveSystem.DecisionAI，所以转而PostPatch UIDEPowerDesc的Update，见下
+            //__instance.energyGenCurrentTick -= (long)((double)__instance.swarm.energyGenCurrentTick * __instance.energyDFHivesDebuffCoef);
+            __instance.energyGenCurrentTick = (long)((double)(__instance.energyGenOriginalCurrentTick - __instance.energyGenCurrentTick_Swarm) * __instance.energyDFHivesDebuffCoef);
         }
+
+        /// <summary>
+        /// 用于修复非戴森球 黑屋窃取能量显示不正常的bug
+        /// </summary>
+        /// <param name="__instance"></param>
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(UIDEPowerDesc), "UpdateUI")]
+        public static void UIDEPowerDescUpdateUIPostPatch(ref UIDEPowerDesc __instance)
+        {
+            int StarIndex = __instance.dysonSphere.starData.index;
+            if (StarIndex < 0 || StarIndex >= 1000)
+                return;
+            if (StarMegaStructureType[StarIndex] == 0)
+                return;
+
+            var _this = __instance;
+            long num5 = (_this.dysonSphere.energyGenOriginalCurrentTick - _this.dysonSphere.energyGenCurrentTick_Swarm - _this.dysonSphere.energyGenCurrentTick) * 60L;
+            StringBuilderUtility.WriteKMG(_this.sb, 8, -num5, true);
+            _this.valueText4.text = _this.sb.ToString();
+        }
+
 
         /// <summary>
         /// 接收器每帧函数的patch，用于设定各种新接收器的行为。同时，让物品输出自动叠加（针对物质解压器接收速度过快），叠加数量取决于当前物流站自动叠加的科技等级。
@@ -1096,9 +1124,10 @@ namespace MoreMegaStructure
                     }
                 }
             }
-
             hashGenByAllSN = 0;
             StarAssembly.UIFrameUpdate(time);
+            StarCannon.RefreshStarCannonProperties();
+
         }
 
         /// <summary>
@@ -1133,7 +1162,11 @@ namespace MoreMegaStructure
 
                 TechProto techProto = LDB.techs.Select(num);
                 TechState ts = default(TechState);
-
+                for (int i = 0; i < techProto.Items.Length; i++) // 科学枢纽不支持研究黑雾矩阵相关科技
+                {
+                    if (techProto.Items[i] == 5201)
+                        return;
+                }
 
                 FactoryProductionStat factoryProductionStat = null;
                 if (__instance.starData.planets.Length > 0)
@@ -1218,7 +1251,7 @@ namespace MoreMegaStructure
                     //Debug.LogWarning("Error on RefreshShipSpeedScale");
                 }
             }
-            else if (StarMegaStructureType[idx] == 4) //如果是星际组装厂，且正在原程折跃接收多功能组件
+            else if (StarMegaStructureType[idx] == 4) //如果是星际组装厂
             {
                 StarAssembly.InternalUpdate(__instance);
                 StarAssembly.TryUseRocketInStorageToBuildIA(__instance);
@@ -1770,7 +1803,7 @@ namespace MoreMegaStructure
                                            StarCannon.GetStarCannonProperties(curDysonSphere)[0] +
                                            " " +
                                            curStar.displayName; //因为阶段可能会变，巨构的标题里面有stage阶段，因此也会变
-                    RightMaxPowGenValueText.text = (StarCannon.GetStarCannonProperties(curDysonSphere)[1] * 60).ToString();
+                    RightMaxPowGenValueText.text = (StarCannon.GetStarCannonProperties(curDysonSphere)[1] * 60 / 100).ToString();
                 }
             }
             catch (Exception)
@@ -1782,7 +1815,7 @@ namespace MoreMegaStructure
         //查看折跃场广播阵列是否达到建造上限
         public static int CheckWarpArrayBuilt()
         {
-            for (int i = 0; i < 200; i++) //应该是1000，但是考虑到一般不会有人用恒星数超过200的mod吧？
+            for (int i = 0; i < 1000; i++)
             {
                 if (StarMegaStructureType[i] == 3) return i;
             }
@@ -1792,7 +1825,7 @@ namespace MoreMegaStructure
 
         public static int CheckStarCannonBuilt()
         {
-            for (int i = 0; i < 200; i++) //应该是1000，但是考虑到一般不会有人用恒星数超过200的mod吧？
+            for (int i = 0; i < 1000; i++)
             {
                 if (StarMegaStructureType[i] == 6) return i;
             }
@@ -1927,8 +1960,14 @@ namespace MoreMegaStructure
                 //StarAssembly.ResetUIBtnTransitions();
             }
             
-            UIStatisticsPatcher.Import(r);
             UIBuildMenuPatcher.InitDataWhenLoad();
+            if (savedModVersion >= 130)
+            {
+                StarCannon.Import(r);
+            }
+
+            // 放在最后
+            UIStatisticsPatcher.Import(r);
         }
 
         public void Export(BinaryWriter w)
@@ -1943,6 +1982,9 @@ namespace MoreMegaStructure
             w.Write(autoReceiveGearProgress);
 
             StarAssembly.Export(w);
+            StarCannon.Export(w);
+
+            // 放在最后
             UIStatisticsPatcher.Export(w);
         }
 
@@ -1963,8 +2005,11 @@ namespace MoreMegaStructure
             RefreshUIWhenLoad();
             InitResolutionWhenLoad();
             EffectRenderer.InitAll();
-            UIStatisticsPatcher.IntoOtherSave();
             UIBuildMenuPatcher.InitDataWhenLoad();
+            StarCannon.IntoOtherSave();
+
+            // 放在最后
+            UIStatisticsPatcher.IntoOtherSave();
         }
 
         private static string Capacity2Str(double capacityPerSecond)

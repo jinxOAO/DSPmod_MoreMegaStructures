@@ -25,8 +25,8 @@ namespace MoreMegaStructure
             int num7 = (_this.mecha.groundCombatModule.fleetCount > _this.mecha.spaceCombatModule.fleetCount) ? _this.mecha.groundCombatModule.fleetCount : _this.mecha.spaceCombatModule.fleetCount;
             int num8 = (num7 <= 2 || highlighted) ? 484 : ((num7 >= 4) ? ((num7 > 4 && _this.fleetSwitchGroup.activeSelf) ? 628 : 596) : 540);
             int num9 = (num7 <= 2 || highlighted) ? 152 : ((num7 >= 4) ? ((num7 > 4 && _this.fleetSwitchGroup.activeSelf) ? 296 : 264) : 208);
-            if (num8 <= 541) 
-                num8 = 541;
+            if (num8 <= 540) 
+                num8 = 540;
             if (num7 >= 3 && num9 < 208)
                 num9 = 208;
             _this.rectTrans.sizeDelta = new Vector2(_this.rectTrans.sizeDelta.x, (float)num8);
