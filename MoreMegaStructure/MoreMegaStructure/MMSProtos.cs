@@ -710,7 +710,8 @@ namespace MoreMegaStructure
                                                                   707 + pagePlus, "Assets/MegaStructureTab/drop1");
 
             TechProto techStarCannon = ProtoRegistry.RegisterTech(StarCannonTechId, "尼科尔戴森光束", "尼科尔戴森光束描述", "尼科尔戴森光束结论", "Assets/MegaStructureTab/starcannontech", new int[] { }, new int[] { 5201 }, new int[] { 200 }, 36000, new int[] { 570, 571, 572, 565, 823 }, new Vector2(65, -3));
-
+            //techStarCannon.PreTechs = new int[] { 1522 };
+            techStarCannon.PreTechsImplicit = new int[] { 1522 };
 
             SIMRecipe.Handcraft = false;
             gluonGenRecipe.Handcraft = false;

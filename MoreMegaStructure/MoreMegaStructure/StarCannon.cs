@@ -680,7 +680,6 @@ namespace MoreMegaStructure
                     if (false)
                     {
                         Debug.Log($"dfsNode yes: {ptr3.dfSNodeId} {ptr3.dfSCoreId} {ptr3.dfSConnectorId} {ptr3.dfSGammaId} {ptr3.dfSTurretId} {ptr3.dfSReplicatorId} in astro{ptr3.astroId} and oriAstro {ptr3.originAstroId} and relayId {ptr3.dfRelayId}");
-                        //Debug.Log($"spacesector is the same? {GameMain.data.spaceSector == spaceSector}");
                     }
                     spaceSector.TransformFromAstro_ref(ptr3.astroId, out zero, ref ptr3.pos);
                     // 原逻辑判断是否在开火距离内 恒星炮不判断
@@ -929,7 +928,7 @@ namespace MoreMegaStructure
                 {
                     // 转火过程中保持开炮状态且方向与当前旋转进度同步
                     //VectorLF3 targetUPosFar = VectorLF3.zero;
-                    DysonSphereLayer layer = null;
+                    //DysonSphereLayer layer = null;
 
 
                     // 游戏内的激光特效及伤害
