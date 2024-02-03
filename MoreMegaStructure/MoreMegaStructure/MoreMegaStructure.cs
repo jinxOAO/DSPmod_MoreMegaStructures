@@ -39,7 +39,7 @@ namespace MoreMegaStructure
 
         public static int megaNum = 7; // 巨构类型的数量
 
-        public static bool developerMode = true; // 发布前修改！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
+        public static bool developerMode = false; // 发布前修改！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
 
         //private static Sprite iconAntiInject;
         public static List<int> RelatedGammas;
@@ -72,6 +72,7 @@ namespace MoreMegaStructure
         public static ConfigEntry<bool> NonlinearEnergy;
         public static ConfigEntry<bool> Support1000Stars;
         public static ConfigEntry<bool> NoWasteResources;
+        public static ConfigEntry<bool> ReverseStarCannonShellAlignDirection;
         public static bool resolutionLower1080 = false;
 
         public static ResourceData resources;
@@ -238,6 +239,7 @@ namespace MoreMegaStructure
                                                  "Turn this to true will let the Interstellar Assemblies support upto 1000 stars (default is 100), but this might slow down your game or your save/load speed. 将此项设置为true能够使星际组装厂支持最多1000个星系（默认只支持100以下），但这可能使你的游戏速度或存读档速度被拖慢。");
             NoWasteResources = Config.Bind("config", "NoWasteResources", true,
                                                  "Turn this to false might slightly increase the game speed. But this will cause: if one of the various materials required by a recipe in Interstellar Assembly is insufficient, (its supply cannot meet the speed of full-speed production). Although the actual output will slow down, other sufficient materials may still be consumed at full speed, which means that they may be wasted.  将此项设置为false可能会轻微提升游戏速度，但这会导致：当星际组装厂中的部分原材料不支持满速消耗时，虽然产出速度按照最低供应原材料的速度为准，但其他充足供应的原材料仍被满速消耗而产生浪费。");
+            ReverseStarCannonShellAlignDirection = Config.Bind("config", "ReverseStarCannonShellAlignDirection", false, "Turn this to true will reverse the align direction of all the shell of star cannon when firing, which means the south pole (of the shells) will point to the target star rather than the north pole.  将此项设置为true会反转恒星炮开火时壳层的对齐方向，这意味着所有壳层的南极将指向目标恒星开火（而非默认的北极）。如果你的炮口造反了，可以尝试更改此项设置。");
 
             //var ab = AssetBundle.LoadFromStream(Assembly.GetExecutingAssembly().GetManifestResourceStream("MoreMegaStructure.megastructureicons"));
             iconRocketMattD = Resources.Load<Sprite>("Assets/MegaStructureTab/rocketMatter");
@@ -783,7 +785,7 @@ namespace MoreMegaStructure
             selectAutoReceiveGearLimitObj.name = "gear-max-num";
             selectAutoReceiveGearLimitObj.transform.SetParent(GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Mecha Window/information").transform);
             selectAutoReceiveGearLimitObj.transform.localScale = new Vector3(1, 1, 1);
-            selectAutoReceiveGearLimitObj.transform.localPosition = new Vector3(-240, -372, 0);
+            selectAutoReceiveGearLimitObj.transform.localPosition = new Vector3(-240, -390, 0);
             selectAutoReceiveGearLimitObj.SetActive(true);
             GameObject.Destroy(selectAutoReceiveGearLimitObj.transform.Find("title").gameObject);
             GameObject.Destroy(selectAutoReceiveGearLimitObj.transform.Find("value-1").gameObject);
@@ -1598,7 +1600,7 @@ namespace MoreMegaStructure
                 }
 
                 WarpBuiltStarIndex = CheckWarpArrayBuilt();
-                CannonBuiltStarIndex = CheckStarCannonBuilt();
+                CannonBuiltStarIndex = GetStarCannonBuiltIndex();
                 if (WarpBuiltStarIndex >= 0 || (isBattleActive && !GameMain.history.TechUnlocked(1921)))
                 {
                     set2WarpFieldGenButtonTextTrans.GetComponent<Text>().color = disableTextColor;
@@ -1823,7 +1825,7 @@ namespace MoreMegaStructure
             return -1;
         }
 
-        public static int CheckStarCannonBuilt()
+        public static int GetStarCannonBuiltIndex()
         {
             for (int i = 0; i < 1000; i++)
             {
@@ -2115,11 +2117,11 @@ namespace MoreMegaStructure
             try
             {
                 MoreMegaStructure.GenesisCompatibility = false;
-                if (DSP_Battle.Configs.versionCode >= 30220410)
-                {
-                    MoreMegaStructure.isBattleActive = true;
-                    MoreMegaStructure.HashGenDivisor = 40000000L * 3; //Battle的削弱
-                }
+                //if (DSP_Battle.Configs.versionCode >= 30220410)
+                //{
+                //    MoreMegaStructure.isBattleActive = true;
+                //    MoreMegaStructure.HashGenDivisor = 40000000L * 3; //Battle的削弱
+                //}
             }
             catch
             {

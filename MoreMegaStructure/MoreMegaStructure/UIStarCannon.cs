@@ -72,7 +72,7 @@ namespace MoreMegaStructure
             //FireButton1Obj.transform.localPosition = new Vector3(30, -95, 0); // 位置
             //FireButton1Obj.GetComponent<RectTransform>().sizeDelta = new Vector2(220, 28); // 按钮大小
             FireButton1Text = FireButton1Obj.transform.Find("button-text").GetComponent<Text>();
-            FireButton1Text.text = "恒星炮开火".Translate();
+            FireButton1Text.text = "恒星炮开火按钮文本".Translate();
             GameObject.DestroyImmediate(FireButton1Obj.GetComponent<Button>());
             FireButton1 = FireButton1Obj.AddComponent<Button>();
             FireButton1.interactable = true;
@@ -110,10 +110,12 @@ namespace MoreMegaStructure
         /// </summary>
         [HarmonyPostfix]
         [HarmonyPatch(typeof(UIStarmap), "_OnOpen")]
+        [HarmonyPatch(typeof(UIDysonEditor), "_OnOpen")]
         public static void UIStarmapOnOpenPostPatch()
         {
-            MoreMegaStructure.CheckStarCannonBuilt();
+            StarCannon.starCannonStarIndex = MoreMegaStructure.GetStarCannonBuiltIndex();
             StarCannon.RefreshStarCannonProperties();
+            //UIStarmapOnUpdatePostPatch_RefreshFireButton(ref __instance);
         }
 
 
@@ -140,7 +142,7 @@ namespace MoreMegaStructure
                 if ((int)StarCannon.state <= 0)
                 {
                     FireButton1UIButton.tips.tipTitle = "恒星炮开火标题".Translate();
-                    FireButton1UIButton.tips.tipText = "选中黑屋巢穴时的恒星炮开火描述".Translate();
+                    FireButton1UIButton.tips.tipText = "选中黑雾巢穴时的恒星炮开火描述".Translate();
                 }
                 else
                 {
@@ -156,7 +158,8 @@ namespace MoreMegaStructure
 
             if (StarCannon.starCannonStarIndex < 0)
             {
-                FireButton1Text.text = "恒星炮未规划按钮文本".Translate(); 
+                FireButton1Text.text = "恒星炮未规划按钮文本".Translate();
+                FireButton1Obj.GetComponent<Image>().color = cannonDisableNormalColor;
                 if (FireButton1UIButton.transitions?.Length > 0)
                 {
                     for (int i = 0; i < 1; i++)
@@ -171,6 +174,7 @@ namespace MoreMegaStructure
             else if(StarCannon.starCannonLevel <= 0)
             {
                 FireButton1Text.text = "恒星炮建设中按钮文本".Translate();
+                FireButton1Obj.GetComponent<Image>().color = cannonDisableNormalColor;
                 if (FireButton1UIButton.transitions?.Length > 0)
                 {
                     for (int i = 0; i < 1; i++)
@@ -185,6 +189,7 @@ namespace MoreMegaStructure
             else if (StarCannon.state == EStarCannonState.Standby)
             {
                 FireButton1Text.text = "恒星炮开火按钮文本".Translate();
+                FireButton1Obj.GetComponent<Image>().color = cannonReadyNormalColor;
                 if (FireButton1UIButton.transitions?.Length > 0)
                 {
                     for (int i = 0; i < 1; i++)
@@ -198,7 +203,8 @@ namespace MoreMegaStructure
             }
             else if (StarCannon.state == EStarCannonState.Align)
             {
-                StarCannonStateText.text = "恒星炮正在瞄准按钮文本".Translate();
+                FireButton1Text.text = "恒星炮正在瞄准按钮文本".Translate();
+                FireButton1Obj.GetComponent<Image>().color = cannonAimingNormalColor;
                 if (FireButton1UIButton.transitions?.Length > 0)
                 {
                     for (int i = 0; i < 1; i++)
@@ -212,7 +218,8 @@ namespace MoreMegaStructure
             }
             else if (StarCannon.state == EStarCannonState.Heat)
             {
-                StarCannonStateText.text = "恒星炮预热中".Translate();
+                FireButton1Text.text = "恒星炮预热中按钮文本".Translate();
+                FireButton1Obj.GetComponent<Image>().color = cannonAimingNormalColor;
                 if (FireButton1UIButton.transitions?.Length > 0)
                 {
                     for (int i = 0; i < 1; i++)
@@ -227,11 +234,12 @@ namespace MoreMegaStructure
             else if (StarCannon.state == EStarCannonState.Fire)
             {
                 int timeLeft = StarCannon.maxFireDuration - (StarCannon.time - StarCannon.endAimTime - StarCannon.warmTimeNeed);
-                StarCannonStateText.text = "恒星炮开火中".Translate() + String.Format(" {0:D2} : {1:D2}", timeLeft / 3600, timeLeft / 60 % 60);
+                FireButton1Text.text = "恒星炮开火中按钮文本".Translate() + String.Format(" {0:D2} : {1:D2}", timeLeft / 3600, timeLeft / 60 % 60);
                 if (__instance.focusHive != null || __instance.mouseHoverHive != null && __instance.focusPlanet == null && __instance.focusStar == null)
                 {
-                    StarCannonStateText.text = "优先射击".Translate();
+                    FireButton1Text.text = "优先射击按钮文本".Translate();
                 }
+                FireButton1Obj.GetComponent<Image>().color = cannonFiringNormalColor;
                 if (FireButton1UIButton.transitions?.Length > 0)
                 {
                     for (int i = 0; i < 1; i++)
@@ -246,7 +254,8 @@ namespace MoreMegaStructure
             else if (StarCannon.state == EStarCannonState.Cooldown)
             {
                 int timeLeft = -StarCannon.time - StarCannon.chargingTimeNeed;
-                StarCannonStateText.text = "恒星炮冷却中".Translate() + String.Format(" {0:D2} : {1:D2}", timeLeft / 3600, timeLeft / 60 % 60);
+                FireButton1Text.text = "恒星炮冷却中按钮文本".Translate() + String.Format(" {0:D2} : {1:D2}", timeLeft / 3600, timeLeft / 60 % 60);
+                FireButton1Obj.GetComponent<Image>().color = cannonChargingNormalColor;
                 if (FireButton1UIButton.transitions?.Length > 0)
                 {
                     for (int i = 0; i < 1; i++)
@@ -261,7 +270,8 @@ namespace MoreMegaStructure
             else if (StarCannon.state == EStarCannonState.Recharge)
             {
                 int timeLeft = -StarCannon.time;
-                StarCannonStateText.text = "恒星炮充能中".Translate() + String.Format(" {0:D2} : {0:D2}", timeLeft / 3600, timeLeft / 60 % 60);
+                FireButton1Text.text = "恒星炮充能中按钮文本".Translate() + String.Format(" {0:D2} : {1:D2}", timeLeft / 3600, timeLeft / 60 % 60);
+                FireButton1Obj.GetComponent<Image>().color = cannonChargingNormalColor;
                 if (FireButton1UIButton.transitions?.Length > 0)
                 {
                     for (int i = 0; i < 1; i++)
@@ -273,6 +283,17 @@ namespace MoreMegaStructure
                     }
                 }
             }
+        }
+
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(UIStarmap), "UpdateCursorView")]
+        public static void LimitCursorViewWidth(ref UIStarmap __instance)
+        {
+            int minWidth = StarCannon.starCannonStarIndex >= 0 && StarCannon.starCannonLevel < 1 ? 225 : 150; // 225是因为恒星炮正在建造中的英文过长，按钮需要更长才能放下文本
+            float width = Math.Max(__instance.cursorViewTrans.sizeDelta.x, minWidth);
+            float height = __instance.cursorViewTrans.sizeDelta.y;
+            __instance.cursorViewTrans.sizeDelta = new Vector2(width, height);
         }
 
 
@@ -292,7 +313,12 @@ namespace MoreMegaStructure
                 if (MoreMegaStructure.StarMegaStructureType[starIndex] == 6)
                 {
                     StarCannonStateUIObj.SetActive(true);
-                    if (StarCannon.state == EStarCannonState.Standby)
+                    if(StarCannon.starCannonLevel <= 0)
+                    {
+                        StarCannonStateText.text = "恒星炮建设中按钮文本".Translate();
+                        StarCannonStateText.color = new Color(0.7f, 0.7f, 0.7f, 0.84f);
+                    }
+                    else if (StarCannon.state == EStarCannonState.Standby)
                     {
                         StarCannonStateText.text = "恒星炮已充能完毕".Translate();
                         StarCannonStateText.color = new Color(0.233f, 0.78f, 1f, 0.754f);
@@ -322,7 +348,7 @@ namespace MoreMegaStructure
                     else if (StarCannon.state == EStarCannonState.Recharge)
                     {
                         int timeLeft = -StarCannon.time;
-                        StarCannonStateText.text = "恒星炮充能中".Translate() + String.Format("  {0:D2} : {0:D2}", timeLeft / 3600, timeLeft / 60 % 60);
+                        StarCannonStateText.text = "恒星炮充能中".Translate() + String.Format("  {0:D2} : {1:D2}", timeLeft / 3600, timeLeft / 60 % 60);
                         StarCannonStateText.color = new Color(0.6f, 0.6f, 0.9f, 0.9f);
                     }
                 }

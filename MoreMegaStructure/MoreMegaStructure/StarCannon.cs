@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using UnityEngine.UI;
 using System.IO;
 using System.Security.Cryptography;
+using System;
 
 namespace MoreMegaStructure
 {
@@ -13,8 +14,8 @@ namespace MoreMegaStructure
         Standby = 0,
         Align = 1,
         Heat = 2,
-        Switch = 3, // 只有一帧，告诉update需要停火当前目标，不管是否已消灭，接下来进入Aim瞄准目标的阶段
-        Aim = 4, // 匀速同步旋转每层，瞄准目标
+        Switch = 3, // 已弃用。只有一帧，告诉update需要停火当前目标，不管是否已消灭，接下来进入Aim瞄准目标的阶段
+        Aim = 4, // 已弃用。匀速同步旋转每层，瞄准目标
         Fire = 5, // 开火中
         Cooldown = -2,
         Recharge = -1
@@ -23,12 +24,13 @@ namespace MoreMegaStructure
     {
 		public static List<long> energyPerTickRequiredByLevel = new List<long> { 0, 100000000, 500000000, 2000000000, 4000000000, 9000000000, 9000000000 };
 		public static List<int> basicDamagePerTickByLevel = new List<int> { 0, 5000, 10000, 15000, 20000, 30000 }; //五级前，伤害是固定的，五级后，伤害是基础伤害+bonus，此外游戏UI显示的HP是实际游戏内计算HP和伤害数值的0.01倍，因此显示在游戏内的秒伤数值需要*60后/100
-		public static float bonusDpsPerMW = 0.2f; //5级后，每1MW的能量提供这么多的秒伤。每tick提供的tick伤害也是这个比值
-		public static List<int> maxAimCountByLevel = new List<int> { 0, 3, 5, 8, 15, 20 }; //同时瞄准的目标上限
-		public static List<int> chargeTickByLevel = new List<int> { 0, 270000, 162000, 72000, 36000, 18000 }; //充能时间，tick
+		// 修改测试用伤害！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
+        public static float bonusDpsPerMW = 0.2f; //5级后，每1MW的能量提供这么多的秒伤。每tick提供的tick伤害也是这个比值
+		public static List<int> maxAimCountByLevel = new List<int> { 0, 3, 6, 10, 15, 30 }; //同时瞄准的目标上限
+		public static List<int> chargeTickByLevel = new List<int> { 0, 162000, 108000, 72000, 36000, 18000 }; //充能时间，tick
 		public static List<int> fireRangeByLevel = new List<int> { 0, 9999, 9999, 9999, 9999, 9999 }; //射程，以光年计
 		public static List<int> damageReductionPerLyByLevel = new List<int> { 3, 3, 2, 1, 0, 0 }; //每光年伤害衰减的百分比
-        public static List<int> maxFireDurationByLevel = new List<int> { 0, 36000, 7200, 10800, 18000, 60000 }; // 一次开火最大持续时间
+        public static List<int> maxFireDurationByLevel = new List<int> { 0, 3600, 7200, 10800, 18000, 60000 }; // 一次开火最大持续时间
         public static ConcurrentDictionary<int, int> noExplodeBullets = new ConcurrentDictionary<int, int>();
         public static List<VectorLF3> laserThickerPosDelta = new List<VectorLF3>();
 
@@ -36,10 +38,11 @@ namespace MoreMegaStructure
         public static int laserBulletNum = 100;
         public static int laserBulletPosDelta = 500; // 主激光发射处随机偏移（激光半径）
         public static int laserBulletEndPosDelta = 75; // 主激光命中处随机偏移（激光命中处半径）
+        //public static int laserAttackPosDelta = 1000; // 次级攻击激光发射处随机偏移
         public static int maxSideLaserIntensity = 5; //12束集束激光子弹数
         public static float sideLaserBulletLifeTime = 0.1f;
         public static VectorLF3 normDirection = new VectorLF3(0, 1, 0);
-        public static int reverseDirection = -1; //只能是1或者-1，1是北极为炮口，-1则是南极。相当于设计恒星炮时所有层级南北极互换
+        public static int reverseDirection = 1; //只能是1或者-1，1是北极为炮口，-1则是南极。相当于设计恒星炮时所有层级南北极互换
         public static int renderLevel = 2; // 默认是2，更小可以减少恒星炮渲染的光束数量
 
         public static GameObject fireButtonObj = null;
@@ -63,17 +66,16 @@ namespace MoreMegaStructure
         public static int starCannonLevel = 1; //恒星炮建造的所属阶段（等级），即完成度
         public static int damagePerTick = 4000; //每tick伤害
         public static int damageReductionPerLy = 0; // 每光年损失的伤害百分比
-        public static double maxRange = 10.0; //恒星炮最大开火距离，以光年计，1ly = 60AU = 60 * 40000m。
+        public static double maxRange = 100.0; //恒星炮最大开火距离，以光年计，1ly = 60AU = 60 * 40000m。
         public static int warmTimeNeed = 240; //阶段2预热加速旋转需要的tick时间
         public static int cooldownTimeNeed = 600; //阶段5冷却需要的tick时间
         public static int chargingTimeNeed = 75 * 3600; //阶段-1的重新充能需要的tick时间
-        public static float reAimAngularSpeed = 30f; //连续瞄准时，所有层以同一个速度旋转瞄准到下一个虫洞
-        public static int maxAimCount = 100; //连续瞄准次数上限，新版本改成了同时射击目标上限
+        public static float reAimAngularSpeed = 10f; //连续瞄准时，所有层以同一个速度旋转瞄准到下一个虫洞
+        public static int maxAimCount = 3; //连续瞄准次数上限，新版本改成了同时射击目标上限
         public static List<double> layerRotateSpeed; //不需要存档，每次随机生成即可
         public static int maxFireDuration = 6000; // 持续开火最大时间
 
         // 其他运行时参数
-        //public static SkillTarget currentTarget; // 每次使用需要检查null，每次读档重置
         public static SpaceSector spaceSector; // 每次读档更新
 
         //每帧更新不需要存档
@@ -104,7 +106,6 @@ namespace MoreMegaStructure
             sideLaserBulletLifeTime = 0.016f * ratio + 0.003f;
             spaceSector = GameMain.data.spaceSector;
             priorTargetHiveOriAstroId = -1;
-            maxAimCountByLevel = new List<int> { 0, 6, 12, 18, 30, 99999 };
             laserThickerPosDelta = new List<VectorLF3>();
             currentTargetIds = new List<int>();
             int x=-1, y=-1, z=-1;
@@ -123,9 +124,13 @@ namespace MoreMegaStructure
                     x++;
                 }
             }
+            reverseDirection = MoreMegaStructure.ReverseStarCannonShellAlignDirection.Value ? -1 : 1;
             //RefreshStarCannonProperties();
         }
 
+        /// <summary>
+        /// 重新计算恒星炮当前属性
+        /// </summary>
         public static void RefreshStarCannonProperties()
         {
             if (starCannonStarIndex >= 0 && starCannonStarIndex < 1000 && MoreMegaStructure.StarMegaStructureType[starCannonStarIndex] == 6 && starCannonStarIndex < GameMain.galaxy.starCount)
@@ -158,6 +163,11 @@ namespace MoreMegaStructure
             }
         }
 
+        /// <summary>
+        /// 返回恒星炮当前属性
+        /// </summary>
+        /// <param name="sphere"></param>
+        /// <returns></returns>
         public static int[] GetStarCannonProperties(DysonSphere sphere)
         {
             if (sphere == null)
@@ -183,7 +193,7 @@ namespace MoreMegaStructure
 
         public static void OnFireButtonClick()
         {
-            starCannonStarIndex = MoreMegaStructure.CheckStarCannonBuilt();
+            starCannonStarIndex = MoreMegaStructure.GetStarCannonBuiltIndex();
             RefreshStarCannonProperties();
             if(starCannonStarIndex < 0)
             {
@@ -192,7 +202,7 @@ namespace MoreMegaStructure
             }
             if (starCannonLevel <= 0)
             {
-                UIRealtimeTip.Popup("恒星炮需要至少修建至第一阶段才能够开火！".Translate());
+                UIRealtimeTip.Popup("恒星炮修建中警告".Translate());
                 return;
             }
             UIStarmap starmap = UIRoot.instance.uiGame.starmap;
@@ -314,7 +324,6 @@ namespace MoreMegaStructure
                     else
                     {
                         priorTargetHiveOriAstroId = starmap.focusHive.hive.hiveAstroId;
-                        SkillTarget currentTarget = SearchNextTarget();
                         currentTargetIds = new List<int>();
                         if (!CheckAndSearchAllTargets()) // 可能是玩家置顶的黑雾巢穴没有存活的目标，反正就是没找到属于这个巢穴的开火目标
                         {
@@ -326,6 +335,24 @@ namespace MoreMegaStructure
                             //state = EStarCannonState.Switch;
                         }
                     }                    
+                }
+                else if(starmap.mouseHoverHive != null)
+                {
+                    StarData star = starmap.mouseHoverHive?.hive?.starData;
+                    if (currentTargetStarIndex != star?.index)
+                    {
+                        UIRealtimeTip.Popup("无法更改目标星系警告".Translate());
+                    }
+                    else
+                    {
+                        priorTargetHiveOriAstroId = starmap.mouseHoverHive.hive.hiveAstroId;
+                        currentTargetIds = new List<int>();
+                        if (!CheckAndSearchAllTargets()) // 可能是玩家置顶的黑雾巢穴没有存活的目标，反正就是没找到属于这个巢穴的开火目标
+                        {
+                            priorTargetHiveOriAstroId = -1; // 还原没有prior的状态
+                            UIRealtimeTip.Popup("无法优先射击该巢穴警告".Translate());
+                        }
+                    }
                 }
             }
             //UIRoot.instance.uiGame.starmap.
@@ -356,225 +383,7 @@ namespace MoreMegaStructure
             ptr.damage = damage;
             ptr.life = life;
             ptr.extendedDistWhenMiss = 0;
-            ptr.mask = ETargetTypeMask.Enemy | ETargetTypeMask.Astro;
-        }
-
-		//public static void TestShootLaser(bool showInfo = false)
-		//{
-  //          if(currentTargetId == 0) { return; }
-		//	var _this = GameMain.data.mainPlayer.controller.actionCombat;
-  //          if(currentTargetId >= spaceSector.enemyPool.Length || currentTargetId <= 0)
-  //          {
-  //              currentTargetId = SearchNextTarget().id;
-  //          }
-  //          ref EnemyData ptr0 = ref spaceSector.enemyPool[currentTargetId];
-  //          if(ptr0.id <= 0) // 目标已不存在，寻找下一个目标
-  //          {
-  //              currentTargetId = SearchNextTarget().id;
-  //              return;
-  //          }
-		//	//GameMain.mainPlayer.controller.actionCombat.Shoot_Laser_Space(ref ptr0, 1000);
-		//	if (true)
-  //          {
-  //              StarData starData = spaceSector.dfHivesByAstro[ptr0.originAstroId - 1000000].starData;
-  //              Vector3 vec = Vector3.zero;
-  //              VectorLF3 endPosU =  VectorLF3.zero;
-  //              //_this.skillSystem.GetObjectUPosition(ref ptr.target, out ptr.endPosU);
-  //              for (int i = 0; i < 1; i++)
-  //              {
-  //                  ref SpaceLaserOneShot ptr = ref _this.skillSystem.dfsTowerLasers.Add();
-  //                  ptr.astroId = starCannonStarIndex * 100;
-  //                  ptr.hitIndex = 32;
-  //                  ptr.target.type = ETargetType.Enemy;
-  //                  ptr.target.id = ptr0.id;
-  //                  ptr.target.astroId = ptr0.originAstroId;
-  //                  ptr.caster.type = ETargetType.Craft;
-  //                  ptr.caster.id = 1;
-  //                  ptr.beginPosU = GameMain.galaxy.stars[starCannonStarIndex].uPosition;// + laserThickerPosDelta[i] * 20;
-  //                  spaceSector.skillSystem.GetObjectUPositionAndVelocity(ref ptr.target, out endPosU, out vec);
-  //                  //ptr.endPosU += (VectorLF3)(0.016666666666666666f * vec);
-  //                  ptr.endPosU = endPosU + (VectorLF3)(0.016666667f * vec);// + laserThickerPosDelta[i] * 20;
-  //                  //ptr.muzzleOffset = Maths.QInvRotateLF(_this.player.uRotation, _this.mecha.skillCastRightU - _this.mecha.skillTargetUCenter);
-  //                  ptr.endVelU = Vector3.zero;
-  //                  ptr.muzzleOffset = Vector3.zero;
-  //                  ptr.damage = 0;
-  //                  ptr.life = 25;
-  //                  ptr.extendedDistWhenMiss = 10;
-  //                  ptr.mask = ETargetTypeMask.Enemy | ETargetTypeMask.Astro;
-  //                  //_this.skillSystem.audio.AddPlayerAudio(312, 1.2f, _this.player.position);
-  //              }
-
-
-  //              // 为了让星图模式也显示激光，用深空来敌老套路创建太阳帆发射轨迹
-  //              int starIndex = starData.index;
-  //              DysonSwarm swarm = GameMain.data.dysonSpheres[starIndex]?.swarm;
-  //              if (swarm == null)
-  //              {
-  //                  return;
-  //              }
-  //              int lessBulletRatio = 1;
-  //              if (swarm != null)
-  //              {
-  //                  VectorLF3 direction = endPosU - starData.uPosition;
-  //                  for (int i = 0; i < laserBulletNum / lessBulletRatio || i == 0; i++)
-  //                  {
-  //                      int bulletIndex = swarm.AddBullet(new SailBullet
-  //                      {
-  //                          maxt = 0.3f,
-  //                          lBegin = GameMain.galaxy.stars[starCannonStarIndex].uPosition,
-  //                          uEndVel = endPosU,
-  //                          uBegin = GameMain.galaxy.stars[starCannonStarIndex].uPosition,
-  //                          uEnd = endPosU + (VectorLF3)(0.3f * vec),
-  //                      }, 0);
-  //                      swarm.bulletPool[bulletIndex].state = 0;
-  //                      if (i >= 1)
-  //                      {
-  //                          noExplodeBullets.AddOrUpdate(bulletIndex, 1, (x, y) => 1);
-  //                      }
-  //                  }
-  //              }
-  //          }
-  //          if (ptr0.originAstroId > 0)
-  //          {
-  //              EnemyDFHiveSystem hiveByAstroId = spaceSector.GetHiveByAstroId(ptr0.originAstroId);
-  //              if (hiveByAstroId != null && hiveByAstroId.hiveAstroId == ptr0.originAstroId)
-  //              {
-  //                  spaceSector.skillSystem.AddSpaceEnemyHatred(hiveByAstroId, ref ptr0, ETargetType.Player, _this.localAstroId, 1);
-  //              }
-  //          }
-			
-		//	StarData star = GameMain.data.localStar;
-		//	Player player = GameMain.data.mainPlayer;
-		//	if(star == null) { return; }
-  //     //     for (int i = 0; i < star.planets.Length; i++)
-  //     //     {
-  //     //         PlanetData planetData = star.planets[i];
-  //     //         PlanetFactory planetFactory = (planetData != null) ? planetData.factory : null;
-  //     //         if (planetFactory != null)
-  //     //         {
-  //     //             for (int j = 1; j < planetFactory.entityCursor; j++)
-  //     //             {
-  //     //                 ref EntityData ptr = ref planetFactory.entityPool[j];
-  //     //                 if (ptr.id == j)
-  //     //                 {
-  //     //                     ref LocalLaserOneShot ptr2 = ref GameMain.data.spaceSector.skillSystem.localLaserOneShots.Add();
-  //     //                     ptr2.astroId = planetFactory.planetId;
-  //     //                     ptr2.hitIndex = 1;
-  //     //                     ptr2.beginPos = player.position + player.position.normalized * 1.5f;
-  //     //                     ptr2.endPos = ptr.pos + ptr.pos.normalized * SkillSystem.RoughHeightByModelIndex[(int)ptr.modelIndex] * 0.5f;
-  //     //                     ptr2.target.type = ETargetType.None;
-  //     //                     ptr2.target.id = ptr.id;
-  //     //                     ptr2.damage = 1000;
-  //     //                     ptr2.life = 10;
-  //     //                     ptr2.mask = ETargetTypeMask.NotPlayer;
-		//					//break;
-  //     //                 }
-  //     //             }
-  //     //         }
-  //     //     }
-  //      }
-
-        public static SkillTarget SearchTargetNoLimit()
-        {
-            SkillTarget skillTarget = default(SkillTarget);
-            skillTarget.type = ETargetType.Enemy;
-            SpaceSector spaceSector = GameMain.data.spaceSector;
-            EnemyData[] enemyPool = spaceSector.enemyPool;
-            int enemyCursor = spaceSector.enemyCursor;
-            for (int i = 0; i < enemyCursor; i++)
-            {
-                ref EnemyData ptr = ref enemyPool[i];
-                if (ptr.id != 0 && ptr.dfRelayId != 0)
-                {
-                    skillTarget.id = ptr.id;
-                    skillTarget.astroId = ptr.originAstroId;
-                    return skillTarget;
-                }
-            }
-            return skillTarget;
-        }
-
-		public static SkillTarget SearchTarget(bool showSearchInfo = false)
-		{
-			SkillTarget skillTarget = default(SkillTarget);
-			skillTarget.type = ETargetType.Enemy;
-			float num2 = 100000; // ammo range
-			float num3 = 1E+12f;
-			var _this = GameMain.mainPlayer.controller.actionCombat;
-			if (_this != null)
-			{
-			}
-			EnemyData[] enemyPool2 = _this.spaceSector.enemyPool;
-			int enemyCursor = _this.spaceSector.enemyCursor;
-			EnemyDFHiveSystem[] dfHivesByAstro = _this.spaceSector.dfHivesByAstro;
-			AstroData[] galaxyAstros = _this.spaceSector.galaxyAstros;
-			Vector3 vector2 = _this.mecha.skillTargetUCenter;
-			float num26 = num2;
-			float num27 = num26 * num26;
-			VectorLF3 zero = VectorLF3.zero;
-			for (int m = 0; m < enemyCursor; m++)
-			{
-                ref EnemyData ptr3 = ref enemyPool2[m]; 
-				if (ptr3.id != 0 && ptr3.dfRelayId == 0)
-                {
-					if (ptr3.dfTinderId != 0)
-						continue;
-					EnemyDFHiveSystem enemyDFHiveSystem = dfHivesByAstro[ptr3.originAstroId - 1000000];
-					if (enemyDFHiveSystem != null && enemyDFHiveSystem.starData.index != 0 && false) // 修改用于判断星系
-						continue;
-					if (showSearchInfo)
-					{
-						Debug.Log($"dfsNode yes: {ptr3.dfSNodeId} {ptr3.dfSCoreId} {ptr3.dfSConnectorId} {ptr3.dfSGammaId} {ptr3.dfSTurretId} {ptr3.dfSReplicatorId} in astro{ptr3.astroId} and oriAstro {ptr3.originAstroId} and relayId {ptr3.dfRelayId}");
-                        //Debug.Log($"spacesector is the same? {GameMain.data.spaceSector == _this.spaceSector}");
-					}
-                    _this.spaceSector.TransformFromAstro_ref(ptr3.astroId, out zero, ref ptr3.pos);
-                    // 原逻辑判断是否在开火距离内 恒星炮不判断
-                    float num28 = (float)(zero.x - (double)vector2.x);
-                    float num29 = num28 * num28;
-                    float num30 = (float)(zero.y - (double)vector2.y);
-                    float num31 = num30 * num30;
-                    float num32 = (float)(zero.z - (double)vector2.z);
-                    float num33 = num32 * num32;
-                    float num34 = num29 + num31 + num33;
-                    bool flag = false;
-                    if (ptr3.astroId >= 100 && ptr3.astroId <= 204899)
-                    {
-                        int num35 = ptr3.astroId / 100 * 100;
-                        for (int n = num35 + 1; n < num35 + 8; n++) // 这里貌似是判断不和星体相交，我把初始循环+1是为了排除恒星本体的防相交判断？
-                        {
-                            AstroData astroData = galaxyAstros[n];
-                            float uRadius = astroData.uRadius;
-                            if (uRadius >= 1f)
-                            {
-                                float num36 = (float)astroData.uPos.x - vector2.x;
-                                float num37 = (float)astroData.uPos.y - vector2.y;
-                                float num38 = (float)astroData.uPos.z - vector2.z;
-                                float num39 = num36 * num28 + num37 * num30 + num38 * num32;
-                                if (num39 > 0f)
-                                {
-                                    float num40 = num36 * num36 + num37 * num37 + num38 * num38;
-                                    float num41 = num39 * num39 / num34;
-                                    flag = (num40 - num41 < uRadius * uRadius && num34 > num41);
-                                }
-                            }
-                        }
-                    }
-                    if (!flag && num34 < num3) // 攻击最近的
-                    {
-                        num3 = num34;
-                        skillTarget.id = ptr3.id;
-                        skillTarget.astroId = ptr3.originAstroId;
-                    }
-
-                }
-            }
-			return skillTarget;
-        }
-
-        public static bool CheckCurrentTargets()
-        {
-
-            return true;
+            ptr.mask = ETargetTypeMask.Enemy;
         }
 
         /// <summary>
@@ -663,19 +472,20 @@ namespace MoreMegaStructure
             AstroData[] galaxyAstros = spaceSector.galaxyAstros;
             Vector3 vector2 = GameMain.galaxy.stars[currentTargetStarIndex].uPosition;
             VectorLF3 zero = VectorLF3.zero;
+            
             for (int m = 0; m < enemyCursor; m++)
             {
                 ref EnemyData ptr3 = ref enemyPool[m];
-                if (ptr3.id != 0 && ptr3.dfRelayId == 0)
+                if (ptr3.id != 0)
                 {
                     if (ptr3.dfTinderId != 0) // 不会锁定火种
                         continue;
                     EnemyDFHiveSystem enemyDFHiveSystem = dfHivesByAstro[ptr3.originAstroId - 1000000];
                     if (enemyDFHiveSystem == null || enemyDFHiveSystem.starData.index != currentTargetStarIndex) // 不是目标星系的黑雾巢穴
                         continue;
-                    if (priorTargetHiveOriAstroId >= 0 && ptr3.originAstroId != priorTargetHiveOriAstroId) // 玩家要求优先攻击特定的黑雾巢穴，因此不属于特定黑雾巢穴的敌人被跳过
+                    if (priorTargetHiveOriAstroId >= 0 && ptr3.originAstroId != priorTargetHiveOriAstroId)// 玩家要求优先攻击特定的黑雾巢穴，因此不属于特定黑雾巢穴的敌人被跳过
                         continue;
-                    if (ptr3.dfSCoreId + ptr3.dfSNodeId + ptr3.dfSConnectorId + ptr3.dfSGammaId + ptr3.dfSTurretId + ptr3.dfSReplicatorId <= 0) // 不是黑雾巢穴的建筑本体，跳过。恒星炮不会攻击敌舰
+                    if (ptr3.dfSCoreId + ptr3.dfSNodeId + ptr3.dfSConnectorId + ptr3.dfSGammaId + ptr3.dfSTurretId + ptr3.dfSReplicatorId + ptr3.dfRelayId <= 0 && priorTargetHiveOriAstroId > -2) // 不是黑雾巢穴的建筑本体，跳过。恒星炮不会攻击敌舰，除非已经找不到hive作为目标，priorTargetHiveOriAstroId变为-2
                         continue;
                     if (false)
                     {
@@ -709,6 +519,7 @@ namespace MoreMegaStructure
                                     float num40 = num36 * num36 + num37 * num37 + num38 * num38;
                                     float num41 = num39 * num39 / num34;
                                     flag = (num40 - num41 < uRadius * uRadius && num34 > num41);
+                                    flag = false; // 跳过判定
                                 }
                             }
                         }
@@ -726,9 +537,13 @@ namespace MoreMegaStructure
 
                 }
             }
-            if(skillTarget.id == 0 && priorTargetHiveOriAstroId >= 0)
+            // 如果找不到合法目标，则改为无优先选中的hive然后再搜索一次，如果已经为无优先hive的情况，priorTargetHiveOriAstroId变为-2，代表允许搜索敌舰
+            if (skillTarget.id == 0 && priorTargetHiveOriAstroId >= -1)
             {
-                priorTargetHiveOriAstroId = -1; // 改为无优先选中的hive然后再搜索一次
+                if (priorTargetHiveOriAstroId >= 0)
+                    priorTargetHiveOriAstroId = -1; 
+                else
+                    priorTargetHiveOriAstroId = -2;
                 skillTarget = SearchNextTarget();
             }
 
@@ -954,8 +769,15 @@ namespace MoreMegaStructure
                         VectorLF3 enemyUPos;
                         Vector3 vec;
                         spaceSector.skillSystem.GetObjectUPositionAndVelocity(ref target, out enemyUPos, out vec);
-                        targetUPos += (VectorLF3)vec * 0.016666667f;
-                        AddNewLaser(centerStarUPos, enemyUPos, target.id, (int)(damagePerTick * ratio), 10);
+                        targetUPos += (VectorLF3)vec * 0.016666667f; 
+                        AddNewLaser(centerStarUPos, enemyUPos, target.id, (int)(damagePerTick * ratio), 30);
+                        if (maxAimCount - count > 0 && i == count - 1) // 如果目标过少，少于可以同时射击的最大数量，溢出的可射击的激光将同时射击最后一个合法目标
+                        {
+                            for (int j = 0; j < maxAimCount - count; j++)
+                            {
+                                AddNewLaser(centerStarUPos, enemyUPos, target.id, (int)(damagePerTick * ratio), 30);
+                            }
+                        }
                     }
 
                     // 为了让星图模式也显示激光，用深空来敌老套路创建太阳帆发射轨迹
@@ -989,10 +811,10 @@ namespace MoreMegaStructure
                             }
                         }
 
-                        //如果不在同星系，则本星系内光会很细，增加一段短光
+                        //不在同星系，本星系内光会很细，增加一段短光
                         int dec = 5;
                         if (renderLevel >= 3) dec = 2;
-                        if (casterSwarm != null && casterSwarm.starData.index != targetSwarm.starData.index)
+                        if (casterSwarm != null)
                         {
                             for (int i = 0; i < laserBulletNum / dec || i == 0; i++)
                             {
@@ -1060,18 +882,11 @@ namespace MoreMegaStructure
                 state = EStarCannonState.Standby;
                 time = 0;
             }
-            //else if (state == EStarCannonState.Switch)
-            //{
-            //    state = EStarCannonState.Aim;
-            //}
-            //else if (state == EStarCannonState.Aim && time >= endAimTime)
-            //{
-            //    state = EStarCannonState.Fire;
-            //}
         }
 
         public static void LaserEffect2(DysonSphere sphere, long gameTick, VectorLF3 targetUPos)
         {
+            return;
             var __instance = sphere;
             VectorLF3 targetDirection = targetUPos - __instance.starData.uPosition;
             VectorLF3 vertDirection = new VectorLF3(0, 0, 1);

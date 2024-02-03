@@ -25,3 +25,4 @@ F:\GitHubRepository\DSPmod_MoreMegaStructures\MoreMegaStructure\MoreMegaStructur
 F:\GitHubRepository\DSPmod_MoreMegaStructures\MoreMegaStructure\MoreMegaStructure\bin\Debug\LDBTool.dll
 F:\GitHubRepository\DSPmod_MoreMegaStructures\MoreMegaStructure\MoreMegaStructure\bin\Debug\Assembly-CSharp-publicized.dll
 F:\GitHubRepository\DSPmod_MoreMegaStructures\MoreMegaStructure\MoreMegaStructure\obj\Debug\MoreMegaStructure.csproj.CopyComplete
+D:\Work\CSFile\DSPmod_MoreMegaStructures\MoreMegaStructure\MoreMegaStructure\obj\Debug\MoreMegaStructure.csproj.CopyComplete

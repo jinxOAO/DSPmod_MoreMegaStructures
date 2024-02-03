@@ -43,7 +43,7 @@ namespace MoreMegaStructure
             return (float)RandSeed.NextDouble();
         }
 
-        public static void Check(int num, string str = "Check ")
+        public static void Check(int num = 0, string str = "Check ")
         {
             Debug.Log(str + num.ToString());
         }

@@ -686,7 +686,7 @@ namespace MoreMegaStructure
                                                                EItemType.Product, ProtoRegistry.GetDefaultIconDesc(Color.white, Color.white));
             dropletItem.DescFields = new int[] { 50, 51, 56, 54, 55, 1 };
 
-            ProtoRegistry.RegisterRecipe(565, ERecipeType.Assemble, 240, new int[] { 9480, 9484 }, new int[] { 2, 2 }, new int[] { 9503 },
+            ProtoRegistry.RegisterRecipe(565, ERecipeType.Assemble, 240, new int[] { 9480, 9484 }, new int[] { 1, 2 }, new int[] { 9503 },
                                          new int[] { 1 }, "力场发生器描述", StarCannonTechId, 201 + pagePlus, "Assets/MegaStructureTab/forceGen");
             RecipeProto SIMRecipe = ProtoRegistry.RegisterRecipe(566, ERecipeType.Particle, 600, new int[] { 1014, 1126, 1124, 1118, 1120 },
                                                                  new int[] { 1, 1, 1, 1, 1 }, new int[] { 9504 }, new int[] { 1 }, "复合态晶体描述", 1919,
@@ -699,9 +699,9 @@ namespace MoreMegaStructure
             RecipeProto strIntOverloaderRecipe = ProtoRegistry.RegisterRecipe(569, ERecipeType.Assemble, 1200, new int[] { 9506, 9486 },
                                                                               new int[] { 2, 2 }, new int[] { 9507 }, new int[] { 1 }, "强力过载装置描述",
                                                                               1919, 205 + pagePlus, "Assets/MegaStructureTab/strIntOverloader");
-            ProtoRegistry.RegisterRecipe(570, ERecipeType.Assemble, 180, new int[] { 1125, 9481, 9503 }, new int[] { 3, 2, 4 }, new int[] { 9508 },
+            ProtoRegistry.RegisterRecipe(570, ERecipeType.Assemble, 180, new int[] { 1125, 9481, 9503 }, new int[] { 3, 2, 3 }, new int[] { 9508 },
                                          new int[] { 1 }, "导流框架描述", StarCannonTechId, 206 + pagePlus, "Assets/MegaStructureTab/starcannonframe");
-            ProtoRegistry.RegisterRecipe(571, ERecipeType.Assemble, 480, new int[] { 1209, 9508, 9486 }, new int[] { 3, 2, 1 }, new int[] { 9509 },
+            ProtoRegistry.RegisterRecipe(571, ERecipeType.Assemble, 480, new int[] { 1209, 9508 }, new int[] { 3, 2 }, new int[] { 9509 },
                                          new int[] { 1 }, "恒星炮组件描述", StarCannonTechId, 207 + pagePlus, "Assets/MegaStructureTab/starcannoncompo");
             ProtoRegistry.RegisterRecipe(572, ERecipeType.Assemble, 360, new int[] { 9509, 1802, 1305 }, new int[] { 2, 2, 2 }, new int[] { 9510 },
                                          new int[] { 1 }, "恒星炮运载火箭描述", StarCannonTechId, 306 + pagePlus, "Assets/MegaStructureTab/rocketStarcannon");
@@ -1560,13 +1560,13 @@ namespace MoreMegaStructure
                 "强力过载装置可以使强力的排斥力峰值和吸引力峰值在特定的点精准重合，因而原子核的任何偏离都会被强力拉回。如果剔除了电磁力干扰，原子核将被完全锚定。", "");
             LocalizationModule.RegisterTranslation("导流框架", "Flow guid frame", "导流框架", "");
             LocalizationModule.RegisterTranslation(
-                "导流框架描述", "Storing, directing the energy of stars in a specific direction, creating a very high power output.",
-                "将恒星的能量存储并引导、集中至特定方向，创造极高功率的能量输出。", "");
+                "导流框架描述", "Storing, directing and guiding the energy of stars in a specific direction, creating high power directional energy resonance.",
+                "将恒星的能量存储并引导、集中至特定方向，创造极高功率的定向能量谐振。", "");
             LocalizationModule.RegisterTranslation("恒星炮组件", "Star cannon component", "恒星炮组件", "");
             LocalizationModule.RegisterTranslation(
                 "恒星炮组件描述",
-                "The star cannon can store the energy of the star and guide it to the front of the muzzle through the frame. Nicoll-Dyson beam will continuously destabilize the wormhole, eventually closing the high-dimensional channel.",
-                "恒星炮能够储存恒星的能量，并通过框架引导至炮口前方。尼科尔-戴森光束可以持续破坏虫洞的稳定性，最终关闭高维通道。", "");
+                "The star cannon can store the energy of the star to stimulate another star's energy surge, guiding its own energy to attack the dark fog. The time for the star cannon to fire is limited, and it needs to be recharged after firing.",
+                "恒星炮能够储存恒星的能量，用以激发另一个恒星的能量涌动，引导其自身的能量攻击其所在星系的黑雾巢穴。恒星炮每次开火的时间有限，开火后需要重新充能。", "");
             LocalizationModule.RegisterTranslation("恒星炮运载火箭", "Star cannon carrier rocket", "恒星炮运载火箭", "");
             LocalizationModule.RegisterTranslation("恒星炮运载火箭描述", "The delivery vehicle for the components of the Star cannon.", "恒星炮相关组件的运载工具。", "");
             LocalizationModule.RegisterTranslation("水滴gm", "Droplet", "水滴", "");
@@ -1578,20 +1578,38 @@ namespace MoreMegaStructure
             LocalizationModule.RegisterTranslation("恒星炮设计说明题目", "Design Instructions", "恒星炮设计说明", "");
             LocalizationModule.RegisterTranslation("恒星炮设计说明文本",
                                                    "1. When the star cannon fires, the rotation axes of all layers will overlap, and the north pole will point to the target, so please design the north pole of each layer's grid as the center of the muzzle;\n" +
-                                                   "2. When the star cannon fires, 12 random  nodes on the 1st layer will emit a laser to the muzzle. For aesthetic reasons, please try to make the first layer only contain up to 12 nodes, and try to make them symmetrical to each other" +
-                                                   "\n3. The construction of the star cannon needs to go through multiple stages. And at the same time, the star cannon can increase its damage, max fire times per charging, and charging speed several times. After reaching the final stage, continue to build shells will continuously increase the damage.",
-                                                   "1.恒星炮开火时所有层级的旋转轴将重叠，并且让北极指向目标开火，因此设计时请以各层网格自身的北极点为炮口中心；\n2.恒星炮开火时，第1层的随机12个节点将发射出激光指向炮口，为美观考虑，请尽量使得第1层只包含12个（或更少的）节点，并使其相互对称。\n3.恒星炮建造需要经过多个阶段，随着各建造阶段完成，恒星炮能数次提高伤害、连续开火次数和充能速度等属性。在达到最终阶段后，继续修建壳层可以不断提高伤害。",
+                                                   "2. When the star cannon fires, 12 random  nodes on the 1st layer will emit a laser to the muzzle. For aesthetic reasons, please try to make the first layer only contain up to 12 nodes, and try to make them symmetrical to each other;\n" +
+                                                   "3. The construction of the star cannon needs to go through multiple stages. And at the same time, the star cannon can increase its damage, max fire target count, and charging speed several times. After reaching the final stage, continue to build shells will continuously increase the damage;\n" +
+                                                   "4. Star cannon can NOT fire at its own star system.",
+                                                   "1.恒星炮开火时所有层级的旋转轴将重叠，并且让北极指向目标开火，因此设计时请以各层网格自身的北极点为炮口中心；\n2.恒星炮开火时，第1层的随机12个节点将发射出激光指向炮口，为美观考虑，请尽量使得第1层只包含12个（或更少的）节点，并使其相互对称。\n3.恒星炮建造需要经过多个阶段，随着各建造阶段完成，恒星炮能数次提高伤害、同时射击的目标数和充能速度等属性。在达到最终阶段后，继续修建壳层可以不断提高伤害。\n4.恒星炮无法向自身所在星系开火。",
                                                    "");
-            LocalizationModule.RegisterTranslation("恒星炮开火", "Launch Star Cannon (R)", " 启动恒星炮 (R)", "");
-            LocalizationModule.RegisterTranslation("恒星炮开火标题", "Design Instructions", "启动恒星炮", "");
-            LocalizationModule.RegisterTranslation("恒星炮开火描述", "Design Instructions", "使用恒星炮射击该星系内的太空黑雾巢穴", "");
-            LocalizationModule.RegisterTranslation("选中黑屋巢穴时的恒星炮开火描述", "Design Instructions", "使用恒星炮向该黑雾巢穴开火，而后继续射击该星系的其他太空黑雾巢穴", "");
-            LocalizationModule.RegisterTranslation("优先射击", "Design Instructions", " 优先射击 (R)", "");
-            LocalizationModule.RegisterTranslation("优先射击标题", "Design Instructions", "优先射击", "");
-            LocalizationModule.RegisterTranslation("优先射击描述", "Design Instructions", "恒星炮将立刻开始瞄准选中的黑雾巢穴以进行攻击，更换锁定的目标可能需要时间", "");
-            LocalizationModule.RegisterTranslation("恒星炮已充能完毕", "Star Cannon fully charged", "恒星炮已充能完毕", "");
-            LocalizationModule.RegisterTranslation("目标无法定位警告", "Star Cannon fully charged", "无法定位任何目标！请至少前往该星系一次，并确认该星系有存活的黑雾巢穴。", "");
-            LocalizationModule.RegisterTranslation("恒星炮不能向自身所在星系开火！", "", "恒星炮无法向自身所在星系开火！", "");
+            LocalizationModule.RegisterTranslation("恒星炮开火按钮文本", "Launch Star Cannon (R)", " 启动恒星炮 (R)", "");
+            LocalizationModule.RegisterTranslation("恒星炮开火标题", "Launch Star Cannon", "启动恒星炮", "");
+            LocalizationModule.RegisterTranslation("恒星炮开火描述", "Attack the space dark fog hive in the selected star system by the Star Cannon.","使用恒星炮射击该星系内的太空黑雾巢穴。", "");
+            LocalizationModule.RegisterTranslation("选中黑雾巢穴时的恒星炮开火描述", "Attack the selected dark fog hive in the selected star system by the Star Cannon. Then attack other hives in that star system.", "使用恒星炮向该黑雾巢穴开火，而后继续射击该星系的其他太空黑雾巢穴。", "");
+            LocalizationModule.RegisterTranslation("优先射击按钮文本", "Prioritize attack (R)", " 优先射击 (R)", "");
+            LocalizationModule.RegisterTranslation("优先射击标题", "Prioritize attack", "优先射击", "");
+            LocalizationModule.RegisterTranslation("优先射击描述", "Star Cannon will turn to attack structures of this selected hive immediately.", "恒星炮将立刻开始转而攻击选中的黑雾巢穴结构。", "");
+            LocalizationModule.RegisterTranslation("恒星炮未规划按钮文本", "Star Cannon not planned", "恒星炮未规划", "");
+            LocalizationModule.RegisterTranslation("恒星炮建设中按钮文本", "Star Cannon Construction in Progress", "恒星炮建设中", "");
+            LocalizationModule.RegisterTranslation("恒星炮正在瞄准按钮文本", "Aiming", "瞄准中", "");
+            LocalizationModule.RegisterTranslation("恒星炮预热中按钮文本", "Guiding", "引导中", "");
+            LocalizationModule.RegisterTranslation("恒星炮开火中按钮文本", "Firing", "开火中", "");
+            LocalizationModule.RegisterTranslation("恒星炮冷却中按钮文本", "Cooling down", "冷却中", "");
+            LocalizationModule.RegisterTranslation("恒星炮充能中按钮文本", "Charging", "充能中", "");
+            LocalizationModule.RegisterTranslation("恒星炮已充能完毕", "Star Cannon Fully Charged", "恒星炮已充能完毕", "");
+            LocalizationModule.RegisterTranslation("恒星炮正在瞄准", "Star Cannon Aiming", "恒星炮正在瞄准", "");
+            LocalizationModule.RegisterTranslation("恒星炮预热中", "Star Cannon Guiding", "恒星炮引导中", "");
+            LocalizationModule.RegisterTranslation("恒星炮开火中", "Star Cannon Firing", "恒星炮开火中", "");
+            LocalizationModule.RegisterTranslation("恒星炮冷却中", "Star Cannon Cooling Down", "恒星炮冷却中", "");
+            LocalizationModule.RegisterTranslation("恒星炮充能中", "Star Cannon Charging", "恒星炮充能中", "");
+            LocalizationModule.RegisterTranslation("没有规划的恒星炮！", "Star Cannon not planned!", "没有规划的恒星炮！", "");
+            LocalizationModule.RegisterTranslation("恒星炮修建中警告", "Star cannon needs to be built to at least the first stage before it can fire!", "恒星炮需要至少修建至第一阶段才能够开火！", "");
+            LocalizationModule.RegisterTranslation("恒星炮冷却中警告", "Unable to fire because the star cannon is cooling down.", "恒星炮正在冷却中，无法开火！", "");
+            LocalizationModule.RegisterTranslation("恒星炮充能中警告", "Unable to fire because the star cannon is charging.", "恒星炮正在充能中，无法开火！", "");
+            LocalizationModule.RegisterTranslation("目标无法定位警告", "Unable to locate any targets! Please visit the star system at least once, and make sure that it has surviving DF hive.", "无法定位任何目标！请至少前往该星系一次，并确认该星系有存活的黑雾巢穴。", "");
+            LocalizationModule.RegisterTranslation("恒星炮不能向自身所在星系开火！", "Star cannon cannot fire at its own star system!", "恒星炮无法向自身所在星系开火！", "");
+            LocalizationModule.RegisterTranslation("恒星级武器检测警告", "Star level weapon activation detected!", "检测到恒星级武器启动！", "");
             LocalizationModule.RegisterTranslation("功能说明题目", "Function", "功能", "");
             LocalizationModule.RegisterTranslation(
                 "物质解压器功能文本", "Produce unipolar magnet and some basic resources such as iron ingot, which can be received by corresponding receivers.",
@@ -1601,8 +1619,8 @@ namespace MoreMegaStructure
             LocalizationModule.RegisterTranslation("折跃场广播阵列功能文本", "Increase the warp speed of logistics vessels.", "提高物流运输船的曲速速度。", "");
             LocalizationModule.RegisterTranslation(
                 "星际组装厂功能文本",
-                "You can set up to four recipes, this megastructure will automatically obtain materials from the exchange logistic stations on the ground, produce products and transport them back to the ground. The production speed depends on the assignment of energy and the recipe's time cost. And you can use proliferator to get extra products without consuming extra energy, if the recipe allows extra production. In any cases, you can not choose the production speedup mode. Unused energy will automatically produce multi-functional integration components.\nIn addition to receive by the exchange logistic station, components can also be transmitted directly to the mecha (but only 10%efficiency). You can set this function in the mecha panel.",
-                "可设定最多四个配方，从地表的物资交换站获取材料，生产产品并输送回物资交换站，生产速度取决于分配的能量水平。可以将原料喷涂增产剂来获取额外产出（如果配方允许），这不会占用额外能量，也不能切换为生产加速模式。未使用的能量会自动生产多功能集成组件。\n组件除了可以在物资交换站接收，还可以直接远程传输到机甲中（但只有10%效率）。你可以在机甲面板中设置此功能。",
+                "You can set up to 15 recipes, this megastructure will automatically obtain materials from the exchange logistic stations on the ground, produce products and transport them back to the ground. The production speed depends on the assignment of energy and the recipe's time cost. And you can use proliferator to get extra products without consuming extra energy, if the recipe allows extra production. In any cases, you can not choose the production speedup mode. Unused energy will automatically produce multi-functional integration components.\nIn addition to receive by the exchange logistic station, components can also be transmitted directly to the mecha (but only 10%efficiency). You can set this function in the mecha panel.",
+                "可设定最多15个配方，从地表的物资交换站获取材料，生产产品并输送回物资交换站，生产速度取决于分配的能量水平。可以将原料喷涂增产剂来获取额外产出（如果配方允许），这不会占用额外能量，也不能切换为生产加速模式。未使用的能量会自动生产多功能集成组件。\n组件除了可以在物资交换站接收，还可以直接远程传输到机甲中（但只有10%效率）。你可以在机甲面板中设置此功能。",
                 "");
             LocalizationModule.RegisterTranslation(
                 "晶体重构器功能文本", "Produce Casimir crystals and optical grating crystals, which can be received by corresponding receivers.",
