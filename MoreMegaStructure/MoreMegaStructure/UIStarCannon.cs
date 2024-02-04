@@ -31,6 +31,10 @@ namespace MoreMegaStructure
         // 巨构编辑面板顶部信息栏
         public static GameObject StarCannonStateUIObj;
         public static Text StarCannonStateText;
+        //// 星图界面底部信息栏
+        //public static GameObject StarCannonStateStarmapUIObj;
+        //public static Text StarCannonStateStarmapText;
+
 
         static Color cannonDisableNormalColor = new Color(0.4f, 0.4f, 0.4f, 1f);
         static Color cannonDisableOverColor = new Color(0.5f, 0.5f, 0.5f, 1f);
@@ -98,6 +102,17 @@ namespace MoreMegaStructure
             StarCannonStateText.material = oriStateTextObj.GetComponent<Text>().material;
             StarCannonStateText.color = new Color(1, 1, 1, 0.7f);
             StarCannonStateUIObj.SetActive(true);
+
+            //Transform parent4 = GameObject.Find("UI Root/Overlay Canvas/In Game/Starmap UIs").transform;
+            //StarCannonStateStarmapUIObj = GameObject.Instantiate(oriTitleObj, parent4);
+            //StarCannonStateStarmapUIObj.name = "star-cannon-state-text";
+            //StarCannonStateStarmapUIObj.transform.localPosition = new Vector3(0, 200, 0);
+
+            //StarCannonStateStarmapText = StarCannonStateUIObj.GetComponent<Text>();
+            //StarCannonStateStarmapText.supportRichText = true;
+            //StarCannonStateStarmapText.material = oriStateTextObj.GetComponent<Text>().material;
+            //StarCannonStateStarmapText.color = new Color(1, 1, 1, 0.7f);
+            //StarCannonStateStarmapUIObj.SetActive(true);
         }
 
         public static void InitWhenLoad()
@@ -290,7 +305,7 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(UIStarmap), "UpdateCursorView")]
         public static void LimitCursorViewWidth(ref UIStarmap __instance)
         {
-            int minWidth = StarCannon.starCannonStarIndex >= 0 && StarCannon.starCannonLevel < 1 ? 225 : 150; // 225是因为恒星炮正在建造中的英文过长，按钮需要更长才能放下文本
+            int minWidth = StarCannon.starCannonStarIndex >= 0 && StarCannon.starCannonLevel < 1 && DSPGame.globalOption.languageLCID != 2052 ? 225 : 150; // 225是因为恒星炮正在建造中的英文过长，按钮需要更长才能放下文本。2052为中文LCID，不需要这么长。1033为英文。
             float width = Math.Max(__instance.cursorViewTrans.sizeDelta.x, minWidth);
             float height = __instance.cursorViewTrans.sizeDelta.y;
             __instance.cursorViewTrans.sizeDelta = new Vector2(width, height);
@@ -320,7 +335,7 @@ namespace MoreMegaStructure
                     }
                     else if (StarCannon.state == EStarCannonState.Standby)
                     {
-                        StarCannonStateText.text = "恒星炮已充能完毕".Translate();
+                        StarCannonStateText.text = "恒星炮已就绪".Translate();
                         StarCannonStateText.color = new Color(0.233f, 0.78f, 1f, 0.754f);
                     }
                     else if (StarCannon.state == EStarCannonState.Align)
@@ -426,6 +441,47 @@ namespace MoreMegaStructure
                 int[] curData = StarCannon.GetStarCannonProperties(MoreMegaStructure.curDysonSphere);
                 __instance.sailCntText.text = curData[2] < 9000 ? curData[2].ToString() : "无限制gm".Translate();
                 __instance.nodeCntText.text = "-" + curData[5].ToString() + "% / ly";
+            }
+        }
+
+        /// <summary>
+        /// 为了星图模式下底部字幕显示恒星炮状态
+        /// </summary>
+        /// <param name="__instance"></param>
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(UIGeneralTips), "_OnUpdate")]
+        public static void UIGeneralTipsOnUpdatePostPatch(ref UIGeneralTips __instance)
+        {
+            var _this = __instance;
+            if (UIGame.viewMode == EViewMode.Starmap && UIGame.viewModeReady)
+            {
+                _this.modeText.gameObject.SetActive(true);
+                _this.modeText.rectTransform.anchoredPosition = new Vector2(0f, 0f);
+                if (StarCannon.starCannonStarIndex < 0)
+                    _this.modeText.text = "星图".Translate() + "\n" + "恒星炮尚未规划".Translate();
+                else if (StarCannon.starCannonLevel < 1)
+                    _this.modeText.text = "星图".Translate() + "\n" + "恒星炮建设中按钮文本".Translate();
+                else if (StarCannon.state == EStarCannonState.Standby)
+                    _this.modeText.text = "星图".Translate() + "\n" + "恒星炮已就绪".Translate();
+                else if (StarCannon.state == EStarCannonState.Align)
+                    _this.modeText.text = "星图".Translate() + "\n" + "恒星炮正在瞄准".Translate();
+                else if (StarCannon.state == EStarCannonState.Heat)
+                    _this.modeText.text = "星图".Translate() + "\n" + "恒星炮预热中".Translate();
+                else if (StarCannon.state == EStarCannonState.Fire)
+                {
+                    int timeLeft = StarCannon.maxFireDuration - (StarCannon.time - StarCannon.endAimTime - StarCannon.warmTimeNeed);
+                    _this.modeText.text = "星图".Translate() + "\n" + "恒星炮开火中".Translate() + String.Format("  {0:D2} : {1:D2}", timeLeft / 3600, timeLeft / 60 % 60);
+                }
+                else if (StarCannon.state == EStarCannonState.Cooldown)
+                {
+                    int timeLeft = -StarCannon.time - StarCannon.chargingTimeNeed;
+                    _this.modeText.text = "星图".Translate() + "\n" + "恒星炮冷却中".Translate() + String.Format("  {0:D2} : {1:D2}", timeLeft / 3600, timeLeft / 60 % 60);
+                }
+                else if (StarCannon.state == EStarCannonState.Recharge)
+                {
+                    int timeLeft = -StarCannon.time;
+                    _this.modeText.text = "星图".Translate() + "\n" + "恒星炮充能中".Translate() + String.Format("  {0:D2} : {1:D2}", timeLeft / 3600, timeLeft / 60 % 60);
+                }
             }
         }
 

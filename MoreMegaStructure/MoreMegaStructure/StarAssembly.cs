@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HarmonyLib;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -17,6 +18,7 @@ namespace MoreMegaStructure
         public static List<int> curSpecType = new List<int>(); // 当前组装厂特化类型
         public static List<int> inProgressSpecType = new List<int>(); // 正处在特化进程中的类型
         public static List<int> satisfiedSpecType = new List<int>(); // 当前正满足要求的特化类型
+        public static List<List<int>> productSpeedLimit = new List<List<int>>(); // 手动限制最大生产速率
 
         // 以下为不需要存档的数据，在载入时重置或者重新计算
         public static Dictionary<int, List<List<int>>> items = new Dictionary<int, List<List<int>>>(); // 存储recipe的原材料的Id
@@ -39,6 +41,8 @@ namespace MoreMegaStructure
         public static GameObject specializeObj = null;
         public static GameObject showHideButtonObj = null;
         public static Text showHideBtnText;
+        public static GameObject showHideLimitButtonObj = null;
+        public static Text showHideLimitBtnText;
 
         public static List<Image> recipeIcons = new List<Image>();
         public static List<Image> incIcons = new List<Image>();
@@ -47,7 +51,9 @@ namespace MoreMegaStructure
         public static List<GameObject> sliderObjs = new List<GameObject>();
         public static List<GameObject> speedTextObjs = new List<GameObject>();
         public static List<GameObject> removeRecipeBtnObjs = new List<GameObject>();
+        public static List<GameObject> setLimitObjs = new List<GameObject>();
         public static List<Slider> sliders = new List<Slider>();
+        public static List<InputField> limitInputs = new List<InputField>();
         public static List<Text> weightTxts = new List<Text>();
         public static List<Text> storageTxts = new List<Text>();
         public static List<Text> recipePickerTxts = new List<Text>();
@@ -59,6 +65,8 @@ namespace MoreMegaStructure
         public static bool lowUIResolution = false;
 
         public static bool lockSliderListener = false;
+
+        public static bool showingLimit = false;
 
         // 以下是固定参数
         public static int tickEnergyForFullSpeed = 20000; // 每相当于1.0倍速的产量需要的tick能量。注意这个会在进入游戏后受到MoreMegaStructure.IASpdFactor.Value作为反系数修改
@@ -104,6 +112,18 @@ namespace MoreMegaStructure
                 showHideButton.onClick.RemoveAllListeners();
                 showHideButton.onClick.AddListener(() => { ShowHideUI(); });
 
+                GameObject showHideLimitButtonObj = GameObject.Instantiate(addNewLayerButton, GigaFactoryUIObj.transform);
+                showHideLimitButtonObj.SetActive(true);
+                showHideLimitButtonObj.name = "show-hide"; //名字
+                showHideLimitButtonObj.transform.localPosition = new Vector3(280, -150, 0); //位置
+                showHideLimitButtonObj.GetComponent<RectTransform>().sizeDelta = new Vector2(200, 24); //按钮大小
+                showHideLimitBtnText = showHideLimitButtonObj.transform.Find("Text").gameObject.GetComponent<Text>();
+                showHideLimitBtnText.text = "配置最大生产速度限制".Translate();
+                Button showHideLimitButton = showHideLimitButtonObj.GetComponent<Button>();
+                showHideLimitButton.interactable = true;
+                showHideLimitButton.onClick.RemoveAllListeners();
+                showHideLimitButton.onClick.AddListener(() => { ShowHideLimitUI(); });
+
                 GameObject backObj = new GameObject("back");
                 backObj.transform.parent = GigaFactoryUIObj.transform;
                 backObj.transform.localScale = new Vector3(1, 1, 1);
@@ -119,6 +139,7 @@ namespace MoreMegaStructure
                     oriIncIconObj = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Station Window/Station-scroll(Clone)/Viewport/pane/storage-box-0(Clone)/storage-icon/inc-3");
                 GameObject oriRemoveRecipeObj = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Assembler Window/produce/circle-back/stop-btn");
                 GameObject oriRemoveRecipeXObj = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Assembler Window/produce/circle-back/stop-btn/x");
+                GameObject oriInputFieldObj = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Blueprint Browser/inspector-group/group-1/input-short-text");
 
                 for (int i = 0; i < slotCount; i++)
                 {
@@ -197,13 +218,42 @@ namespace MoreMegaStructure
                     weightTxtObj.GetComponent<Text>().text = "";
                     weightTxtObj.GetComponent<Text>().alignment = TextAnchor.LowerLeft;
 
-                    GameObject storageTxtObj = GameObject.Instantiate(GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Assembler Window/produce/circle-back/cnt-text"), sliderObj.transform);
-                    storageTxtObj.transform.localPosition = new Vector3(180, -12, 0);
+                    GameObject storageTxtObj = GameObject.Instantiate(GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Assembler Window/produce/circle-back/cnt-text"), slotObj.transform);
+                    storageTxtObj.transform.localPosition = new Vector3(330, -122, 0);
                     storageTxts.Add(storageTxtObj.GetComponent<Text>());
                     storageTxtObj.GetComponent<Text>().fontSize = 16;
                     storageTxtObj.GetComponent<Text>().lineSpacing = 0.95f;
                     storageTxtObj.GetComponent<Text>().text = "";
                     storageTxtObj.GetComponent<Text>().alignment = TextAnchor.LowerLeft;
+
+                    GameObject spdLimitObj = new GameObject();
+                    spdLimitObj.transform.SetParent(slotObj.transform);
+                    spdLimitObj.name = "speed-limit";
+                    spdLimitObj.transform.localPosition = new Vector3(120, -98, 0);
+                    spdLimitObj.transform.localScale = new Vector3(1, 1, 1);
+                    setLimitObjs.Add(spdLimitObj);
+                    GameObject spdLimitTitleObj = GameObject.Instantiate(GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Assembler Window/produce/circle-back/cnt-text"), spdLimitObj.transform);
+                    spdLimitTitleObj.name = "title";
+                    spdLimitTitleObj.transform.localPosition = new Vector3(60, 0, 0);
+                    spdLimitTitleObj.GetComponent<Text>().text = "最大生产速度限制".Translate();
+                    spdLimitTitleObj.GetComponent<Text>().fontSize = 16;
+                    spdLimitTitleObj.GetComponent<Text>().alignment = TextAnchor.LowerLeft;
+                    GameObject spdLimitInputObj = GameObject.Instantiate(oriInputFieldObj, spdLimitObj.transform);
+                    spdLimitInputObj.name = "value-input";
+                    spdLimitInputObj.transform.localPosition = new Vector3(30, 0, 0);
+                    spdLimitInputObj.GetComponent<UIButton>().tips.tipTitle = "最大生产速度限制题目".Translate();
+                    spdLimitInputObj.GetComponent<UIButton>().tips.tipText = "最大生产速度限制描述".Translate();
+                    spdLimitInputObj.GetComponent<UIButton>().tips.width = 300;
+                    spdLimitInputObj.GetComponent<UIButton>().tips.offset = new Vector2(450, 130);
+                    spdLimitInputObj.GetComponent<RectTransform>().sizeDelta = new Vector2(100, 20);
+                    spdLimitInputObj.GetComponent<InputField>().contentType = InputField.ContentType.IntegerNumber;
+                    spdLimitInputObj.GetComponent<InputField>().textComponent.fontSize = 12;
+                    spdLimitInputObj.GetComponent<InputField>().characterLimit = 9;
+                    spdLimitInputObj.GetComponent<InputField>().onEndEdit.RemoveAllListeners();
+                    string istr = i.ToString();
+                    spdLimitInputObj.GetComponent<InputField>().onEndEdit.AddListener((x) => { SetProductSpeedLimit(Convert.ToInt32(istr), x); });
+                    limitInputs.Add(spdLimitInputObj.GetComponent<InputField>());
+                    spdLimitObj.SetActive(false);
 
                     // 这里不能直接传入i，否则会导致所有的参数都变成了5，所以我该怎么写啊啊啊啊啊啊好麻烦
                     if (i == 0)
@@ -384,6 +434,7 @@ namespace MoreMegaStructure
             weights = new List<List<double>>();
             progress = new List<List<double>>();
             incProgress = new List<List<double>>();
+            productSpeedLimit = new List<List<int>>();
             specProgress = new List<int>();
             curSpecType = new List<int>();
             inProgressSpecType = new List<int>();
@@ -394,12 +445,14 @@ namespace MoreMegaStructure
                 weights.Add(new List<double> { 1 });
                 progress.Add(new List<double> { 0 });
                 incProgress.Add(new List<double> { 0 });
+                productSpeedLimit.Add(new List<int> { 0 });
                 for (int i = 1; i < slotCount; i++)
                 {
                     recipeIds[starIndex].Add(0);
                     weights[starIndex].Add(0);
                     progress[starIndex].Add(0);
                     incProgress[starIndex].Add(0);
+                    productSpeedLimit[starIndex].Add(0);
                 }
 
                 specProgress.Add(0);
@@ -419,6 +472,7 @@ namespace MoreMegaStructure
                     weights[i][j] = j == 0 ? 1 : 0;
                     progress[i][j] = 0;
                     incProgress[i][j] = 0;
+                    productSpeedLimit[i][j] = 0;
                 }
             }
         }
@@ -961,7 +1015,11 @@ namespace MoreMegaStructure
                 else
                     return energy * weights[starIndex][0] / MoreMegaStructure.multifunctionComponentHeat * (MoreMegaStructure.isRemoteReceiveingGear ? 0.1 : 1.0);
             }
-
+            if (productSpeedLimit[starIndex][slotNum] > 0 && slotNum != 0)
+            {
+                if (prog * 3600 * productCounts[starIndex][slotNum][0] > productSpeedLimit[starIndex][slotNum])
+                    prog = productSpeedLimit[starIndex][slotNum] * 1.0 / productCounts[starIndex][slotNum][0] / 3600;
+            }
             return prog;
         }
 
@@ -1197,6 +1255,7 @@ namespace MoreMegaStructure
             {
                 if (forceShowUI)
                 {
+                    showingLimit = false; // 强制打开时，默认不显示生产速率限制的编辑栏
                     GigaFactoryUIObj.SetActive(true);
                     if(lowUIResolution)
                         specializeObj.SetActive(false);
@@ -1205,6 +1264,7 @@ namespace MoreMegaStructure
                 }
                 showHideButtonObj.SetActive(true);
                 showHideBtnText.text = "显示/隐藏星际组装厂配置".Translate();
+                showHideLimitBtnText.text = "配置最大生产速度限制".Translate();
                 lockSliderListener = true;
                 int maxSlotIndex = CalcMaxSlotIndex(GameMain.data.dysonSpheres[MoreMegaStructure.curStar.index]);
                 for (int i = 1; i < slotCount; i++)
@@ -1213,8 +1273,9 @@ namespace MoreMegaStructure
                     {
                         recipeIcons[i].sprite = LDB.recipes.Select(recipeIds[starIndex][i]).iconSprite;
                         recipeSelectTips[i].SetActive(false);
-                        sliderObjs[i].SetActive(true);
+                        sliderObjs[i].SetActive(!showingLimit);
                         speedTextObjs[i].SetActive(true);
+                        setLimitObjs[i].SetActive(showingLimit);
                         sliders[i].value = W2S(weights[starIndex][i]);
                         removeRecipeBtnObjs[i].SetActive(true);
                     }
@@ -1224,12 +1285,12 @@ namespace MoreMegaStructure
                         recipeSelectTips[i].SetActive(true);
                         sliderObjs[i].SetActive(false);
                         speedTextObjs[i].SetActive(false);
+                        setLimitObjs[i].SetActive(false);
                         removeRecipeBtnObjs[i].SetActive(false);
                         if (maxSlotIndex < i)
                             recipePickerTxts[i].text = String.Format("组装厂槽位解锁于".Translate(), MoreMegaStructure.Capacity2Str(speedNeededToUnlockSlot[i]));
                         else
                             recipePickerTxts[i].text = "指定配方".Translate();
-
                     }
                 }
                 sliderObjs[0].SetActive(true);
@@ -1266,6 +1327,8 @@ namespace MoreMegaStructure
         {
             if (MoreMegaStructure.curStar == null) return;
             int starIndex = MoreMegaStructure.curStar.index;
+            if (GameMain.data.dysonSpheres?.Length <= starIndex) return;
+            if (!GigaFactoryUIObj.activeSelf) return;
             int maxSlotIndex = CalcMaxSlotIndex(GameMain.data.dysonSpheres[starIndex]);
             if (MoreMegaStructure.StarMegaStructureType[starIndex] != 4) return;
             for (int i = 1; i < slotCount; i++)
@@ -1282,8 +1345,10 @@ namespace MoreMegaStructure
                         incStr = $"<color=#61D8FFC8>  +{extraProductRatio * 100} %</color>";
                     }
                     
-                    
-                    produceSpeedTxts[i].text = "理论最大速度".Translate() + " " +  value + "/min" + incStr;
+                    if(productSpeedLimit[starIndex][i] > 0)
+                        produceSpeedTxts[i].text = "受限理论最大速度".Translate() + " " +  value + "/min" + incStr;
+                    else
+                        produceSpeedTxts[i].text = "理论最大速度".Translate() + " " + value + "/min" + incStr;
                     weightTxts[i].text = "能量分配".Translate() + " " + ((weights[starIndex][i] * 100)).ToString() + "%";
                 }
                 else
@@ -1426,6 +1491,7 @@ namespace MoreMegaStructure
             incProgress[starIndex][slotIndex] = 0;
             progress[starIndex][slotIndex] = 0;
             weights[starIndex][slotIndex] = 0;
+            productSpeedLimit[starIndex][slotIndex] = 0;
             currentStarIncs[slotIndex] = 0;
             double total = 1;
             for (int i = 1; i < slotCount; i++)
@@ -1484,6 +1550,7 @@ namespace MoreMegaStructure
             incProgress[starIndex][currentRecipeSlot] = 0;
             progress[starIndex][currentRecipeSlot] = 0;
             currentStarIncs[currentRecipeSlot] = 0;
+            productSpeedLimit[starIndex][currentRecipeSlot] = 0;
             if (!recipe.productive) // 不能增产的配方，其incProgress标记为负数
                 incProgress[starIndex][currentRecipeSlot] = -1;
             if (!items.ContainsKey(starIndex))
@@ -1646,6 +1713,7 @@ namespace MoreMegaStructure
         public static void ShowHideUI()
         {
             if (GigaFactoryUIObj == null) return;
+            showingLimit = false;
             if (GigaFactoryUIObj.activeSelf)
             {
                 GigaFactoryUIObj.SetActive(false);
@@ -1672,6 +1740,18 @@ namespace MoreMegaStructure
             }
         }
 
+        public static void ShowHideLimitUI()
+        {
+            if (GigaFactoryUIObj == null) return;
+            showingLimit = !showingLimit;
+            RefreshUI();
+            int starIndex = MoreMegaStructure.curStar.index;
+            for (int i = 1; i < slotCount; i++)
+            {
+                limitInputs[i].text = productSpeedLimit[starIndex][i].ToString();
+            }
+        }
+
         /// <summary>
         /// 返回当前星际组装厂能量下可支持的最大配方数
         /// </summary>
@@ -1691,15 +1771,33 @@ namespace MoreMegaStructure
             return 4;
         }
 
-
-
+        public static void SetProductSpeedLimit(int index, string text)
+        {
+            if (MoreMegaStructure.curStar == null)
+                return;
+            int starIndex = MoreMegaStructure.curStar.index;
+            int value = 0;
+            if (text.Length == 0 || text == "")
+                text = "0";
+            try
+            {
+                value = Convert.ToInt32(text);
+            }
+            catch (Exception)
+            {
+                value = 0;
+            }
+            if (value < 0)
+                value = 0;
+            productSpeedLimit[starIndex][index] = value;
+            limitInputs[index].text = value.ToString();
+        }
 
         /// <summary>
         /// 根据是否线性调整能量分配比例，将SliderValue转变为Weights的数值
         /// </summary>
         /// <param name="sliderValue"></param>
         /// <returns></returns>
-
         public static double S2W(double sliderValue)
         {
             if (MoreMegaStructure.NonlinearEnergy.Value)
@@ -1790,6 +1888,16 @@ namespace MoreMegaStructure
                     satisfiedSpecType[i] = r.ReadInt32();
                 }
             }
+            if(MoreMegaStructure.savedModVersion >= 130)
+            {
+                for (int i = 0; i < 1000; i++)
+                {
+                    for (int j = 0; j < slotCountInSave; j++)
+                    {
+                        productSpeedLimit[i][j] = r.ReadInt32();
+                    }
+                }
+            }
 
             tickEnergyForFullSpeed = (int)(20000.0 / MoreMegaStructure.IASpdFactor.Value);
             if (tickEnergyForFullSpeed <= 0) tickEnergyForFullSpeed = 100000;
@@ -1828,6 +1936,13 @@ namespace MoreMegaStructure
                 w.Write(curSpecType[i]);
                 w.Write(inProgressSpecType[i]);
                 w.Write(satisfiedSpecType[i]);
+            }
+            for (int i = 0; i < 1000; i++)
+            {
+                for (int j = 0; j < slotCount; j++)
+                {
+                    w.Write(productSpeedLimit[i][j]);
+                }
             }
         }
 

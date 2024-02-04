@@ -152,11 +152,11 @@ namespace MoreMegaStructure
                     }
                     if (_this.buildMenu.isDismantleMode)
                     {
-                        _this.posWanted = -60f;
+                        _this.posWanted = -75f;
                     }
                     if (_this.buildMenu.isUpgradeMode)
                     {
-                        _this.posWanted = -60f;
+                        _this.posWanted = -75f;
                     }
                 }
                 else if (_this.sandboxMenu.active)
@@ -172,7 +172,7 @@ namespace MoreMegaStructure
                     }
                     if (_this.sandboxMenu.isRemovalMode)
                     {
-                        _this.posWanted = -60f;
+                        _this.posWanted = -75f;
                     }
                 }
                 else if (_this.mainPlayer.controller.actionBuild.blueprintMode > EBlueprintMode.None)

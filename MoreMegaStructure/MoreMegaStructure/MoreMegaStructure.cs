@@ -22,7 +22,7 @@ namespace MoreMegaStructure
     [BepInDependency(CommonAPIPlugin.GUID)]
     [BepInDependency(DSPModSavePlugin.MODGUID)]
     [CommonAPISubmoduleDependency(nameof(ProtoRegistry), nameof(TabSystem), nameof(LocalizationModule))]
-    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.2")]
+    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.3")]
     public class MoreMegaStructure : BaseUnityPlugin, IModCanSave
     {
         /// <summary>
@@ -30,7 +30,7 @@ namespace MoreMegaStructure
         /// </summary>
         public static int modVersion = 130;
 
-        public static int savedModVersion = 119;
+        public static int savedModVersion = 130;
 
         public static bool CompatibilityPatchUnlocked = false;
 
@@ -287,6 +287,7 @@ namespace MoreMegaStructure
             Harmony.CreateAndPatchAll(typeof(RendererSphere));
             Harmony.CreateAndPatchAll(typeof(EffectRenderer));
             Harmony.CreateAndPatchAll(typeof(ReceiverPatchers));
+            Harmony.CreateAndPatchAll(typeof(StarAssembly));
             Harmony.CreateAndPatchAll(typeof(UIReceiverPatchers));
             if (UIStatisticsPatcher.active) Harmony.CreateAndPatchAll(typeof(UIStatisticsPatcher));
             Harmony.CreateAndPatchAll(typeof(UIBuildMenuPatcher));
@@ -366,24 +367,10 @@ namespace MoreMegaStructure
             // test
             if (developerMode)
             {
-                if (Input.GetKeyDown(KeyCode.Q))
-                {
-                    
-                }
-                else if (Input.GetKeyDown(KeyCode.R))
-                {
-                    //StarCannon.TestShootLaser(true);
-                }
                 if(Input.GetKeyDown(KeyCode.N))
                 {
-                    //KeyNPressTime = !KeyNPressTime;
-                    //if (KeyNPressTime == false)
-                    //    testHitIndex += 1;
-                    //StarCannon.SearchTarget(true);
-                    var starmap = UIRoot.instance.uiGame.starmap;
-                    //Utils.Log($"Is not null? star {starmap.focusStar != null} / planet {starmap.focusPlanet != null} / hive {starmap.focusHive != null} / hover {starmap.mouseHoverStar != null}&{starmap.mouseHoverPlanet != null}&{starmap.mouseHoverHive != null}");
+                    Utils.Log(DSPGame.globalOption.languageLCID.ToString());
                 }
-
             }
         }
 
@@ -1735,6 +1722,11 @@ namespace MoreMegaStructure
                     UIRealtimeTip.Popup("警告最多一个恒星炮".Translate() + " " + systemName);
                     return;
                 }
+                else if(type == 6 && !GameMain.data.history.TechState(MMSProtos.StarCannonTechId).unlocked)
+                {
+                    UIRealtimeTip.Popup("先解锁恒星炮科技警告".Translate());
+                    return;
+                }
 
                 //根据是否有现存框架，是否允许改变巨构类型
                 if (curDysonSphere != null)
@@ -1927,7 +1919,6 @@ namespace MoreMegaStructure
             for (int i = 0; i < 1000; i++)
             {
                 StarMegaStructureType[i] = r.ReadInt32();
-                if (i < 64) Debug.Log($"star{i} type is {StarMegaStructureType[i]}");
             }
 
             if (savedModVersion >= 101)
@@ -1966,6 +1957,10 @@ namespace MoreMegaStructure
             if (savedModVersion >= 130)
             {
                 StarCannon.Import(r);
+            }
+            else
+            {
+                StarCannon.IntoOtherSave();
             }
 
             // 放在最后

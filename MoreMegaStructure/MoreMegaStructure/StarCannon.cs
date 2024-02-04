@@ -26,7 +26,7 @@ namespace MoreMegaStructure
 		public static List<int> basicDamagePerTickByLevel = new List<int> { 0, 5000, 10000, 15000, 20000, 30000 }; //五级前，伤害是固定的，五级后，伤害是基础伤害+bonus，此外游戏UI显示的HP是实际游戏内计算HP和伤害数值的0.01倍，因此显示在游戏内的秒伤数值需要*60后/100
 		// 修改测试用伤害！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
         public static float bonusDpsPerMW = 0.2f; //5级后，每1MW的能量提供这么多的秒伤。每tick提供的tick伤害也是这个比值
-		public static List<int> maxAimCountByLevel = new List<int> { 0, 3, 6, 10, 15, 30 }; //同时瞄准的目标上限
+		public static List<int> maxAimCountByLevel = new List<int> { 0, 3, 5, 10, 15, 30 }; //同时瞄准的目标上限
 		public static List<int> chargeTickByLevel = new List<int> { 0, 162000, 108000, 72000, 36000, 18000 }; //充能时间，tick
 		public static List<int> fireRangeByLevel = new List<int> { 0, 9999, 9999, 9999, 9999, 9999 }; //射程，以光年计
 		public static List<int> damageReductionPerLyByLevel = new List<int> { 3, 3, 2, 1, 0, 0 }; //每光年伤害衰减的百分比
@@ -52,13 +52,10 @@ namespace MoreMegaStructure
 
         // 需要存档的参数
         public static EStarCannonState state = EStarCannonState.Standby; //恒星炮开火阶段。1=瞄准；2=预热旋转且瞄准锁定；3=开火；4=刚消灭一个目标、准备继续连续瞄准（此阶段只有一帧）；5=连续开火的正在瞄准新虫洞；-2=将各层角度还原到随机的其他角度并减慢旋转速度，冷却中；-1=重新充能中；0=充能完毕、待命、可开火。
-        //public static int currentTargetId = 0;
         public static int priorTargetHiveOriAstroId = -1; // 黑屋巢穴的id = 1000000 + dfHivesByAstro的index
         public static int currentTargetStarIndex = 0;
-        public static int retargetTimeLeft = 0;
         public static int time = 0; //恒星炮工作流程计时，均以tick记。负值代表冷却/充能过程
         public static int endAimTime = 999; //最慢的轨道所需的瞄准时间，也就是阶段1的总时间
-        //public static VectorLF3 targetUPos = new VectorLF3(30000, 40000, -50000);
         public static float rotateSpeedScale = 1;
         public static List<int> currentTargetIds;
 
@@ -69,7 +66,7 @@ namespace MoreMegaStructure
         public static double maxRange = 100.0; //恒星炮最大开火距离，以光年计，1ly = 60AU = 60 * 40000m。
         public static int warmTimeNeed = 240; //阶段2预热加速旋转需要的tick时间
         public static int cooldownTimeNeed = 600; //阶段5冷却需要的tick时间
-        public static int chargingTimeNeed = 75 * 3600; //阶段-1的重新充能需要的tick时间
+        public static int chargingTimeNeed = 45 * 3600; //阶段-1的重新充能需要的tick时间
         public static float reAimAngularSpeed = 10f; //连续瞄准时，所有层以同一个速度旋转瞄准到下一个虫洞
         public static int maxAimCount = 3; //连续瞄准次数上限，新版本改成了同时射击目标上限
         public static List<double> layerRotateSpeed; //不需要存档，每次随机生成即可
@@ -77,11 +74,12 @@ namespace MoreMegaStructure
 
         // 其他运行时参数
         public static SpaceSector spaceSector; // 每次读档更新
+        public static bool needReAlign = false; // 每次读档置为true，因为发现了瞄准过程中读档会读不到各个壳层的正在旋转的数据，所以如果读档时发现state为align则进行一次新的对齐操作
 
         //每帧更新不需要存档
         public static int starCannonStarIndex = -1; //恒星炮所在恒星的index，每帧更新
 
-        public static void InitWhenLoad()
+        public static void InitBeforeLoad()
         {
             noExplodeBullets = new ConcurrentDictionary<int, int>();
             layerRotateSpeed = new List<double>();
@@ -126,6 +124,14 @@ namespace MoreMegaStructure
             }
             reverseDirection = MoreMegaStructure.ReverseStarCannonShellAlignDirection.Value ? -1 : 1;
             //RefreshStarCannonProperties();
+        }
+
+        public static void InitAfterLoad()
+        {
+            if(state == EStarCannonState.Align)
+            {
+                needReAlign = true;
+            }
         }
 
         /// <summary>
@@ -458,14 +464,9 @@ namespace MoreMegaStructure
         public static SkillTarget SearchNextTarget()
         {
             SkillTarget skillTarget = default(SkillTarget);
-            if (currentTargetStarIndex < 0 || currentTargetStarIndex>= GameMain.galaxy.starCount)
+            if (currentTargetStarIndex < 0 || currentTargetStarIndex >= GameMain.galaxy.starCount)
                 return skillTarget;
             skillTarget.type = ETargetType.Enemy;
-            float num3 = 1E+12f;
-            var _this = GameMain.mainPlayer.controller.actionCombat;
-            if (_this != null)
-            {
-            }
             EnemyData[] enemyPool = spaceSector.enemyPool;
             int enemyCursor = spaceSector.enemyCursor;
             EnemyDFHiveSystem[] dfHivesByAstro = spaceSector.dfHivesByAstro;
@@ -528,7 +529,6 @@ namespace MoreMegaStructure
                     {
                         if (!currentTargetIds.Contains(ptr3.id))
                         {
-                            num3 = num34;
                             skillTarget.id = ptr3.id;
                             skillTarget.astroId = ptr3.originAstroId;
                             return skillTarget;
@@ -558,11 +558,11 @@ namespace MoreMegaStructure
             time = 0;
             endAimTime = 0;
             state = EStarCannonState.Align;
-            rotateSpeedScale = 1;
+            rotateSpeedScale = 0.1f;
             layerRotateSpeed = new List<double>();
             for (int i = 0; i<22; i++)
             {
-                double speed = Utils.RandF() - 0.5;
+                double speed = Utils.RandF() - 1;
                 if (speed < 0.2 && speed > -0.2)
                     speed *= 2;
                 layerRotateSpeed.Add(speed);
@@ -673,27 +673,13 @@ namespace MoreMegaStructure
                     {
                         DysonSphereLayer layer = __instance.layersIdBased[i];
 
-                        if (state == EStarCannonState.Align && time <= 1) //原本第二个条件是是time==0，但可能会出现不进行瞄准动画的问题，因此改成了<=1，大不了瞄准两次
+                        if (state == EStarCannonState.Align && (time <= 1 || needReAlign)) //原本第二个条件是是time==0，但可能会出现不进行瞄准动画的问题，因此改成了<=1，大不了瞄准两次
                         {
                             float originAngularSpeed = layer.orbitAngularSpeed;
                             layer.orbitAngularSpeed = reAimAngularSpeed;
-
-                            /*
-                            layer.orbitAngularSpeed *= 10.0f; //加快轨道旋转速度，只在下面计算时用到一次，之后可以立刻还原
-                            if(layer.orbitRadius > 20000)
-                            {
-                                layer.orbitAngularSpeed *= layer.orbitRadius / 20000;
-                            }*/
                             layer.InitOrbitRotation(layer.orbitRotation, final); //每个戴森壳层开始轨道旋转、对齐瞄准
                             float aimTimeNeed = Quaternion.Angle(layer.orbitRotation, final) / layer.orbitAngularSpeed * 60f;
-                            endAimTime = Mathf.Max(endAimTime, (int)aimTimeNeed); //保存瞄准完成所需的最大时间
-                            /*
-                            layer.orbitAngularSpeed /= 10.0f; //轨道旋转速度还原
-                            if(layer.orbitRadius > 20000)
-                            {
-                                layer.orbitAngularSpeed /= layer.orbitRadius / 20000;
-                            }
-                            */
+                            endAimTime = Mathf.Max(time + endAimTime, time + (int)aimTimeNeed); //保存瞄准完成所需的最大时间
                             layer.orbitAngularSpeed = originAngularSpeed;
                         }
 
@@ -706,19 +692,9 @@ namespace MoreMegaStructure
                         //目标锁定和旋转速度设置
                         if (state == EStarCannonState.Fire) //如果不是连续开火的瞄准阶段，也不是停火后的冷却阶段
                         {
-                                layer.orbitRotation = final; //瞄准方向锁定在目标上
+                            layer.orbitRotation = final; //瞄准方向锁定在目标上
                         }
 
-                        if ((int)state >= 2)//加速旋转
-                        {
-                            if (rotateSpeedScale < 3f)
-                                rotateSpeedScale += 0.005f;
-                        }
-                        else if ((int)state < 0) //冷却、停止开火阶段，减速旋转
-                        {
-                            if (rotateSpeedScale > 0.5f)
-                                rotateSpeedScale -= 0.01f;
-                        }
                         if(state == EStarCannonState.Fire) // 开火中，锁定炮口方向指向目标
                         {
                             layer.orbitRotation = final;
@@ -737,9 +713,20 @@ namespace MoreMegaStructure
                         }
                     }
                 }
+                if ((int)state >= 2) // 预热阶段，壳层逐渐加速旋转
+                {
+                    if (rotateSpeedScale < 3f)
+                        rotateSpeedScale += 0.01f;
+                }
+                else if ((int)state < 0) // 冷却、停止开火阶段，壳层减速旋转
+                {
+                    if (rotateSpeedScale > 0.05f)
+                        rotateSpeedScale -= 0.01f;
+                }
+                needReAlign = false;
 
                 // 开火等特效和伤害逻辑处理
-                if((int)state >= 3)
+                if ((int)state >= 3)
                 {
                     // 转火过程中保持开炮状态且方向与当前旋转进度同步
                     //VectorLF3 targetUPosFar = VectorLF3.zero;
@@ -769,13 +756,13 @@ namespace MoreMegaStructure
                         VectorLF3 enemyUPos;
                         Vector3 vec;
                         spaceSector.skillSystem.GetObjectUPositionAndVelocity(ref target, out enemyUPos, out vec);
-                        targetUPos += (VectorLF3)vec * 0.016666667f; 
+                        targetUPos += (VectorLF3)vec * 0.016666667f;
                         AddNewLaser(centerStarUPos, enemyUPos, target.id, (int)(damagePerTick * ratio), 30);
                         if (maxAimCount - count > 0 && i == count - 1) // 如果目标过少，少于可以同时射击的最大数量，溢出的可射击的激光将同时射击最后一个合法目标
                         {
                             for (int j = 0; j < maxAimCount - count; j++)
                             {
-                                AddNewLaser(centerStarUPos, enemyUPos, target.id, (int)(damagePerTick * ratio), 30);
+                                AddNewLaser(centerStarUPos, enemyUPos, target.id, (int)(damagePerTick * ratio), 10);
                             }
                         }
                     }
@@ -1062,17 +1049,41 @@ namespace MoreMegaStructure
 
         public static void Import(BinaryReader r)
         {
-            InitWhenLoad();
+            InitBeforeLoad();
+            state = (EStarCannonState)r.ReadInt32();
+            priorTargetHiveOriAstroId = r.ReadInt32();
+            currentTargetStarIndex = r.ReadInt32();
+            time = r.ReadInt32();
+            endAimTime = r.ReadInt32();
+            rotateSpeedScale = (float)r.ReadDouble();
+            int c = r.ReadInt32();
+            for (int i = 0; i < c; i++)
+            {
+                currentTargetIds.Add(r.ReadInt32());
+            }
+            InitAfterLoad();
         }
 
         public static void Export(BinaryWriter w)
-        { 
-        
+        {
+            w.Write((int)state);
+            w.Write(priorTargetHiveOriAstroId);
+            w.Write(currentTargetStarIndex);
+            w.Write(time);
+            w.Write(endAimTime);
+            w.Write((double)rotateSpeedScale);
+            int c = currentTargetIds.Count;
+            w.Write(c);
+            for (int i = 0; i < c; i++)
+            {
+                w.Write(currentTargetIds[i]);
+            }
         }
 
         public static void IntoOtherSave()
         {
-            InitWhenLoad();
+            InitBeforeLoad();
+            InitAfterLoad();
         }
     }
 }

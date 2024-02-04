@@ -13,7 +13,7 @@ namespace MoreMegaStructure
 {
     internal static class MMSProtos
     {
-        static int StarCannonTechId = 1918;
+        public static int StarCannonTechId = 1918;
 
         internal static void RefreshInitAll()
         {
@@ -710,7 +710,6 @@ namespace MoreMegaStructure
                                                                   707 + pagePlus, "Assets/MegaStructureTab/drop1");
 
             TechProto techStarCannon = ProtoRegistry.RegisterTech(StarCannonTechId, "尼科尔戴森光束", "尼科尔戴森光束描述", "尼科尔戴森光束结论", "Assets/MegaStructureTab/starcannontech", new int[] { }, new int[] { 5201 }, new int[] { 200 }, 36000, new int[] { 570, 571, 572, 565, 823 }, new Vector2(65, -3));
-            //techStarCannon.PreTechs = new int[] { 1522 };
             techStarCannon.PreTechsImplicit = new int[] { 1522 };
 
             SIMRecipe.Handcraft = false;
@@ -1580,8 +1579,8 @@ namespace MoreMegaStructure
                                                    "1. When the star cannon fires, the rotation axes of all layers will overlap, and the north pole will point to the target, so please design the north pole of each layer's grid as the center of the muzzle;\n" +
                                                    "2. When the star cannon fires, 12 random  nodes on the 1st layer will emit a laser to the muzzle. For aesthetic reasons, please try to make the first layer only contain up to 12 nodes, and try to make them symmetrical to each other;\n" +
                                                    "3. The construction of the star cannon needs to go through multiple stages. And at the same time, the star cannon can increase its damage, max fire target count, and charging speed several times. After reaching the final stage, continue to build shells will continuously increase the damage;\n" +
-                                                   "4. Star cannon can NOT fire at its own star system.",
-                                                   "1.恒星炮开火时所有层级的旋转轴将重叠，并且让北极指向目标开火，因此设计时请以各层网格自身的北极点为炮口中心；\n2.恒星炮开火时，第1层的随机12个节点将发射出激光指向炮口，为美观考虑，请尽量使得第1层只包含12个（或更少的）节点，并使其相互对称。\n3.恒星炮建造需要经过多个阶段，随着各建造阶段完成，恒星炮能数次提高伤害、同时射击的目标数和充能速度等属性。在达到最终阶段后，继续修建壳层可以不断提高伤害。\n4.恒星炮无法向自身所在星系开火。",
+                                                   "4. After built the star cannon, select a star system or a space dark fog hive in starmap mode, then launch the star cannon. Star cannon can NOT fire at its own star system.",
+                                                   "1.恒星炮开火时所有层级的旋转轴将重叠，并且让北极指向目标开火，因此设计时请以各层网格自身的北极点为炮口中心；\n2.恒星炮开火时，第1层的随机12个节点将发射出激光指向炮口，为美观考虑，请尽量使得第1层只包含12个（或更少的）节点，并使其相互对称。\n3.恒星炮建造需要经过多个阶段，随着各建造阶段完成，恒星炮能数次提高伤害、同时射击的目标数和充能速度等属性。在达到最终阶段后，继续修建壳层可以不断提高伤害。\n4.建造恒星炮后，在星图模式中选择一个恒星系或太空黑雾巢穴进行开火。恒星炮无法向自身所在星系开火。",
                                                    "");
             LocalizationModule.RegisterTranslation("恒星炮开火按钮文本", "Launch Star Cannon (R)", " 启动恒星炮 (R)", "");
             LocalizationModule.RegisterTranslation("恒星炮开火标题", "Launch Star Cannon", "启动恒星炮", "");
@@ -1597,19 +1596,24 @@ namespace MoreMegaStructure
             LocalizationModule.RegisterTranslation("恒星炮开火中按钮文本", "Firing", "开火中", "");
             LocalizationModule.RegisterTranslation("恒星炮冷却中按钮文本", "Cooling down", "冷却中", "");
             LocalizationModule.RegisterTranslation("恒星炮充能中按钮文本", "Charging", "充能中", "");
-            LocalizationModule.RegisterTranslation("恒星炮已充能完毕", "Star Cannon Fully Charged", "恒星炮已充能完毕", "");
+            LocalizationModule.RegisterTranslation("恒星炮已就绪", "Star Cannon is Ready", "恒星炮已就绪", "");
             LocalizationModule.RegisterTranslation("恒星炮正在瞄准", "Star Cannon Aiming", "恒星炮正在瞄准", "");
             LocalizationModule.RegisterTranslation("恒星炮预热中", "Star Cannon Guiding", "恒星炮引导中", "");
             LocalizationModule.RegisterTranslation("恒星炮开火中", "Star Cannon Firing", "恒星炮开火中", "");
             LocalizationModule.RegisterTranslation("恒星炮冷却中", "Star Cannon Cooling Down", "恒星炮冷却中", "");
             LocalizationModule.RegisterTranslation("恒星炮充能中", "Star Cannon Charging", "恒星炮充能中", "");
             LocalizationModule.RegisterTranslation("没有规划的恒星炮！", "Star Cannon not planned!", "没有规划的恒星炮！", "");
+            LocalizationModule.RegisterTranslation("恒星炮尚未规划", "Star Cannon Not Planned", "恒星炮尚未规划", "");
             LocalizationModule.RegisterTranslation("恒星炮修建中警告", "Star cannon needs to be built to at least the first stage before it can fire!", "恒星炮需要至少修建至第一阶段才能够开火！", "");
             LocalizationModule.RegisterTranslation("恒星炮冷却中警告", "Unable to fire because the star cannon is cooling down.", "恒星炮正在冷却中，无法开火！", "");
             LocalizationModule.RegisterTranslation("恒星炮充能中警告", "Unable to fire because the star cannon is charging.", "恒星炮正在充能中，无法开火！", "");
-            LocalizationModule.RegisterTranslation("目标无法定位警告", "Unable to locate any targets! Please visit the star system at least once, and make sure that it has surviving DF hive.", "无法定位任何目标！请至少前往该星系一次，并确认该星系有存活的黑雾巢穴。", "");
+            LocalizationModule.RegisterTranslation("目标无法定位警告", "Unable to locate any targets! Please check if this star system has surviving DF hive.", "无法定位任何目标！请确认该星系有存活的黑雾巢穴。", "");
             LocalizationModule.RegisterTranslation("恒星炮不能向自身所在星系开火！", "Star cannon cannot fire at its own star system!", "恒星炮无法向自身所在星系开火！", "");
             LocalizationModule.RegisterTranslation("恒星级武器检测警告", "Star level weapon activation detected!", "检测到恒星级武器启动！", "");
+            LocalizationModule.RegisterTranslation("尼科尔戴森光束", "Nicoll-Dyson beam", "尼科尔-戴森光束","");
+            LocalizationModule.RegisterTranslation("尼科尔戴森光束描述", "Decoding a method to guide stellar energy from dark fog matrix, then use it to attack space dark fog hive.\nAfter built the star cannon, select a star system or a space dark fog hive in starmap mode, then launch the star cannon.\n<color=#FD965ECC>Warning:</color> This technology has been prohibited by the COSMO Technology Ethics Committee. <color=#FD965ECC>Please initiate such research manually.</color>", "从黑雾矩阵中解码引导恒星级能量的方法，并利用其攻击太空黑雾巢穴。\n建造恒星炮后，在星图模式中选择一个恒星系或太空黑雾巢穴进行开火。\n<color=#FD965ECC>警告：</color>该科技的相关技术已被COSMO技术伦理委员会禁用，<color=#FD965ECC>请手动研究。</color>","");
+            LocalizationModule.RegisterTranslation("尼科尔戴森光束结论", "You have unlocked the star cannon.", "你解锁了建造恒星炮的能力。","");
+            LocalizationModule.RegisterTranslation("先解锁恒星炮科技警告", "You have to unlocked the Nicoll-Dyson beam tech first.", "你需要先解锁尼科尔-戴森光束的科技。", "");
             LocalizationModule.RegisterTranslation("功能说明题目", "Function", "功能", "");
             LocalizationModule.RegisterTranslation(
                 "物质解压器功能文本", "Produce unipolar magnet and some basic resources such as iron ingot, which can be received by corresponding receivers.",
@@ -1641,6 +1645,7 @@ namespace MoreMegaStructure
                 "Exchange Logistic Station can transport materials like Interstellar Logistics Station. In addition, the interstellar assembly also needs this building to obtain raw materials from the ground, or to transport the product to the ground.",
                 "物资交换物流站可以像星际物流站一样运输物资，除此之外，星际组装厂还需要此建筑来从地面获取原材料，或将产物输送至地表。", "");
             LocalizationModule.RegisterTranslation("理论最大速度", "max", "最大", "");
+            LocalizationModule.RegisterTranslation("受限理论最大速度", "<color=#ff1010c0>(limited)</color> max", "<color=#ff1010c0>(受限)</color>最大", "");
             LocalizationModule.RegisterTranslation("能量分配", "Energy Allocation", "能量分配", "");
             LocalizationModule.RegisterTranslation("剩余能量", "Residual Energy", "剩余能量", "");
             LocalizationModule.RegisterTranslation("警告巨构不支持恒星系数量大于100个",
@@ -1653,6 +1658,10 @@ namespace MoreMegaStructure
             LocalizationModule.RegisterTranslation("主产物巨构内部仓储", "Internal Storage (Primary Product)", "主产物内部仓储", "");
             LocalizationModule.RegisterTranslation("巨构内部仓储", "Internal Storage", "内部仓储", "");
             LocalizationModule.RegisterTranslation("显示/隐藏星际组装厂配置", "Show/Hide Star Assembly Recipes", "显示/隐藏 星际组装厂配置", "");
+            LocalizationModule.RegisterTranslation("配置最大生产速度限制", "Configure production speed limit", "配置生产速度限制", "");
+            LocalizationModule.RegisterTranslation("最大生产速度限制", "Speed limit (/min)", "生产速度限制(/min)", "");
+            LocalizationModule.RegisterTranslation("最大生产速度限制题目", "Production speed limit", "生产速度限制", "");
+            LocalizationModule.RegisterTranslation("最大生产速度限制描述", "By changing this value, the maximum production speed of this recipe can be limited. Even if the allocated energy and raw material supply can meet higher production speed, the interstellar assembly will still consume raw materials for production according to this speed limit.\nCancel this limitation by set it to 0 (default).", "通过该数值，可以限制此配方在星际组装厂的最大生产速度，即使分配的能量和地面原材料的供给均可以满足更高的生产速度，星际组装厂也会按照此设置中限制的速度消耗原材料进行生产。\n设置为0（默认）则代表取消限制。", "");
             LocalizationModule.RegisterTranslation("组装厂槽位解锁于", "Locked. Unlock at {0}x speed", "已锁定，解锁于 {0}x 速度", "");
             LocalizationModule.RegisterTranslation("星际组装厂槽位未解锁警告", "This slot is locked!", "此栏位尚未解锁！", "");
 
