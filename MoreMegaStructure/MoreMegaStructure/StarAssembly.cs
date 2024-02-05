@@ -140,6 +140,8 @@ namespace MoreMegaStructure
                 GameObject oriRemoveRecipeObj = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Assembler Window/produce/circle-back/stop-btn");
                 GameObject oriRemoveRecipeXObj = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Assembler Window/produce/circle-back/stop-btn/x");
                 GameObject oriInputFieldObj = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Blueprint Browser/inspector-group/group-1/input-short-text");
+                if(oriInputFieldObj == null)
+                    oriInputFieldObj = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Blueprint Browser/inspector-group/BP-panel-scroll(Clone)/Viewport/pane/group-1/input-short-text");
 
                 for (int i = 0; i < slotCount; i++)
                 {
@@ -238,6 +240,7 @@ namespace MoreMegaStructure
                     spdLimitTitleObj.GetComponent<Text>().text = "最大生产速度限制".Translate();
                     spdLimitTitleObj.GetComponent<Text>().fontSize = 16;
                     spdLimitTitleObj.GetComponent<Text>().alignment = TextAnchor.LowerLeft;
+                    
                     GameObject spdLimitInputObj = GameObject.Instantiate(oriInputFieldObj, spdLimitObj.transform);
                     spdLimitInputObj.name = "value-input";
                     spdLimitInputObj.transform.localPosition = new Vector3(30, 0, 0);
@@ -254,6 +257,7 @@ namespace MoreMegaStructure
                     spdLimitInputObj.GetComponent<InputField>().onEndEdit.AddListener((x) => { SetProductSpeedLimit(Convert.ToInt32(istr), x); });
                     limitInputs.Add(spdLimitInputObj.GetComponent<InputField>());
                     spdLimitObj.SetActive(false);
+                    
 
                     // 这里不能直接传入i，否则会导致所有的参数都变成了5，所以我该怎么写啊啊啊啊啊啊好麻烦
                     if (i == 0)
