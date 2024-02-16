@@ -1329,6 +1329,7 @@ namespace MoreMegaStructure
 
         public static void RefreshProduceSpeedContent()
         {
+            if (UIRoot.instance.uiMainMenu.gameObject.activeSelf) return;
             if (MoreMegaStructure.curStar == null) return;
             int starIndex = MoreMegaStructure.curStar.index;
             if (GameMain.data.dysonSpheres?.Length <= starIndex) return;
@@ -1348,8 +1349,8 @@ namespace MoreMegaStructure
                         //incStr = $"<color=#FD965EE0>  +{extraProductRatio * 100} %</color>";
                         incStr = $"<color=#61D8FFC8>  +{extraProductRatio * 100} %</color>";
                     }
-                    
-                    if(productSpeedLimit[starIndex][i] > 0)
+
+                    if (productSpeedLimit[starIndex][i] > 0)
                         produceSpeedTxts[i].text = "受限理论最大速度".Translate() + " " +  value + "/min" + incStr;
                     else
                         produceSpeedTxts[i].text = "理论最大速度".Translate() + " " + value + "/min" + incStr;
@@ -1408,6 +1409,7 @@ namespace MoreMegaStructure
                 {
                     storageTxts[i].text = "";
                 }
+                
             }
             int MCProductCount = productStorage[starIndex].ContainsKey(9500) ? productStorage[starIndex][9500] : 0;
             storageTxts[0].text = "巨构内部仓储".Translate() + "\n" + MCProductCount.ToString() + "/10000";

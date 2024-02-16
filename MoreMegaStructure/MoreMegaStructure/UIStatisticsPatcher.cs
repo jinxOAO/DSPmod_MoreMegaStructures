@@ -3,12 +3,20 @@ using System.Collections.Generic;
 using System.IO;
 using HarmonyLib;
 using UnityEngine;
+using System.Diagnostics;
 
 namespace MoreMegaStructure
 {
     public class UIStatisticsPatcher
     {
         public static bool active = true;
+        public static long time0 = 0;
+        public static long time1 = 0;
+        public static long time2 = 0;
+        public static long time3 = 0;
+        public static long time4 = 0;
+        public static long time5 = 0;
+
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(UIStatisticsWindow), "RefreshAstroBox")]
@@ -132,7 +140,6 @@ namespace MoreMegaStructure
                 // 这一行使原本的
                 _this.ValueToAstroBox();
             }
-
             return false;
         }
 
@@ -385,9 +392,12 @@ namespace MoreMegaStructure
         {
             int maxLen = __instance.gameData.factories.Length + GameMain.galaxy.starCount;
             maxLen = maxLen < __instance.factoryStatPool.Length ? maxLen : __instance.factoryStatPool.Length;
+            int endIndex = GameMain.data.factories.Length + GameMain.galaxy.starCount - 1;
             for (int i = __instance.gameData.factories.Length; i < maxLen; i++)
             {
-                __instance.factoryStatPool[i].PrepareTick();
+                int starIndex =  endIndex - i;
+                if(MoreMegaStructure.StarMegaStructureType.Length > starIndex && starIndex >= 0 && MoreMegaStructure.StarMegaStructureType[starIndex] == 4)
+                    __instance.factoryStatPool[i].PrepareTick();
             }
         }
 
@@ -396,21 +406,26 @@ namespace MoreMegaStructure
         public static void ProductionStatisticsGameTickPostPatch(ref ProductionStatistics __instance, long time)
         {
             bool flag = true;
-            for (int i = __instance.gameData.factories.Length; i < __instance.gameData.factories.Length + GameMain.galaxy.starCount; i++)
+            int maxLen = Math.Min(__instance.gameData.factories.Length + GameMain.galaxy.starCount, __instance.factoryStatPool.Length);
+            int endIndex = GameMain.data.factories.Length + GameMain.galaxy.starCount - 1;
+            for (int i = __instance.gameData.factories.Length; i < maxLen; i++)
             {
-                __instance.factoryStatPool[i].GameTick(time);
-                if (__instance.factoryStatPool[i].itemChanged && flag)
+                int starIndex = endIndex - i;
+                if (MoreMegaStructure.StarMegaStructureType.Length > starIndex && starIndex >= 0 && MoreMegaStructure.StarMegaStructureType[starIndex] == 4)
                 {
-                    try
+                    __instance.factoryStatPool[i].GameTick(time);
+                    if (__instance.factoryStatPool[i].itemChanged && flag)
                     {
-                        UIRoot.instance.uiGame.statWindow.OnItemChange();
-                    }
-                    catch (Exception message)
-                    {
-                        Debug.LogError(message);
-                    }
+                        try
+                        {
+                            UIRoot.instance.uiGame.statWindow.OnItemChange();
+                        }
+                        catch (Exception message)
+                        {
+                        }
 
-                    flag = false;
+                        flag = false;
+                    }
                 }
             }
         }
@@ -444,28 +459,27 @@ namespace MoreMegaStructure
                 __instance.productEntryList.Add(2, 0L, num);
                 return false;
             }
-
             return true;
         }
 
         public static void Export(BinaryWriter w)
         {
-            w.Write(0);
-            w.Write(GameMain.statistics.production.factoryStatPool.Length - GameMain.data.factories.Length);
-            for (int i = GameMain.data.factories.Length; i < GameMain.statistics.production.factoryStatPool.Length; i++)
-            {
-                GameMain.statistics.production.factoryStatPool[i].Export(w.BaseStream, w);
-            }
+            //w.Write(0);
+            //w.Write(GameMain.statistics.production.factoryStatPool.Length - GameMain.data.factories.Length);
+            //for (int i = GameMain.data.factories.Length; i < GameMain.statistics.production.factoryStatPool.Length; i++)
+            //{
+            //    GameMain.statistics.production.factoryStatPool[i].Export(w.BaseStream, w);
+            //}
         }
 
         public static void Import(BinaryReader r)
         {
             RearrangeStatisticLists();
-            if (MoreMegaStructure.savedModVersion >= 119)
+            if (MoreMegaStructure.savedModVersion >= 119 && MoreMegaStructure.savedModVersion<=134)
             {
                 r.ReadInt32();
                 int num = r.ReadInt32();
-                Debug.Log($"datafactorylenis {GameMain.data.factories.Length}");
+                //Debug.Log($"datafactory len = {GameMain.data.factories.Length}");
                 int count = Math.Min(GameMain.statistics.production.factoryStatPool.Length, GameMain.data.factories.Length + num);
                 for (int i = GameMain.data.factories.Length; i < count; i++)
                 {

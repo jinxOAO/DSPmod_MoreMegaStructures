@@ -659,11 +659,20 @@ namespace MoreMegaStructure
 
         public static void AddNewItems2()
         {
-            //if (!MoreMegaStructure.isBattleActive) return;
-
             int pagePlus = MoreMegaStructure.pagenum * 1000;
             //itemId 9513 available
             //recipeId 576 available
+            int recipeIdBias = 0;
+            int techPosXBias = 0;
+            if (MoreMegaStructure.GenesisCompatibility)
+            {
+                recipeIdBias = -200;
+                techPosXBias = -8;
+            }
+            //if(MoreMegaStructure.FECompatibility)
+            //{
+            //    recipeIdBias = -200;
+            //}
 
             ProtoRegistry.RegisterItem(9503, "力场发生器", "力场发生器描述", "Assets/MegaStructureTab/forceGen", 201 + pagePlus, 20, EItemType.Component,
                                        ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.7f, 0.7f)));
@@ -684,33 +693,31 @@ namespace MoreMegaStructure
 
             ItemProto dropletItem = ProtoRegistry.RegisterItem(9511, "水滴gm", "水滴描述gm", "Assets/MegaStructureTab/drop1", 707 + pagePlus, 1,
                                                                EItemType.Product, ProtoRegistry.GetDefaultIconDesc(Color.white, Color.white));
-            dropletItem.DescFields = new int[] { 50, 51, 56, 54, 55, 1 };
 
-            ProtoRegistry.RegisterRecipe(565, ERecipeType.Assemble, 240, new int[] { 9480, 9484 }, new int[] { 1, 2 }, new int[] { 9503 },
+            ProtoRegistry.RegisterRecipe(565 + recipeIdBias, ERecipeType.Assemble, 240, new int[] { 9480, 9484 }, new int[] { 1, 2 }, new int[] { 9503 },
                                          new int[] { 1 }, "力场发生器描述", StarCannonTechId, 201 + pagePlus, "Assets/MegaStructureTab/forceGen");
-            RecipeProto SIMRecipe = ProtoRegistry.RegisterRecipe(566, ERecipeType.Particle, 600, new int[] { 1014, 1126, 1124, 1118, 1120 },
-                                                                 new int[] { 1, 1, 1, 1, 1 }, new int[] { 9504 }, new int[] { 1 }, "复合态晶体描述", 1919,
-                                                                 202 + pagePlus, "Assets/MegaStructureTab/compoCrystal");
-            ProtoRegistry.RegisterRecipe(567, ERecipeType.Assemble, 360, new int[] { 1305, 1205 }, new int[] { 1, 2 }, new int[] { 9505 },
+            RecipeProto SIMRecipe = ProtoRegistry.RegisterRecipe(566 + recipeIdBias, ERecipeType.Particle, 600, new int[] { 1014, 1126, 1124, 1118, 1120 },
+                                         new int[] { 1, 1, 1, 1, 1 }, new int[] { 9504 }, new int[] { 1 }, "复合态晶体描述", 1919, 202 + pagePlus, "Assets/MegaStructureTab/compoCrystal");
+            ProtoRegistry.RegisterRecipe(567 + recipeIdBias, ERecipeType.Assemble, 360, new int[] { 1305, 1205 }, new int[] { 1, 2 }, new int[] { 9505 },
                                          new int[] { 1 }, "电磁力抑制器描述", 1919, 203 + pagePlus, "Assets/MegaStructureTab/elemaginhibitor2");
-            RecipeProto gluonGenRecipe = ProtoRegistry.RegisterRecipe(568, ERecipeType.Assemble, 360, new int[] { 9483, 1402, 1122 },
-                                                                      new int[] { 1, 1, 2 }, new int[] { 9506 }, new int[] { 1 }, "胶子发生器描述", 1919,
-                                                                      204 + pagePlus, "Assets/MegaStructureTab/gluonGen");
-            RecipeProto strIntOverloaderRecipe = ProtoRegistry.RegisterRecipe(569, ERecipeType.Assemble, 1200, new int[] { 9506, 9486 },
-                                                                              new int[] { 2, 2 }, new int[] { 9507 }, new int[] { 1 }, "强力过载装置描述",
-                                                                              1919, 205 + pagePlus, "Assets/MegaStructureTab/strIntOverloader");
-            ProtoRegistry.RegisterRecipe(570, ERecipeType.Assemble, 180, new int[] { 1125, 9481, 9503 }, new int[] { 3, 2, 3 }, new int[] { 9508 },
+            RecipeProto gluonGenRecipe = ProtoRegistry.RegisterRecipe(568 + recipeIdBias, ERecipeType.Assemble, 360, new int[] { 9483, 1402, 1122 },
+                                         new int[] { 1, 1, 2 }, new int[] { 9506 }, new int[] { 1 }, "胶子发生器描述", 1919, 204 + pagePlus, "Assets/MegaStructureTab/gluonGen");
+            RecipeProto strIntOverloaderRecipe = ProtoRegistry.RegisterRecipe(569 + recipeIdBias, ERecipeType.Assemble, 1200, new int[] { 9506, 9486 },
+                                         new int[] { 2, 2 }, new int[] { 9507 }, new int[] { 1 }, "强力过载装置描述", 1919, 205 + pagePlus, "Assets/MegaStructureTab/strIntOverloader");
+            ProtoRegistry.RegisterRecipe(570 + recipeIdBias, ERecipeType.Assemble, 180, new int[] { 1125, 9481, 9503 }, new int[] { 3, 2, 3 }, new int[] { 9508 },
                                          new int[] { 1 }, "导流框架描述", StarCannonTechId, 206 + pagePlus, "Assets/MegaStructureTab/starcannonframe");
-            ProtoRegistry.RegisterRecipe(571, ERecipeType.Assemble, 480, new int[] { 1209, 9508 }, new int[] { 3, 2 }, new int[] { 9509 },
+            ProtoRegistry.RegisterRecipe(571 + recipeIdBias, ERecipeType.Assemble, 480, new int[] { 1209, 9508 }, new int[] { 3, 2 }, new int[] { 9509 },
                                          new int[] { 1 }, "恒星炮组件描述", StarCannonTechId, 207 + pagePlus, "Assets/MegaStructureTab/starcannoncompo");
-            ProtoRegistry.RegisterRecipe(572, ERecipeType.Assemble, 360, new int[] { 9509, 1802, 1305 }, new int[] { 2, 2, 2 }, new int[] { 9510 },
+            ProtoRegistry.RegisterRecipe(572 + recipeIdBias, ERecipeType.Assemble, 360, new int[] { 9509, 1802, 1305 }, new int[] { 2, 2, 2 }, new int[] { 9510 },
                                          new int[] { 1 }, "恒星炮运载火箭描述", StarCannonTechId, 306 + pagePlus, "Assets/MegaStructureTab/rocketStarcannon");
-            RecipeProto dropRecipe = ProtoRegistry.RegisterRecipe(573, ERecipeType.Assemble, 3600, new int[] { 9505, 9507, 9504 },
+            RecipeProto dropRecipe = ProtoRegistry.RegisterRecipe(573 + recipeIdBias, ERecipeType.Assemble, 3600, new int[] { 9505, 9507, 9504 },
                                                                   new int[] { 20, 20, 100 }, new int[] { 9511 }, new int[] { 1 }, "水滴描述", 1919,
                                                                   707 + pagePlus, "Assets/MegaStructureTab/drop1");
-
-            TechProto techStarCannon = ProtoRegistry.RegisterTech(StarCannonTechId, "尼科尔戴森光束", "尼科尔戴森光束描述", "尼科尔戴森光束结论", "Assets/MegaStructureTab/starcannontech", new int[] { }, new int[] { 5201 }, new int[] { 200 }, 36000, new int[] { 570, 571, 572, 565, 823 }, new Vector2(65, -3));
+            //1918
+            TechProto techStarCannon = ProtoRegistry.RegisterTech(StarCannonTechId, "尼科尔戴森光束", "尼科尔戴森光束描述", "尼科尔戴森光束结论", "Assets/MegaStructureTab/starcannontech", new int[] { }, new int[] { 5201 }, new int[] { 200 }, 36000, new int[] { 570 + recipeIdBias, 571 + recipeIdBias, 572 + recipeIdBias, 565 + recipeIdBias }, new Vector2(65 + techPosXBias, -3)); // 原本解锁有个823不记得是什么了
             techStarCannon.PreTechsImplicit = new int[] { 1522 };
+            techStarCannon.IsHiddenTech = true;
+            techStarCannon.PreItem = new int[] { 5201 };
 
             SIMRecipe.Handcraft = false;
             gluonGenRecipe.Handcraft = false;
@@ -732,7 +739,7 @@ namespace MoreMegaStructure
         {
             if (!MoreMegaStructure.GenesisCompatibility) return;
 
-            int pagePlus = MoreMegaStructure.pagenum * 1000;
+            int pagePlus = MoreMegaStructure.pagenum * 1000 + 100;
             var recipe376 = ProtoRegistry.RegisterRecipe(376, (ERecipeType)10, 6, new int[] { 9500 }, new int[] { 25 }, new int[] { 6257 },
                                                          new int[] { 1 }, "巨建快速组装描述", 1923, 403 + pagePlus, "Assets/MegaStructureTab/quick6257");
             var recipe377 = ProtoRegistry.RegisterRecipe(377, (ERecipeType)10, 6, new int[] { 9500 }, new int[] { 25 }, new int[] { 6258 },
@@ -1557,7 +1564,7 @@ namespace MoreMegaStructure
                 "强力过载装置描述",
                 "The SIO device can make the repulsive and the attractive force peak to coincide precisely at a specific point, so that any deviation of the nucleus will be pulled back by the strong interaction force. If electromagnetic interference is removed, the nucleus will be fully anchored.",
                 "强力过载装置可以使强力的排斥力峰值和吸引力峰值在特定的点精准重合，因而原子核的任何偏离都会被强力拉回。如果剔除了电磁力干扰，原子核将被完全锚定。", "");
-            LocalizationModule.RegisterTranslation("导流框架", "Flow guid frame", "导流框架", "");
+            LocalizationModule.RegisterTranslation("导流框架", "Flow guide frame", "导流框架", "");
             LocalizationModule.RegisterTranslation(
                 "导流框架描述", "Storing, directing and guiding the energy of stars in a specific direction, creating high power directional energy resonance.",
                 "将恒星的能量存储并引导、集中至特定方向，创造极高功率的定向能量谐振。", "");

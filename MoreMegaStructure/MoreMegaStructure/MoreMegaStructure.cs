@@ -28,14 +28,15 @@ namespace MoreMegaStructure
         /// <summary>
         /// mod版本会进行存档
         /// </summary>
-        public static int modVersion = 130;
+        public static int modVersion = 135;
 
-        public static int savedModVersion = 130;
+        public static int savedModVersion = 135;
 
         public static bool CompatibilityPatchUnlocked = false;
 
         public static bool GenesisCompatibility;
         public static bool isBattleActive;
+        public static bool FECompatibility = false;
 
         public static int megaNum = 7; // 巨构类型的数量
 
@@ -153,6 +154,7 @@ namespace MoreMegaStructure
         public static GameObject set2MegaAssemButtonObj;
         public static GameObject set2CrystalMinerButtonObj;
         public static GameObject set2StarCannonButtonObj;
+        public static GameObject rightBarObj;
         public static GameObject LeftMegaBuildWarning;
         public static GameObject DysonEditorPowerDescLabel4BarObj;
         public static GameObject selectAutoReceiveGearLimitObj;
@@ -193,7 +195,7 @@ namespace MoreMegaStructure
         /// <summary>
         /// 下面的数据为游戏运行时的关键数据，且会进行存档
         /// </summary>
-        public static int[] StarMegaStructureType = new int[1000]; //用于存储每个恒星所构建的巨构建筑类型，默认为0则为戴森球
+        public static int[] StarMegaStructureType = new int[1000]; //用于存储每个恒星所构建的巨构建筑类型，默认为0则为戴森球，1物质解压器，2科学枢纽，3折跃场，4星际组装厂，5晶体重构器，6恒星炮
 
         public static int maxAutoReceiveGear = 1000;
         public static long autoReceiveGearProgress;
@@ -614,7 +616,7 @@ namespace MoreMegaStructure
                 SetMegaStructureWarningText.fontSize = 16;
                 SetMegaStructureWarningText.color = new Color(1f, 1f, 0.57f, 1f);
 
-                GameObject rightBarObj
+                rightBarObj
                     = Instantiate(
                         GameObject.Find(
                             "UI Root/Overlay Canvas/In Game/Windows/Dyson Sphere Editor/Dyson Editor Control Panel/inspector/sphere-group/sail-stat/bar-group/bar-orange"),
@@ -1116,7 +1118,7 @@ namespace MoreMegaStructure
             hashGenByAllSN = 0;
             StarAssembly.UIFrameUpdate(time);
             StarCannon.RefreshStarCannonProperties();
-
+            //UIStatisticsPatcher.UpdateLag();
         }
 
         /// <summary>
@@ -1552,6 +1554,8 @@ namespace MoreMegaStructure
                 set2MegaAssemButtonTextTrans.GetComponent<Text>().text = "规划".Translate() + "星际组装厂".Translate();      //生产多功能预制件
                 set2CrystalMinerButtonTextTrans.GetComponent<Text>().text = "规划".Translate() + "晶体重构器".Translate();
                 set2StarCannonButtonTextTrans.GetComponent<Text>().text = "规划".Translate() + "恒星炮".Translate();
+                set2StarCannonButtonObj.SetActive(GameMain.data.history.TechState(MMSProtos.StarCannonTechId).unlocked);
+                rightBarObj.GetComponent<RectTransform>().sizeDelta = new Vector2(8, GameMain.data.history.TechState(MMSProtos.StarCannonTechId).unlocked ? 243 : 213);
 
                 set2DysonButtonTextTrans.GetComponent<Text>().color = normalTextColor;
                 set2MatDecomButtonTextTrans.GetComponent<Text>().color = normalTextColor;
@@ -2111,12 +2115,7 @@ namespace MoreMegaStructure
         {
             try
             {
-                MoreMegaStructure.GenesisCompatibility = false;
-                //if (DSP_Battle.Configs.versionCode >= 30220410)
-                //{
-                //    MoreMegaStructure.isBattleActive = true;
-                //    MoreMegaStructure.HashGenDivisor = 40000000L * 3; //Battle的削弱
-                //}
+                //MoreMegaStructure.isBattleActive = true;
             }
             catch
             {
@@ -2124,4 +2123,21 @@ namespace MoreMegaStructure
             }
         }
     }
+
+
+    //[BepInDependency("com.menglei.dsp.FractionateEverything")]
+    //[BepInPlugin("Gnimaerd.DSP.plugin.MMSFEPatch", "MMSFEPatch", "1.0")]
+    //public class FractionateEverythingCompatibilityPatch : BaseUnityPlugin
+    //{
+    //    void Awake()
+    //    {
+    //        try
+    //        {
+    //            //MoreMegaStructure.FECompatibility = true;
+    //        }
+    //        catch
+    //        {
+    //        }
+    //    }
+    //}
 }

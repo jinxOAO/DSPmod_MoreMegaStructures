@@ -756,7 +756,7 @@ namespace MoreMegaStructure
                         VectorLF3 enemyUPos;
                         Vector3 vec;
                         spaceSector.skillSystem.GetObjectUPositionAndVelocity(ref target, out enemyUPos, out vec);
-                        targetUPos += (VectorLF3)vec * 0.016666667f;
+                        enemyUPos += (VectorLF3)vec * 0.016666667f;
                         AddNewLaser(centerStarUPos, enemyUPos, target.id, (int)(damagePerTick * ratio), 30);
                         if (maxAimCount - count > 0 && i == count - 1) // 如果目标过少，少于可以同时射击的最大数量，溢出的可射击的激光将同时射击最后一个合法目标
                         {
@@ -1009,42 +1009,6 @@ namespace MoreMegaStructure
             }
         }
 
-
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(SkillSystem), "DamageObject")]
-        public static void TestDamageObjectPP(ref SkillSystem __instance, int damage, int slice, ref SkillTarget target, ref SkillTarget caster)
-        {
-            return;
-            ref CombatStat result = ref CombatStat.empty;
-            int astroId = target.astroId;
-            if (astroId > 1000000)
-            {
-                if (target.type == ETargetType.Enemy)
-                {
-                    EnemyDFHiveSystem enemyDFHiveSystem = spaceSector.dfHivesByAstro[astroId - 1000000];
-                    int num = 0;
-                    if (enemyDFHiveSystem != null)
-                    {
-                        num = enemyDFHiveSystem.evolve.level;
-                        int num2 = 100 / slice;
-                        int num3 = num * num2 / 2;
-                        damage -= num3;
-                        if (damage < num2)
-                        {
-                            damage = num2;
-                        }
-                        //Utils.Log($"damage is {damage}");
-
-                        ref EnemyData ptr = ref spaceSector.enemyPool[target.id];
-                        if (ptr.combatStatId > 0)
-                        {
-                            CombatStat[] buffer = __instance.combatStats.buffer;
-                            int combatStatId = ptr.combatStatId;
-                        }
-                    }
-                }
-            }
-        }
 
 
         public static void Import(BinaryReader r)
