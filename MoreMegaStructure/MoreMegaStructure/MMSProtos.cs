@@ -696,7 +696,7 @@ namespace MoreMegaStructure
 
             ProtoRegistry.RegisterRecipe(565 + recipeIdBias, ERecipeType.Assemble, 240, new int[] { 9480, 9484 }, new int[] { 1, 2 }, new int[] { 9503 },
                                          new int[] { 1 }, "力场发生器描述", StarCannonTechId, 201 + pagePlus, "Assets/MegaStructureTab/forceGen");
-            RecipeProto SIMRecipe = ProtoRegistry.RegisterRecipe(566 + recipeIdBias, ERecipeType.Particle, 600, new int[] { 1014, 1126, 1124, 1118, 1120 },
+            RecipeProto SIMRecipe = ProtoRegistry.RegisterRecipe(566 + recipeIdBias, ERecipeType.Particle, 600, new int[] { 5203, 1126, 1124, 1118, 1120 },
                                          new int[] { 1, 1, 1, 1, 1 }, new int[] { 9504 }, new int[] { 1 }, "复合态晶体描述", 1919, 202 + pagePlus, "Assets/MegaStructureTab/compoCrystal");
             ProtoRegistry.RegisterRecipe(567 + recipeIdBias, ERecipeType.Assemble, 360, new int[] { 1305, 1205 }, new int[] { 1, 2 }, new int[] { 9505 },
                                          new int[] { 1 }, "电磁力抑制器描述", 1919, 203 + pagePlus, "Assets/MegaStructureTab/elemaginhibitor2");
@@ -723,6 +723,7 @@ namespace MoreMegaStructure
             gluonGenRecipe.Handcraft = false;
             strIntOverloaderRecipe.Handcraft = false;
             dropRecipe.Handcraft = false;
+
         }
 
         public static void EditOriRR(Proto proto)
