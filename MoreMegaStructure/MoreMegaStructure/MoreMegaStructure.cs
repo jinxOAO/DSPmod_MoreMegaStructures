@@ -286,8 +286,8 @@ namespace MoreMegaStructure
 
             Harmony.CreateAndPatchAll(typeof(MoreMegaStructure));
             Harmony.CreateAndPatchAll(typeof(StarCannon));
-            Harmony.CreateAndPatchAll(typeof(RendererSphere));
-            Harmony.CreateAndPatchAll(typeof(EffectRenderer));
+            //Harmony.CreateAndPatchAll(typeof(RendererSphere));
+            //Harmony.CreateAndPatchAll(typeof(EffectRenderer));
             Harmony.CreateAndPatchAll(typeof(ReceiverPatchers));
             Harmony.CreateAndPatchAll(typeof(StarAssembly));
             Harmony.CreateAndPatchAll(typeof(UIReceiverPatchers));
@@ -1942,7 +1942,7 @@ namespace MoreMegaStructure
 
             RefreshUIWhenLoad();
             InitResolutionWhenLoad();
-            EffectRenderer.InitAll();
+            //EffectRenderer.InitAll();
 
             if (savedModVersion >= 110)
             {
@@ -2005,7 +2005,7 @@ namespace MoreMegaStructure
 
             RefreshUIWhenLoad();
             InitResolutionWhenLoad();
-            EffectRenderer.InitAll();
+            //EffectRenderer.InitAll();
             UIBuildMenuPatcher.InitDataWhenLoad();
             StarCannon.IntoOtherSave();
 

@@ -31,6 +31,7 @@ namespace MoreMegaStructure
         public static Dictionary<int, Dictionary<int,int>> productStorageInc = new Dictionary<int, Dictionary<int, int>>(); // 存储产物的增产点数
         public static Dictionary<int, List<int>> specBuffLevel = new Dictionary<int, List<int>>(); // 星际组装厂特化后，配方能触发加成
         public static List<int> currentStarIncs = new List<int>();
+        public static int blueBuffByTCFV = 0;
 
         //public static int currentStarIndex = 0; // 弃用，使用MoreMegaStructure.curStar.index
         public static int currentRecipeSlot = 0; // 选择recipe时暂存所选定的是第几个recipe栏位
@@ -522,6 +523,7 @@ namespace MoreMegaStructure
                 currentStarIncs.Add(0);
             }
             lockSliderListener = false;
+            blueBuffByTCFV = 0;
         }
 
         public static void ForceResetIncDataCache()
@@ -741,6 +743,50 @@ namespace MoreMegaStructure
                                     lock (obj)
                                     {
                                         productRegister[products[starIndex][i][j]] += minSatisfied * productCounts[starIndex][i][j];
+                                    }
+                                }
+                            }
+                            // 深空来敌蓝buff效果
+                            if (blueBuffByTCFV > 0 && itemCounts[starIndex][i].Count > 1)
+                            {
+                                int returnCount = minSatisfied * productCounts[starIndex][i][0];
+                                int realConsume = minSatisfied * itemCounts[starIndex][i][0];
+                                int overReturned = returnCount - realConsume;
+                                int returnItemId = items[starIndex][i][0];
+                                if (!productStorage[starIndex].ContainsKey(returnItemId))
+                                    productStorage[starIndex].Add(returnItemId, returnCount);
+                                else
+                                    productStorage[starIndex][returnItemId] += returnCount;
+                                if (productStorage[starIndex][returnItemId] > 10000) productStorage[starIndex][returnItemId] = 10000;
+                                if (minInc > 0) // 返还的输入原材料具有本次的增产等级
+                                {
+                                    if (!productStorageInc[starIndex].ContainsKey(returnItemId))
+                                        productStorageInc[starIndex][returnItemId] = returnCount * minInc;
+                                    else
+                                        productStorageInc[starIndex][returnItemId] += returnCount * minInc;
+
+                                    if (productStorageInc[starIndex][returnItemId] > 4 * productStorage[starIndex][returnItemId])
+                                        productStorageInc[starIndex][returnItemId] = 4 * productStorage[starIndex][returnItemId];
+                                }
+                                if(overReturned <= 0) 
+                                {
+                                    int[] obj = consumeRegister;
+                                    lock (obj)
+                                    {
+                                        consumeRegister[returnItemId] -= returnCount;
+                                    }
+                                }
+                                else // 返还的比消耗的还多，多出的视为生产
+                                {
+                                    int[] obj = consumeRegister;
+                                    lock (obj)
+                                    {
+                                        consumeRegister[returnItemId] -= realConsume;
+                                    }
+                                    int[] obj2 = productRegister;
+                                    lock (obj2)
+                                    {
+                                        productRegister[returnItemId] += overReturned;
                                     }
                                 }
                             }
