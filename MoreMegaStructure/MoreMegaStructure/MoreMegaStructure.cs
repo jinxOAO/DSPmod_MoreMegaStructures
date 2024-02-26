@@ -36,7 +36,7 @@ namespace MoreMegaStructure
 
         public static bool GenesisCompatibility;
         public static bool isBattleActive;
-        public static bool FECompatibility = false;
+        public static bool TCFVCompatibility = false;
 
         public static int megaNum = 7; // 巨构类型的数量
 
@@ -2115,7 +2115,7 @@ namespace MoreMegaStructure
         {
             try
             {
-                //MoreMegaStructure.isBattleActive = true;
+                MoreMegaStructure.TCFVCompatibility = true;
             }
             catch
             {
