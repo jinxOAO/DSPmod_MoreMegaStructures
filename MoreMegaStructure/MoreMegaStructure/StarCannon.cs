@@ -27,10 +27,10 @@ namespace MoreMegaStructure
 		// 修改测试用伤害！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
         public static float bonusDpsPerMW = 0.2f; //5级后，每1MW的能量提供这么多的秒伤。每tick提供的tick伤害也是这个比值
 		public static List<int> maxAimCountByLevel = new List<int> { 0, 3, 5, 10, 15, 30 }; //同时瞄准的目标上限
-		public static List<int> chargeTickByLevel = new List<int> { 0, 162000, 108000, 72000, 36000, 18000 }; //充能时间，tick
+		public static List<int> chargeTickByLevel = new List<int> { 0, 108000, 72000, 54000, 36000, 18000 }; //充能时间，tick
 		public static List<int> fireRangeByLevel = new List<int> { 0, 9999, 9999, 9999, 9999, 9999 }; //射程，以光年计
 		public static List<int> damageReductionPerLyByLevel = new List<int> { 3, 3, 2, 1, 0, 0 }; //每光年伤害衰减的百分比
-        public static List<int> maxFireDurationByLevel = new List<int> { 0, 3600, 7200, 10800, 18000, 60000 }; // 一次开火最大持续时间
+        public static List<int> maxFireDurationByLevel = new List<int> { 0, 7200, 7200, 10800, 18000, 60000 }; // 一次开火最大持续时间
         public static ConcurrentDictionary<int, int> noExplodeBullets = new ConcurrentDictionary<int, int>();
         public static List<VectorLF3> laserThickerPosDelta = new List<VectorLF3>();
 
@@ -75,6 +75,8 @@ namespace MoreMegaStructure
         // 其他运行时参数
         public static SpaceSector spaceSector; // 每次读档更新
         public static bool needReAlign = false; // 每次读档置为true，因为发现了瞄准过程中读档会读不到各个壳层的正在旋转的数据，所以如果读档时发现state为align则进行一次新的对齐操作
+        public static float chargeSpeedFactorByTCFV = 1; // 深空来敌元驱动聚能环加速充能速度
+        public static float damageFactorByTCFV = 1; // 深空来敌增伤
 
         //每帧更新不需要存档
         public static int starCannonStarIndex = -1; //恒星炮所在恒星的index，每帧更新
@@ -194,7 +196,12 @@ namespace MoreMegaStructure
             {
 				damagePerTick += (int)((cannonEnergy - energyPerTickRequiredByLevel[5]) * 1.0 / 1000000.0 * bonusDpsPerMW);
             }
-			return new int[] { level, damagePerTick, maxAimCountByLevel[level], chargeTickByLevel[level], fireRangeByLevel[level], damageReductionPerLyByLevel[level], maxFireDurationByLevel[level] };
+            if (damageFactorByTCFV != 1)
+                damagePerTick = (int)(damagePerTick * damageFactorByTCFV);
+            int realChargeTick = chargeTickByLevel[level];
+            if (chargeSpeedFactorByTCFV > 0)
+                realChargeTick = (int)(realChargeTick / chargeSpeedFactorByTCFV);
+            return new int[] { level, damagePerTick, maxAimCountByLevel[level], realChargeTick, fireRangeByLevel[level], damageReductionPerLyByLevel[level], maxFireDurationByLevel[level] };
         }
 
         public static void OnFireButtonClick()

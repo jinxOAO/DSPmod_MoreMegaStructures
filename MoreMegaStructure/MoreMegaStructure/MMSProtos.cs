@@ -691,8 +691,16 @@ namespace MoreMegaStructure
             ProtoRegistry.RegisterItem(9510, "恒星炮运载火箭", "恒星炮运载火箭描述", "Assets/MegaStructureTab/rocketStarcannon", 306 + pagePlus, 20,
                                        EItemType.Product, ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.3f, 0.9f, 0.9f)));
 
-            ItemProto dropletItem = ProtoRegistry.RegisterItem(9511, "水滴gm", "水滴描述gm", "Assets/MegaStructureTab/drop1", 707 + pagePlus, 1,
+            ItemProto dropletItem = ProtoRegistry.RegisterItem(9511, "水滴gm", "水滴描述gm", "Assets/MegaStructureTab/drop1", 707 + pagePlus, 10,
                                                                EItemType.Product, ProtoRegistry.GetDefaultIconDesc(Color.white, Color.white));
+            // 下面这些由深空来敌自行完成，深空来敌必须new一个新的prefabDesc!!!否则会改了别的物品
+            //dropletItem.DescFields = new int[] { 81, 82, 80, 59, 11, 1 };
+            //dropletItem.AmmoType = EAmmoType.Bullet;
+            //if (dropletItem.prefabDesc == null)
+            //    dropletItem.prefabDesc = new PrefabDesc();
+            //dropletItem.prefabDesc.isCraftUnit = true;
+            //dropletItem.prefabDesc.craftUnitMaxMovementSpeed = 30000;
+            //dropletItem.prefabDesc.workEnergyPerTick = 500000;
 
             ProtoRegistry.RegisterRecipe(565 + recipeIdBias, ERecipeType.Assemble, 240, new int[] { 9480, 9484 }, new int[] { 1, 2 }, new int[] { 9503 },
                                          new int[] { 1 }, "力场发生器描述", StarCannonTechId, 201 + pagePlus, "Assets/MegaStructureTab/forceGen");
@@ -711,7 +719,7 @@ namespace MoreMegaStructure
             ProtoRegistry.RegisterRecipe(572 + recipeIdBias, ERecipeType.Assemble, 360, new int[] { 9509, 1802, 1305 }, new int[] { 2, 2, 2 }, new int[] { 9510 },
                                          new int[] { 1 }, "恒星炮运载火箭描述", StarCannonTechId, 306 + pagePlus, "Assets/MegaStructureTab/rocketStarcannon");
             RecipeProto dropRecipe = ProtoRegistry.RegisterRecipe(573 + recipeIdBias, ERecipeType.Assemble, 3600, new int[] { 9505, 9507, 9504 },
-                                                                  new int[] { 20, 20, 100 }, new int[] { 9511 }, new int[] { 1 }, "水滴描述", 1919,
+                                                                  new int[] { 20, 20, 100 }, new int[] { 9511 }, new int[] { 1 }, "水滴描述gm", 1919,
                                                                   707 + pagePlus, "Assets/MegaStructureTab/drop1");
             //1918
             TechProto techStarCannon = ProtoRegistry.RegisterTech(StarCannonTechId, "尼科尔戴森光束", "尼科尔戴森光束描述", "尼科尔戴森光束结论", "Assets/MegaStructureTab/starcannontech", new int[] { }, new int[] { 5201 }, new int[] { 200 }, 36000, new int[] { 570 + recipeIdBias, 571 + recipeIdBias, 572 + recipeIdBias, 565 + recipeIdBias }, new Vector2(65 + techPosXBias, -3)); // 原本解锁有个823不记得是什么了
@@ -1579,8 +1587,8 @@ namespace MoreMegaStructure
             LocalizationModule.RegisterTranslation("水滴gm", "Droplet", "水滴", "");
             LocalizationModule.RegisterTranslation(
                 "水滴描述gm",
-                "If the battle is in the current galaxy, the droplets will leave the mecha and hit the enemy's key structures with its extremely hard surface. Since precise control of the propulsion and steering of the droplets requires powerful remote computing power, and the launch of droplets and manipulation require the remote supply of mecha energy, there is an upper limit to the number of droplets that the mecha can control at one time.",
-                "如果战斗发生在当前星系，水滴将从机甲中离开，并使用极其坚硬的表面撞击敌人的关键结构。由于精确地控制水滴的推进和转向需要强大的远端运算能力，且发射水滴和操控均需要机甲能量的远程供给，机甲一次性能够操控的水滴数量是有上限的。", "");
+                "Droplets can fight as Icarus' space fleet. It uses extremely solid surface to hit key structures. Precise control of the droplet's propulsion and steering requires powerful remote computing power, as well as a remote supply of Mecha energy to control it. Although the damage efficiency of tje droplet is limited by its attack mode, its structure of strongly interacting materials allows it to withstand unlimited damage. You neet to set the space fleet type to droplet type to use the droplet.",
+                "水滴可以作为伊卡洛斯的空中舰队进行作战，并使用极其坚硬的表面撞击敌人的关键结构。精确地控制水滴的推进和转向需要强大的远端运算能力，且发射水滴和操控也需要机甲能量的远程供给。虽然水滴的输出效率受其攻击方式限制，但其由强相互作用力材料组成的结构可以使其承受无限的伤害。你需要将太空编队的类型设置为水滴编队，以此放入水滴。", "");
 
             LocalizationModule.RegisterTranslation("恒星炮设计说明题目", "Design Instructions", "恒星炮设计说明", "");
             LocalizationModule.RegisterTranslation("恒星炮设计说明文本",

@@ -2107,22 +2107,22 @@ namespace MoreMegaStructure
         }
     }
 
-    [BepInDependency("com.ckcz123.DSP_Battle")]
-    [BepInPlugin("Gnimaerd.DSP.plugin.MMSBattle", "MMSBattle", "1.0")]
-    public class DSPBattleCompatibilityPatch : BaseUnityPlugin
-    {
-        void Awake()
-        {
-            try
-            {
-                MoreMegaStructure.TCFVCompatibility = true;
-            }
-            catch
-            {
-                // ignore
-            }
-        }
-    }
+    //[BepInDependency("com.ckcz123.DSP_Battle")]
+    //[BepInPlugin("Gnimaerd.DSP.plugin.MMSBattle", "MMSBattle", "1.0")]
+    //public class DSPBattleCompatibilityPatch : BaseUnityPlugin
+    //{
+    //    void Awake()
+    //    {
+    //        try
+    //        {
+    //            MoreMegaStructure.TCFVCompatibility = true;
+    //        }
+    //        catch
+    //        {
+    //            // ignore
+    //        }
+    //    }
+    //}
 
 
     //[BepInDependency("com.menglei.dsp.FractionateEverything")]

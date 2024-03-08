@@ -747,7 +747,7 @@ namespace MoreMegaStructure
                                 }
                             }
                             // 深空来敌蓝buff效果
-                            if (blueBuffByTCFV > 0 && itemCounts[starIndex][i].Count > 1)
+                            if (blueBuffByTCFV > 0 && itemCounts[starIndex][i].Count > 1 && products[starIndex][i][0] != 1803)
                             {
                                 int returnCount = minSatisfied * productCounts[starIndex][i][0];
                                 int realConsume = minSatisfied * itemCounts[starIndex][i][0];

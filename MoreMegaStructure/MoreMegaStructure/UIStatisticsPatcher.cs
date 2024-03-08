@@ -187,45 +187,62 @@ namespace MoreMegaStructure
         {
             if (__result != null) // 已经找到的planetData不拦截
                 return;
-            int num = planetId / 100 - 1; // starIndex
-            if (num < 0 || num >= __instance.stars.Length)
+            try
             {
-                return;
-            }
-            int num2 = planetId % 100 - 1; // planet index in star system
-            if (num2 >= __instance.stars[num].planets.Length)
-            {
-                if (__instance.stars[num] == null)
+                int num = planetId / 100 - 1; // starIndex
+                if (num < 0 || num >= __instance.stars.Length)
                 {
                     return;
                 }
-
+                int num2 = planetId % 100 - 1; // planet index in star system
                 if (num2 >= __instance.stars[num].planets.Length)
                 {
-                    PlanetData planet = new PlanetData();
-                    for (int i = num * 100 + 1; i < planetId; i++) // 这里是为了，bottleneck会用工厂信息，随便找一个不是null的factory搪塞一下，防止他报错。反正后面大概也许把需要处理的数据还得都覆盖一遍
+                    if (__instance.stars[num] == null)
                     {
-                        int index = i - num * 100 - 1;
-                        PlanetData pd = __instance.stars[num].planets[index];
-                        if (pd != null && pd.factory != null)
-                        {
-                            planet.factory = pd.factory;
-                            break;
-                        }
-
-                        if (i == planetId - 1)
-                        {
-                            Utils.Log("planetById Postfix found no factory to replace null, now returning new PlanetData() as result");
-                        }
+                        return;
                     }
 
-                    planet.factoryIndex = GameMain.data.factories.Length + GameMain.galaxy.starCount - num - 1;
-                    planet.overrideName = Utils.MegaNameByType(MoreMegaStructure.StarMegaStructureType[num]) +
-                                          " " +
-                                          GameMain.galaxy.StarById(num + 1).displayName;
-                    __result = planet;
-                    return;
+                    if (num2 >= __instance.stars[num].planets.Length)
+                    {
+                        PlanetData planet = new PlanetData();
+                        planet.factory = null;
+                        for (int i = num * 100 + 1; i < planetId; i++) // 这里是为了，bottleneck会用工厂信息，随便找一个不是null的factory搪塞一下，防止他报错。反正后面大概也许把需要处理的数据还得都覆盖一遍
+                        {
+                            int index = i - num * 100 - 1;
+                            if (index >= 0 && index < __instance.stars[num].planets.Length)
+                            {
+                                PlanetData pd = __instance.stars[num].planets[index];
+                                if (pd != null && pd.factory != null)
+                                {
+                                    planet.factory = pd.factory;
+                                    break;
+                                }
+                            }
+                            if (i == planetId - 1)
+                            {
+                                Utils.Log("planetById Postfix found no factory to replace null, now returning new PlanetData() as result");
+                            }
+                        }
+                        if (planet.factory == null)
+                        {
+                            for (int i = 0; i < GameMain.data.factories.Length && i < GameMain.data.factoryCount; i++)
+                            {
+                                if (GameMain.data.factories[i] != null)
+                                    planet.factory = GameMain.data.factories[i];
+                            }
+                        }
+                        planet.factoryIndex = GameMain.data.factories.Length + GameMain.galaxy.starCount - num - 1;
+                        planet.overrideName = Utils.MegaNameByType(MoreMegaStructure.StarMegaStructureType[num]) +
+                                              " " +
+                                              GameMain.galaxy.StarById(num + 1).displayName;
+                        __result = planet;
+                        return;
+                    }
                 }
+            }
+            catch (Exception)
+            {
+                Utils.Log("Error in MoreMegaStructure PalnetByIdPostPatch.");
             }
         }
 
