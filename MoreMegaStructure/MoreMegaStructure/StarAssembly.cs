@@ -32,6 +32,8 @@ namespace MoreMegaStructure
         public static Dictionary<int, List<int>> specBuffLevel = new Dictionary<int, List<int>>(); // 星际组装厂特化后，配方能触发加成
         public static List<int> currentStarIncs = new List<int>();
         public static int blueBuffByTCFV = 0;
+        public static int r002ByTCFV = 0;
+        public static int r106ByTCFV = 0;
 
         //public static int currentStarIndex = 0; // 弃用，使用MoreMegaStructure.curStar.index
         public static int currentRecipeSlot = 0; // 选择recipe时暂存所选定的是第几个recipe栏位
@@ -524,6 +526,8 @@ namespace MoreMegaStructure
             }
             lockSliderListener = false;
             blueBuffByTCFV = 0;
+            r002ByTCFV = 0;
+            r106ByTCFV = 0;
         }
 
         public static void ForceResetIncDataCache()
@@ -724,8 +728,9 @@ namespace MoreMegaStructure
                             for (int j = 0; j < products[starIndex][i].Count; j++)
                             {
                                 productStorage[starIndex][products[starIndex][i][j]] += minSatisfied * productCounts[starIndex][i][j];
-                                // 恒星反应釜产物的增产点数储存
-                                if (curSpecType[starIndex] == 2 && specBuffLevel[starIndex][i] > 0)
+                                if (productStorage[starIndex][products[starIndex][i][j]] > 10000) productStorage[starIndex][products[starIndex][i][j]] = 10000;
+                                // 恒星反应釜产物的增产点数储存 以及深空来敌女神泪效果
+                                if (curSpecType[starIndex] == 2 && specBuffLevel[starIndex][i] > 0 || r002ByTCFV > 0)
                                 {
                                     if (!productStorageInc.ContainsKey(starIndex))
                                         productStorageInc.Add(starIndex, new Dictionary<int, int>());
@@ -736,7 +741,6 @@ namespace MoreMegaStructure
                                     if (productStorageInc[starIndex][products[starIndex][i][j]] > 4 * productStorage[starIndex][products[starIndex][i][j]])
                                         productStorageInc[starIndex][products[starIndex][i][j]] = 4 * productStorage[starIndex][products[starIndex][i][j]];
                                 }
-                                if (productStorage[starIndex][products[starIndex][i][j]] > 10000) productStorage[starIndex][products[starIndex][i][j]] = 10000;
                                 if (productRegister != null)
                                 {
                                     int[] obj = productRegister;
@@ -790,6 +794,42 @@ namespace MoreMegaStructure
                                     }
                                 }
                             }
+                            // 深空来敌能量迸发效果
+                            if(r106ByTCFV > 0)
+                            {
+                                int rocketId = products[starIndex][i][0];
+                                int rodNum = -1;
+                                if (rocketId >= 9488 && rocketId <= 9490)
+                                    rodNum = 2;
+                                else if (rocketId == 9491 || rocketId == 9492 || rocketId == 9510 || rocketId == 1503)
+                                    rodNum = 1;
+                                if (rodNum > 0) // 判断原材料是否已满
+                                {
+                                    int returnItemId = 1802; 
+                                    int returnCount = minSatisfied * 2;
+                                    if (!productStorage[starIndex].ContainsKey(returnItemId))
+                                        productStorage[starIndex].Add(returnItemId, returnCount);
+                                    else
+                                        productStorage[starIndex][returnItemId] += returnCount;
+                                    if (productStorage[starIndex][returnItemId] > 10000) productStorage[starIndex][returnItemId] = 10000;
+                                    if (minInc > 0) // 返还的输入原材料具有本次的增产等级
+                                    {
+                                        if (!productStorageInc[starIndex].ContainsKey(returnItemId))
+                                            productStorageInc[starIndex][returnItemId] = returnCount * minInc;
+                                        else
+                                            productStorageInc[starIndex][returnItemId] += returnCount * minInc;
+
+                                        if (productStorageInc[starIndex][returnItemId] > 4 * productStorage[starIndex][returnItemId])
+                                            productStorageInc[starIndex][returnItemId] = 4 * productStorage[starIndex][returnItemId];
+                                    }
+                                    int[] obj = consumeRegister;
+                                    lock (obj)
+                                    {
+                                        consumeRegister[returnItemId] -= 2;
+                                    }
+                                }
+                            }
+
                             // 增产效果
                             if (incProgress[starIndex][i] >= 0 || specBuffLevel[starIndex][i] > 0) // 负数则视为是无法增产的配方，但是如果能够享受特化Buff，那么可以无视recipe设定，强行允许增产！
                             {
@@ -1082,6 +1122,8 @@ namespace MoreMegaStructure
         // 返回特化和增产剂联合作用下的增产系数
         public static double GetFullIncMilli(int starIndex, int slotNum, int incLevel)
         {
+            incLevel = incLevel >= 10 ? 10 : incLevel;
+            incLevel = incLevel < 0 ? 0 : incLevel;
             double incByProliferator = Cargo.incTableMilli[incLevel];
             double incBySpecialization = 0;
             if (specBuffLevel[starIndex][slotNum] > 0)

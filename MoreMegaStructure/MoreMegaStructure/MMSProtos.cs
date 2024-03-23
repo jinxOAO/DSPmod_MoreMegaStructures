@@ -660,8 +660,8 @@ namespace MoreMegaStructure
         public static void AddNewItems2()
         {
             int pagePlus = MoreMegaStructure.pagenum * 1000;
-            //itemId 9513 available
-            //recipeId 576 available
+            //itemId 9514 available
+            //recipeId 576 available (383 available)
             int recipeIdBias = 0;
             int techPosXBias = 0;
             if (MoreMegaStructure.GenesisCompatibility)
