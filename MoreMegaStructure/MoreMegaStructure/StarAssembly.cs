@@ -1176,7 +1176,7 @@ namespace MoreMegaStructure
                     specTypeFlag[1] = -9999;
 
                 // 2
-                if (recipeType == ERecipeType.Chemical || recipeType == ERecipeType.Refine || products[starIndex][slot].Contains(1141) || products[starIndex][slot].Contains(1142) || products[starIndex][slot].Contains(1143))
+                if (recipeType == ERecipeType.Chemical || recipeType == ERecipeType.Refine || (int)recipeType == 16 || products[starIndex][slot].Contains(1141) || products[starIndex][slot].Contains(1142) || products[starIndex][slot].Contains(1143))
                 {
                     specTypeFlag[2] += 1;
                     if (curSpecType[starIndex] == 2)
