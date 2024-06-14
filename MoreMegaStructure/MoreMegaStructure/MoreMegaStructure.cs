@@ -22,7 +22,7 @@ namespace MoreMegaStructure
     [BepInDependency(CommonAPIPlugin.GUID)]
     [BepInDependency(DSPModSavePlugin.MODGUID)]
     [CommonAPISubmoduleDependency(nameof(ProtoRegistry), nameof(TabSystem), nameof(LocalizationModule))]
-    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.3")]
+    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.4.1")]
     public class MoreMegaStructure : BaseUnityPlugin, IModCanSave
     {
         /// <summary>
@@ -295,6 +295,8 @@ namespace MoreMegaStructure
             Harmony.CreateAndPatchAll(typeof(UIBuildMenuPatcher));
             Harmony.CreateAndPatchAll(typeof(UIStarCannon));
             Harmony.CreateAndPatchAll(typeof(UIMechaWindowPatcher));
+            Harmony.CreateAndPatchAll(typeof(PerformanceMonitorPatcher));
+            Harmony.CreateAndPatchAll(typeof(UIPerformancePanelPatcher));
 
             MMSProtos.ChangeReceiverRelatedStringProto();
             MMSProtos.AddTranslateUILabel();
@@ -319,6 +321,8 @@ namespace MoreMegaStructure
                 AccessTools.StaticFieldRefAccess<ConfigFile>(typeof(LDBTool), "CustomStringENUS").Clear();
                 AccessTools.StaticFieldRefAccess<ConfigFile>(typeof(LDBTool), "CustomStringFRFR").Clear();
             }
+
+            MMSPF.AddMMSSamples();
         }
 
         public void Start()
@@ -900,6 +904,9 @@ namespace MoreMegaStructure
             int[] productRegister,
             int[] consumeRegister)
         {
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.MainLogic);
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.Receiver);
             int idx = factory.planet.star.id - 1;
             bool postWork = false;
             if (idx < 0 || idx > 999)
@@ -1074,6 +1081,9 @@ namespace MoreMegaStructure
                 }
             }
 
+            MMSCPU.EndSample(ECpuWorkEntryExtended.Receiver);
+            MMSCPU.EndSample(ECpuWorkEntryExtended.MainLogic);
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
             return false;
         }
 
@@ -1084,6 +1094,8 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(GameData), "GameTick")]
         public static void GameTickPostPatch(long time)
         {
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.MainLogic);
             isRemoteReceiveingGear = false;
             if ((GameMain.mainPlayer.package.GetItemCount(9500) < maxAutoReceiveGear || maxAutoReceiveGear >= 3000)) isRemoteReceiveingGear = true;
 
@@ -1116,8 +1128,14 @@ namespace MoreMegaStructure
                 }
             }
             hashGenByAllSN = 0;
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.StarAssembly);
             StarAssembly.UIFrameUpdate(time);
+            MMSCPU.EndSample(ECpuWorkEntryExtended.StarAssembly);
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.StarCannon);
             StarCannon.RefreshStarCannonProperties();
+            MMSCPU.EndSample(ECpuWorkEntryExtended.StarCannon);
+            MMSCPU.EndSample(ECpuWorkEntryExtended.MainLogic);
+            MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
             //UIStatisticsPatcher.UpdateLag();
         }
 
@@ -1129,6 +1147,8 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(DysonSphere), "GameTick")]
         public static void DysonSphereGameTickPostPatch(ref DysonSphere __instance)
         {
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.MainLogic);
             int idx = __instance.starData.id - 1;
             if (idx < 0 || idx > 999)
             {
@@ -1244,6 +1264,7 @@ namespace MoreMegaStructure
             }
             else if (StarMegaStructureType[idx] == 4) //如果是星际组装厂
             {
+                MMSCPU.BeginSample(ECpuWorkEntryExtended.StarAssembly);
                 StarAssembly.InternalUpdate(__instance);
                 StarAssembly.TryUseRocketInStorageToBuildIA(__instance);
                 /*
@@ -1263,7 +1284,10 @@ namespace MoreMegaStructure
                     }
                 }
                 */
+                MMSCPU.EndSample(ECpuWorkEntryExtended.StarAssembly);
             }
+            MMSCPU.EndSample(ECpuWorkEntryExtended.MainLogic);
+            MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
         }
 
         /// <summary>
@@ -1274,6 +1298,8 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(SiloComponent), "InternalUpdate")]
         public static void SiloUpdatePatch(ref SiloComponent __instance)
         {
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.Patch);
             int planetId = __instance.planetId;
             int starIndex = planetId / 100 - 1;
             PlanetFactory factory = GameMain.galaxy.stars[starIndex].planets[planetId % 100 - 1].factory;
@@ -1339,6 +1365,8 @@ namespace MoreMegaStructure
                 __instance.bulletInc = 0;
                 __instance.bulletId = bulletIdExpected;
             }
+            MMSCPU.EndSample(ECpuWorkEntryExtended.Patch);
+            MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
         }
 
         /// <summary>
@@ -1349,6 +1377,8 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(EjectorComponent), "InternalUpdate")]
         public static void EjectorUpdatePatch(ref EjectorComponent __instance)
         {
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.Patch);
             if (!GenesisCompatibility) return; // 目前只对创世之书生效
             int planetId = __instance.planetId;
             int starIndex = planetId / 100 - 1;
@@ -1380,6 +1410,8 @@ namespace MoreMegaStructure
                     __instance.bulletId = 1501;
                 }
             }
+            MMSCPU.EndSample(ECpuWorkEntryExtended.Patch);
+            MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
         }
 
         /// <summary>

@@ -7,6 +7,8 @@ namespace MoreMegaStructure
     public static class ReceiverPatchers
     {
         internal static readonly Dictionary<int,int> ProductId2MegaType = new Dictionary<int,int>();
+        public static Dictionary<int,int> RRId2OreId = new Dictionary<int,int>();
+        public static Dictionary<int, int> MDOreModeFactor = new Dictionary<int,int>();
 
         internal static void InitRawData()
         {
@@ -22,6 +24,26 @@ namespace MoreMegaStructure
 
             ProductId2MegaType.Add(1014, 5);
             ProductId2MegaType.Add(1126, 5);
+
+            ProductId2MegaType.Add(1001, 1);
+            ProductId2MegaType.Add(1002, 1);
+            ProductId2MegaType.Add(1003, 1);
+            ProductId2MegaType.Add(1004, 1);
+            ProductId2MegaType.Add(1006, 1);
+
+            RRId2OreId.Add(9493, 1001);
+            RRId2OreId.Add(9494, 1002);
+            RRId2OreId.Add(9495, 1003);
+            RRId2OreId.Add(9496, 1004);
+            RRId2OreId.Add(9497, 1016);
+            RRId2OreId.Add(9501, 1006);
+
+            MDOreModeFactor.Add(1001, 1);
+            MDOreModeFactor.Add(1002, 1);
+            MDOreModeFactor.Add(1003, 2);
+            MDOreModeFactor.Add(1004, 2);
+            MDOreModeFactor.Add(1006, 2);
+
         }
 
 
@@ -75,6 +97,94 @@ namespace MoreMegaStructure
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// 使得复制粘贴可以应用于物质解压器的原矿模式
+        /// </summary>
+        /// <param name="__instance"></param>
+        /// <param name="objectId"></param>
+        /// <param name="factory"></param>
+        [HarmonyPatch(typeof(BuildingParameters), "PasteToFactoryObject")]
+        [HarmonyPostfix]
+        public static void BuildingParametersPastePostPatch(ref BuildingParameters __instance, int objectId, PlanetFactory factory, ref bool __result)
+        {
+            int num = -objectId;
+            Player mainPlayer = factory.gameData.mainPlayer;
+            EntityData[] entityPool = factory.entityPool;
+            PowerSystem powerSystem = factory.powerSystem;
+            if (objectId > 0 && entityPool[objectId].id == objectId)
+            {
+                int powerGenId = entityPool[objectId].powerGenId;
+                if (powerGenId != 0 && __instance.type == BuildingType.Gamma && powerSystem.genPool[powerGenId].gamma)
+                {
+                    ItemProto itemProto4 = LDB.items.Select((int)entityPool[objectId].protoId);
+                    if (itemProto4 != null)
+                    {
+                        if (__instance.mode0 > 0 && __instance.mode0 != powerSystem.genPool[powerGenId].productId && __instance.mode0 != itemProto4.prefabDesc.powerProductId)
+                        {
+                            if (ReceiverPatchers.RRId2OreId.ContainsKey(itemProto4.ID) && __instance.mode0 == ReceiverPatchers.RRId2OreId[itemProto4.ID])
+                            {
+                                factory.TakeBackItemsInEntity(mainPlayer, objectId);
+                                powerSystem.genPool[powerGenId].productId = __instance.mode0;
+                                __result = true;
+                                return;
+                            }
+                        }
+                        // 此处可以限制mode0==0禁止复制到非原始接收器上，但是不写了，保留这种操作，目前未发现会产生bug
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 为了让直接建造建筑的时候可以复制到原矿模式。此外，除了游戏自带的射线接受器之外的接收器，现在建造时默认为物质生成模式
+        /// </summary>
+        /// <param name="__instance"></param>
+        /// <param name="entityId"></param>
+        /// <param name="recipeId"></param>
+        /// <param name="filterId"></param>
+        /// <param name="parameters"></param>
+        /// <param name="factory"></param>
+        [HarmonyPatch(typeof(BuildingParameters), "ApplyPrebuildParametersToEntity")]
+        [HarmonyPostfix]
+        public static void ApplyPrebuildParametersToEntityPostPatch(int entityId, int[] parameters, PlanetFactory factory) // 此处很奇怪，我要是加上ref __instance以及其他原本方法需要的参数，就会在patch的时候报错。
+        {
+            GameHistoryData history = factory.gameData.history;
+            EntityData[] entityPool = factory.entityPool;
+            PowerSystem powerSystem = factory.powerSystem;
+            if (entityId > 0 && entityPool[entityId].id == entityId)
+            {
+                ItemProto itemProto = LDB.items.Select((int)entityPool[entityId].protoId);
+                PrefabDesc prefabDesc = null;
+                if (itemProto != null)
+                {
+                    prefabDesc = itemProto.prefabDesc;
+                }
+                if (prefabDesc == null)
+                {
+                    return;
+                }
+                int powerGenId = entityPool[entityId].powerGenId;
+                if (powerGenId != 0)
+                {
+                    if (powerSystem.genPool[powerGenId].gamma && parameters != null && parameters.Length >= 1)
+                    {
+                        if (parameters[0] > 0 && parameters[0] != powerSystem.genPool[powerGenId].productId && ReceiverPatchers.RRId2OreId.ContainsKey(itemProto.ID) && parameters[0] == ReceiverPatchers.RRId2OreId[itemProto.ID] && history.ItemUnlocked(parameters[0]))
+                        {
+                            powerSystem.genPool[powerGenId].productId = parameters[0];
+                        }
+                        else if (parameters[0] == 0 && parameters[0] != powerSystem.genPool[powerGenId].productId && itemProto.ID != 2208) // 不同的
+                        {
+                            powerSystem.genPool[powerGenId].productId = prefabDesc.powerProductId;
+                        }
+                    }
+                    else if (powerSystem.genPool[powerGenId].gamma && parameters == null) // 不从任何现有建筑Shift过来建造的时候（即建造一个全新的建筑时），prarmeters是null，让其自动设置为物质合成模式
+                    {
+                        powerSystem.genPool[powerGenId].productId = prefabDesc.powerProductId;
+                    }
+                }
+            }
         }
     }
 }

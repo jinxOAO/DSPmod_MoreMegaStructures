@@ -1304,7 +1304,9 @@ namespace MoreMegaStructure
 
             new StringProto { Name = "MegaStructures", ZHCN = "巨构", ENUS = "Megastructures" }.RegisterTranslation();
 
-            new StringProto { Name = "物质合成", ZHCN = "物质合成", ENUS = "Substance generation" }.RegisterTranslation();
+            new StringProto { Name = "物质合成", ZHCN = "物质合成", ENUS = "Substance Generation" }.RegisterTranslation();
+            new StringProto { Name = "原矿模式", ZHCN = "原矿输出", ENUS = "Ore Generation" }.RegisterTranslation();
+            new StringProto { Name = "原矿模式提示", ZHCN = "在原矿输出模式下，产物将直接重构为原矿。", ENUS = "In Ore Generation mode, the receiver will receive product delivered by the megastructure and directly convert it into the raw ore." }.RegisterTranslation();
 
             new StringProto { Name = "恒星炮", ZHCN = "恒星炮", ENUS = "Star cannon" }.RegisterTranslation();
 
@@ -1729,6 +1731,16 @@ namespace MoreMegaStructure
             LocalizationModule.RegisterTranslation("特化进程消退中", "Progress fading {0}%", "特化进程消退中 {0}%", "");
             LocalizationModule.RegisterTranslation("等待其他特化进程消退", "Stand by", "等待进程开始", "");
             LocalizationModule.RegisterTranslation("特化条件未满足", "Requirements not satisfied", "特化条件未满足", "");
+
+
+            LocalizationModule.RegisterTranslation("PF巨构", "MoreMegaStructure", "更多巨构", "");
+            LocalizationModule.RegisterTranslation("PF巨构主要逻辑", "MainLogic (MMS)", "主要逻辑（巨构）", "");
+            LocalizationModule.RegisterTranslation("PF接收器", "Receivers", "接收器", "");
+            LocalizationModule.RegisterTranslation("PF星际组装厂", "Star Assembly", "星际组装厂", "");
+            LocalizationModule.RegisterTranslation("PF恒星炮", "Star Cannon", "恒星炮", "");
+            LocalizationModule.RegisterTranslation("PF寻敌逻辑", "Enemy Search", "寻敌逻辑", "");
+            LocalizationModule.RegisterTranslation("PF巨构数据统计", "Statistics (MMS)", "数据统计（巨构）", "");
+            LocalizationModule.RegisterTranslation("PFOtherPatches", "Other Patch", "其他 Patch", "");
         }
 
         /// <summary>
@@ -1737,14 +1749,14 @@ namespace MoreMegaStructure
         /// <param name="proto"></param>
         internal static void ChangeReceiverRelatedStringProto()
         {
-            new StringProto { Name = "光子生成", ZHCN = "物质合成", ENUS = "Substance generation" }.RegisterTranslation();
+            new StringProto { Name = "光子生成", ZHCN = "物质合成", ENUS = "Substance Generation" }.RegisterTranslation();
 
             new StringProto
             {
                 Name = "光子生成描述",
                 ZHCN = "在物质合成模式下，接收站将允许接收巨构建筑的输出，并将其转换为对应物质。",
                 ENUS
-                    = "In Substance generation mode, the receiver will receive product delivered by the megastructure and convert it into the corresponding item."
+                    = "In Substance Generation mode, the receiver will receive product delivered by the megastructure and convert it into the corresponding item."
             }.RegisterTranslation();
 
 

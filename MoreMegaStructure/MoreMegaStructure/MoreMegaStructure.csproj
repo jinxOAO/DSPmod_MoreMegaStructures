@@ -90,12 +90,14 @@
     <Compile Include="MegaButtonGroupBehaviour.cs" />
     <Compile Include="MMSProtos.cs" />
     <Compile Include="MoreMegaStructure.cs" />
+    <Compile Include="PerformanceMonitorPatcher.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReceiverPatchers.cs" />
     <Compile Include="RendererSphere.cs" />
     <Compile Include="StarAssembly.cs" />
     <Compile Include="StarCannon.cs" />
     <Compile Include="UIMechaWindowPatcher.cs" />
+    <Compile Include="UIPerformancePanelPatcher.cs" />
     <Compile Include="UIStarCannon.cs" />
     <Compile Include="UIBuildMenuPatcher.cs" />
     <Compile Include="UIReceiverPatchers.cs" />

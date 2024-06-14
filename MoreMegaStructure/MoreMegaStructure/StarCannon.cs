@@ -52,7 +52,7 @@ namespace MoreMegaStructure
 
         // 需要存档的参数
         public static EStarCannonState state = EStarCannonState.Standby; //恒星炮开火阶段。1=瞄准；2=预热旋转且瞄准锁定；3=开火；4=刚消灭一个目标、准备继续连续瞄准（此阶段只有一帧）；5=连续开火的正在瞄准新虫洞；-2=将各层角度还原到随机的其他角度并减慢旋转速度，冷却中；-1=重新充能中；0=充能完毕、待命、可开火。
-        public static int priorTargetHiveOriAstroId = -1; // 黑屋巢穴的id = 1000000 + dfHivesByAstro的index
+        public static int priorTargetHiveOriAstroId = -1; // 黑雾巢穴的id = 1000000 + dfHivesByAstro的index
         public static int currentTargetStarIndex = 0;
         public static int time = 0; //恒星炮工作流程计时，均以tick记。负值代表冷却/充能过程
         public static int endAimTime = 999; //最慢的轨道所需的瞄准时间，也就是阶段1的总时间
@@ -422,6 +422,8 @@ namespace MoreMegaStructure
 
         public static bool CheckAndSearchAllTargets()
         {
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.EnemySearch);
             if (maxAimCount <= 0)
                 return false;
             int count = Mathf.Min(currentTargetIds.Count, maxAimCount);
@@ -460,6 +462,8 @@ namespace MoreMegaStructure
                     break;
                 }
             }
+            MMSCPU.EndSample(ECpuWorkEntryExtended.EnemySearch);
+            MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
             return currentTargetIds.Count > 0;
         }
 
@@ -470,6 +474,8 @@ namespace MoreMegaStructure
         /// <returns></returns>
         public static SkillTarget SearchNextTarget()
         {
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.EnemySearch);
             SkillTarget skillTarget = default(SkillTarget);
             if (currentTargetStarIndex < 0 || currentTargetStarIndex >= GameMain.galaxy.starCount)
                 return skillTarget;
@@ -554,6 +560,8 @@ namespace MoreMegaStructure
                 skillTarget = SearchNextTarget();
             }
 
+            MMSCPU.EndSample(ECpuWorkEntryExtended.EnemySearch);
+            MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
             return skillTarget;
         }
 
@@ -622,6 +630,8 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(DysonSphere), "GameTick")]
         public static void StarCannonUpdate(ref DysonSphere __instance, long gameTick)
         {
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.StarCannon);
             if (__instance == null || __instance.layersIdBased == null)
                 return;
 
@@ -795,7 +805,7 @@ namespace MoreMegaStructure
                                     lBegin = __instance.starData.uPosition,
                                     uEndVel = targetUPos,
                                     uBegin = __instance.starData.uPosition + Utils.RandPosDelta() * laserBulletPosDelta,
-                                    uEnd = ((i == 0) ? (targetUPos + Utils.RandPosDelta() * laserBulletEndPosDelta) : ((targetUPos - __instance.starData.uPosition).normalized) * nearPoint * (1+ Utils.RandF() * 3)),
+                                    uEnd = ((i == 0) ? (targetUPos + Utils.RandPosDelta() * laserBulletEndPosDelta) : ((targetUPos - __instance.starData.uPosition).normalized * nearPoint * (1+ Utils.RandF() * 3)) + __instance.starData.uPosition),
                                 }, 0);
                                 casterSwarm.bulletPool[bulletIndex].state = 0;
                                 if (i >= 1)
@@ -876,6 +886,8 @@ namespace MoreMegaStructure
                 state = EStarCannonState.Standby;
                 time = 0;
             }
+            MMSCPU.EndSample(ECpuWorkEntryExtended.StarCannon);
+            MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
         }
 
         public static void LaserEffect2(DysonSphere sphere, long gameTick, VectorLF3 targetUPos)

@@ -22,6 +22,8 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(UIStatisticsWindow), "RefreshAstroBox")]
         public static bool RefreshAstroBoxPostPatch(ref UIStatisticsWindow __instance)
         {
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.Statistics);
             if (__instance == null)
             {
                 return true;
@@ -140,6 +142,8 @@ namespace MoreMegaStructure
                 // 这一行使原本的
                 _this.ValueToAstroBox();
             }
+            MMSCPU.EndSample(ECpuWorkEntryExtended.Statistics);
+            MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
             return false;
         }
 
@@ -255,6 +259,8 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(UIStatisticsWindow), "ComputeDisplayProductEntries")]
         public static bool ComputeDisplayEntriesPrePatch(ref UIStatisticsWindow __instance)
         {
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.Statistics);
             __instance.productEntryList.PrepareDisplayEntries(__instance.lastListCursor);
             __instance.factoryStatGroupCursor = 0;
             if (__instance.astroFilter == -1)
@@ -377,6 +383,9 @@ namespace MoreMegaStructure
             }
 
             __instance.productEntryList.RefreshDatasIndices(__instance.lastListCursor);
+
+            MMSCPU.EndSample(ECpuWorkEntryExtended.Statistics);
+            MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
             return false;
         }
 
@@ -407,6 +416,8 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(ProductionStatistics), "PrepareTick")]
         public static void ProductionStatisticsPrepareTickPostPatch(ref ProductionStatistics __instance)
         {
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.Statistics);
             int maxLen = __instance.gameData.factories.Length + GameMain.galaxy.starCount;
             maxLen = maxLen < __instance.factoryStatPool.Length ? maxLen : __instance.factoryStatPool.Length;
             int endIndex = GameMain.data.factories.Length + GameMain.galaxy.starCount - 1;
@@ -416,12 +427,16 @@ namespace MoreMegaStructure
                 if(MoreMegaStructure.StarMegaStructureType.Length > starIndex && starIndex >= 0 && MoreMegaStructure.StarMegaStructureType[starIndex] == 4)
                     __instance.factoryStatPool[i].PrepareTick();
             }
+            MMSCPU.EndSample(ECpuWorkEntryExtended.Statistics);
+            MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
         }
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(ProductionStatistics), "GameTick")]
         public static void ProductionStatisticsGameTickPostPatch(ref ProductionStatistics __instance, long time)
         {
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.Statistics);
             bool flag = true;
             int maxLen = Math.Min(__instance.gameData.factories.Length + GameMain.galaxy.starCount, __instance.factoryStatPool.Length);
             int endIndex = GameMain.data.factories.Length + GameMain.galaxy.starCount - 1;
@@ -445,6 +460,8 @@ namespace MoreMegaStructure
                     }
                 }
             }
+            MMSCPU.EndSample(ECpuWorkEntryExtended.Statistics);
+            MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
         }
 
         /// <summary>
@@ -463,6 +480,8 @@ namespace MoreMegaStructure
             long energyConsumption,
             long factoryIndex)
         {
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.Statistics);
             if (factoryIndex >= GameMain.data.factories.Length)
             {
                 long num = __instance.ComputePower(powerPool[0]);
@@ -476,6 +495,8 @@ namespace MoreMegaStructure
                 __instance.productEntryList.Add(2, 0L, num);
                 return false;
             }
+            MMSCPU.EndSample(ECpuWorkEntryExtended.Statistics);
+            MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
             return true;
         }
 
