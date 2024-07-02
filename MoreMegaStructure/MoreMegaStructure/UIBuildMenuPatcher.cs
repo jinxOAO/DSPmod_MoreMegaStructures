@@ -14,6 +14,8 @@ namespace MoreMegaStructure
 {
     public class UIBuildMenuPatcher
     {
+        public static bool enabled = false;
+
         public static List<GameObject> childButtonObjs = new List<GameObject>();
         public static List<UIButton> childButtons = new List<UIButton>();
         public static List<Image> childIcons = new List<Image>();
@@ -40,16 +42,19 @@ namespace MoreMegaStructure
 
         public static void InitDataWhenLoad()
         {
-            protos[usedCategory, 0] = LDB.items.Select(9493);
-            protos[usedCategory, 1] = LDB.items.Select(9494);
-            protos[usedCategory, 2] = LDB.items.Select(9495);
-            protos[usedCategory, 3] = LDB.items.Select(9496);
-            protos[usedCategory, 4] = LDB.items.Select(9497);
-            protos[usedCategory, 5] = LDB.items.Select(9501);
-            protos[usedCategory, 6] = LDB.items.Select(9498);
-            protos[usedCategory, 7] = LDB.items.Select(9502);
+            if (enabled)
+            {
+                protos[usedCategory, 0] = LDB.items.Select(9493);
+                protos[usedCategory, 1] = LDB.items.Select(9494);
+                protos[usedCategory, 2] = LDB.items.Select(9495);
+                protos[usedCategory, 3] = LDB.items.Select(9496);
+                protos[usedCategory, 4] = LDB.items.Select(9497);
+                protos[usedCategory, 5] = LDB.items.Select(9501);
+                protos[usedCategory, 6] = LDB.items.Select(9498);
+                protos[usedCategory, 7] = LDB.items.Select(9502);
 
-            //switchHotkeyRowText.GetComponent<Text>().text = "切换快捷键".Translate();
+                //switchHotkeyRowText.GetComponent<Text>().text = "切换快捷键".Translate();
+            }
         }
 
         public static void InitUI()
@@ -130,7 +135,7 @@ namespace MoreMegaStructure
         /// <param name="__instance"></param>
         [HarmonyPostfix]
         [HarmonyPatch(typeof(UIFunctionPanel), "_OnUpdate")]
-        public static void UIBuildMenuOnUpdatePostPatch(ref UIFunctionPanel __instance)
+        public static void UIBuildMenuOnUpdatePostPatch0(ref UIFunctionPanel __instance)
         {
             
             var _this = __instance;
@@ -245,7 +250,7 @@ namespace MoreMegaStructure
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(UIBuildMenu), "SetCurrentCategory")]
-        public static void UIBuildMenuSetCurrentCategoryPostPatch(ref UIBuildMenu __instance, int category)
+        public static void UIBuildMenuSetCurrentCategoryPostPatch0(ref UIBuildMenu __instance, int category)
         {
             var _this = __instance;
             if (_this.player != null)
@@ -492,20 +497,23 @@ namespace MoreMegaStructure
 
         public static void SwitchHotKeyRow(bool force0 = false)
         {
-            bool flag0 = hotkeyActivateRow == 0;
-            bool flag1 = hotkeyActivateRow == 1;
-            if (force0)
+            if (enabled)
             {
-                flag0 = true;
-                flag1 = false;
-            }
-            for (int i = 0; i < 10; i++)
-            {
-                oriChildHotkeyText[i].text = flag0 ? $"F{i + 1}" : "";
-            }
-            for (int i = 0;i < 10; i++)
-            {
-                childHotkeyText[i].text = flag1 ? $"F{i + 1}" : "";
+                bool flag0 = hotkeyActivateRow == 0;
+                bool flag1 = hotkeyActivateRow == 1;
+                if (force0)
+                {
+                    flag0 = true;
+                    flag1 = false;
+                }
+                for (int i = 0; i < 10; i++)
+                {
+                    oriChildHotkeyText[i].text = flag0 ? $"F{i + 1}" : "";
+                }
+                for (int i = 0; i < 10; i++)
+                {
+                    childHotkeyText[i].text = flag1 ? $"F{i + 1}" : "";
+                }
             }
         }
 

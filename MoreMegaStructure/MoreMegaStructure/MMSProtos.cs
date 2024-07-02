@@ -4,6 +4,7 @@ using xiaoye97;
 using CommonAPI.Systems;
 using CommonAPI.Systems.ModLocalization;
 using UnityEngine;
+//using BuildMenuTool;
 
 // ReSharper disable once InconsistentNaming
 
@@ -701,7 +702,6 @@ namespace MoreMegaStructure
             //dropletItem.prefabDesc.isCraftUnit = true;
             //dropletItem.prefabDesc.craftUnitMaxMovementSpeed = 30000;
             //dropletItem.prefabDesc.workEnergyPerTick = 500000;
-
             ProtoRegistry.RegisterRecipe(565 + recipeIdBias, ERecipeType.Assemble, 240, new int[] { 9480, 9484 }, new int[] { 1, 2 }, new int[] { 9503 },
                                          new int[] { 1 }, "力场发生器描述", StarCannonTechId, 201 + pagePlus, "Assets/MegaStructureTab/forceGen");
             RecipeProto SIMRecipe = ProtoRegistry.RegisterRecipe(566 + recipeIdBias, ERecipeType.Particle, 600, new int[] { 5203, 1126, 1124, 1118, 1120 },
@@ -813,7 +813,7 @@ namespace MoreMegaStructure
 
             ReceiverIronRecipe.Results = new int[] { 9493 };
             ReceiverIronRecipe.ResultCounts = new int[] { 1 };
-            ReceiverIronRecipe.GridIndex = 301 + pagePlus;
+            ReceiverIronRecipe.GridIndex = 9901 + pagePlus;
             ReceiverIronRecipe.TimeSpend = 480;
             Traverse.Create(ReceiverIronRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverIron);
             ReceiverIronRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技
@@ -823,7 +823,7 @@ namespace MoreMegaStructure
             ReceiverIron.name = "铁金属重构装置".Translate();
             ReceiverIron.Description = "接收重构装置描述";
             ReceiverIron.description = "接收重构装置描述".Translate();
-            ReceiverIron.GridIndex = 301 + pagePlus;
+            ReceiverIron.GridIndex = 9901 + pagePlus;
             ReceiverIron.HeatValue = 0L;
             ReceiverIron.prefabDesc = oriItem3.prefabDesc.Copy();
             ReceiverIron.prefabDesc.powerProductHeat = 6000000;
@@ -854,7 +854,7 @@ namespace MoreMegaStructure
 
             ReceiverCopperRecipe.Results = new int[] { 9494 };
             ReceiverCopperRecipe.ResultCounts = new int[] { 1 };
-            ReceiverCopperRecipe.GridIndex = 302 + pagePlus;
+            ReceiverCopperRecipe.GridIndex = 9902 + pagePlus;
             ReceiverCopperRecipe.TimeSpend = 480;
             Traverse.Create(ReceiverCopperRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverCopper);
             ReceiverCopperRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技
@@ -864,7 +864,7 @@ namespace MoreMegaStructure
             ReceiverCopper.name = "铜金属重构装置".Translate();
             ReceiverCopper.Description = "接收重构装置描述";
             ReceiverCopper.description = "接收重构装置描述".Translate();
-            ReceiverCopper.GridIndex = 302 + pagePlus;
+            ReceiverCopper.GridIndex = 9902 + pagePlus;
             ReceiverCopper.HeatValue = 0L;
             ReceiverCopper.prefabDesc = oriItem3.prefabDesc.Copy();
             ReceiverCopper.prefabDesc.powerProductHeat = 6000000;
@@ -895,7 +895,7 @@ namespace MoreMegaStructure
 
             ReceiverSiliconRecipe.Results = new int[] { 9495 };
             ReceiverSiliconRecipe.ResultCounts = new int[] { 1 };
-            ReceiverSiliconRecipe.GridIndex = 303 + pagePlus;
+            ReceiverSiliconRecipe.GridIndex = 9903 + pagePlus;
             ReceiverSiliconRecipe.TimeSpend = 480;
             Traverse.Create(ReceiverSiliconRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverSilicon);
             ReceiverSiliconRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技
@@ -905,7 +905,7 @@ namespace MoreMegaStructure
             ReceiverSilicon.name = "高纯硅重构装置".Translate();
             ReceiverSilicon.Description = "接收重构装置描述";
             ReceiverSilicon.description = "接收重构装置描述".Translate();
-            ReceiverSilicon.GridIndex = 303 + pagePlus;
+            ReceiverSilicon.GridIndex = 9903 + pagePlus;
             ReceiverSilicon.HeatValue = 0L;
             ReceiverSilicon.prefabDesc = oriItem3.prefabDesc.Copy();
             ReceiverSilicon.prefabDesc.powerProductHeat = 6000000;
@@ -936,7 +936,7 @@ namespace MoreMegaStructure
 
             ReceiverTitaniumRecipe.Results = new int[] { 9496 };
             ReceiverTitaniumRecipe.ResultCounts = new int[] { 1 };
-            ReceiverTitaniumRecipe.GridIndex = 304 + pagePlus;
+            ReceiverTitaniumRecipe.GridIndex = 9904 + pagePlus;
             ReceiverTitaniumRecipe.TimeSpend = 480;
             Traverse.Create(ReceiverTitaniumRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverTitanium);
             ReceiverTitaniumRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技 
@@ -946,7 +946,7 @@ namespace MoreMegaStructure
             ReceiverTitanium.name = "钛金属重构装置".Translate();
             ReceiverTitanium.Description = "接收重构装置描述";
             ReceiverTitanium.description = "接收重构装置描述".Translate();
-            ReceiverTitanium.GridIndex = 304 + pagePlus;
+            ReceiverTitanium.GridIndex = 9904 + pagePlus;
             ReceiverTitanium.HeatValue = 0L;
             ReceiverTitanium.prefabDesc = oriItem3.prefabDesc.Copy();
             ReceiverTitanium.prefabDesc.powerProductHeat = 6000000;
@@ -977,7 +977,7 @@ namespace MoreMegaStructure
 
             ReceiverMagoreRecipe.Results = new int[] { 9497 };
             ReceiverMagoreRecipe.ResultCounts = new int[] { 1 };
-            ReceiverMagoreRecipe.GridIndex = 305 + pagePlus;
+            ReceiverMagoreRecipe.GridIndex = 9905 + pagePlus;
             ReceiverMagoreRecipe.TimeSpend = 480;
             Traverse.Create(ReceiverMagoreRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverMagore);
             ReceiverMagoreRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技
@@ -987,7 +987,7 @@ namespace MoreMegaStructure
             ReceiverMagore.name = "单极磁石重构装置".Translate();
             ReceiverMagore.Description = "接收重构装置描述";
             ReceiverMagore.description = "接收重构装置描述".Translate();
-            ReceiverMagore.GridIndex = 305 + pagePlus;
+            ReceiverMagore.GridIndex = 9905 + pagePlus;
             ReceiverMagore.HeatValue = 0L;
             ReceiverMagore.prefabDesc = oriItem3.prefabDesc.Copy();
             ReceiverMagore.prefabDesc.powerProductHeat = 6000000;
@@ -1018,7 +1018,7 @@ namespace MoreMegaStructure
 
             ReceiverCoalRecipe.Results = new int[] { 9501 };
             ReceiverCoalRecipe.ResultCounts = new int[] { 1 };
-            ReceiverCoalRecipe.GridIndex = 306 + pagePlus;
+            ReceiverCoalRecipe.GridIndex = 9906 + pagePlus;
             ReceiverCoalRecipe.TimeSpend = 480;
             Traverse.Create(ReceiverCoalRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverCoal);
             ReceiverCoalRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技 
@@ -1028,7 +1028,7 @@ namespace MoreMegaStructure
             ReceiverCoal.name = "石墨提炼装置".Translate();
             ReceiverCoal.Description = "接收重构装置描述";
             ReceiverCoal.description = "接收重构装置描述".Translate();
-            ReceiverCoal.GridIndex = 306 + pagePlus;
+            ReceiverCoal.GridIndex = 9906 + pagePlus;
             ReceiverCoal.HeatValue = 0L;
             ReceiverCoal.prefabDesc = oriItem3.prefabDesc.Copy();
             ReceiverCoal.prefabDesc.powerProductHeat = 12000000;
@@ -1059,7 +1059,7 @@ namespace MoreMegaStructure
 
             ReceiverCasimirRecipe.Results = new int[] { 9498 };
             ReceiverCasimirRecipe.ResultCounts = new int[] { 1 };
-            ReceiverCasimirRecipe.GridIndex = 307 + pagePlus;
+            ReceiverCasimirRecipe.GridIndex = 9907 + pagePlus;
             ReceiverCasimirRecipe.TimeSpend = 480;
             Traverse.Create(ReceiverCasimirRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverCasimir);
             ReceiverCasimirRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技 
@@ -1069,7 +1069,7 @@ namespace MoreMegaStructure
             ReceiverCasimir.name = "晶体接收器".Translate();
             ReceiverCasimir.Description = "晶体接收器描述";
             ReceiverCasimir.description = "晶体接收器描述".Translate();
-            ReceiverCasimir.GridIndex = 307 + pagePlus;
+            ReceiverCasimir.GridIndex = 9907 + pagePlus;
             ReceiverCasimir.HeatValue = 0L;
             ReceiverCasimir.prefabDesc = oriItem3.prefabDesc.Copy();
             ReceiverCasimir.prefabDesc.powerProductHeat = 120000000;
@@ -1100,7 +1100,7 @@ namespace MoreMegaStructure
 
             ReceiverGratingRecipe.Results = new int[] { 9502 };
             ReceiverGratingRecipe.ResultCounts = new int[] { 1 };
-            ReceiverGratingRecipe.GridIndex = 308 + pagePlus;
+            ReceiverGratingRecipe.GridIndex = 9908 + pagePlus;
             ReceiverGratingRecipe.TimeSpend = 480;
             Traverse.Create(ReceiverGratingRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverGrating);
             ReceiverGratingRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技 
@@ -1110,7 +1110,7 @@ namespace MoreMegaStructure
             ReceiverGrating.name = "光栅晶体接收器".Translate();
             ReceiverGrating.Description = "晶体接收器描述";
             ReceiverGrating.description = "晶体接收器描述".Translate();
-            ReceiverGrating.GridIndex = 308 + pagePlus;
+            ReceiverGrating.GridIndex = 9908 + pagePlus;
             ReceiverGrating.HeatValue = 0L;
             ReceiverGrating.prefabDesc = oriItem3.prefabDesc.Copy();
             ReceiverGrating.prefabDesc.powerProductHeat = 12000000;
@@ -1123,7 +1123,6 @@ namespace MoreMegaStructure
             ReceiverGrating.Upgrades = new int[] { 2208, 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502 };
             //ReceiverGrating.makes = new List<RecipeProto> { ReceiverGratingRecipe };
             Traverse.Create(ReceiverGrating).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverGrating);
-
             //IC
             var ReceiverICRecipe = oriRecipe3.Copy();
             var ReceiverIC = oriItem3.Copy();
@@ -1198,6 +1197,10 @@ namespace MoreMegaStructure
             //Exchanger.makes = new List<RecipeProto> { ExchangerRecipe };
             Traverse.Create(Exchanger).Field("_iconSprite").SetValue(Resources.Load<Sprite>("Assets/MegaStructureTab/exchangeLS"));
 
+            //ReceiverIron.BuildIndex = 221;
+            //ReceiverCoal.BuildIndex = 222;
+            //Exchanger.BuildIndex = 127;
+            //ReceiverCopper.BuildIndex = 224;
 
             LDBTool.PostAddProto(ReceiverIron);
             LDBTool.PostAddProto(ReceiverIronRecipe);
@@ -1219,6 +1222,8 @@ namespace MoreMegaStructure
             LDBTool.PostAddProto(ReceiverGratingRecipe);
             LDBTool.PostAddProto(Exchanger);
             LDBTool.PostAddProto(ExchangerRecipe);
+            //Exchanger.BindBuildBar(102, 2);
+
         }
 
         public class StringProto
@@ -1252,7 +1257,7 @@ namespace MoreMegaStructure
             new StringProto { Name = "研究效率", ZHCN = "研究效率", ENUS = "Research Capacity" }.RegisterTranslation();
             new StringProto { Name = "折跃场加速", ZHCN = "折跃场加速", ENUS = "Warp Acceleration" }.RegisterTranslation();
 
-            new StringProto { Name = "切换快捷键", ZHCN = "CapsLock\n↑快捷键切换↓", ENUS = "CapsLock\n↑ Hotkey Row ↓" }.RegisterTranslation();
+            
         }
 
         public static void AddTranslateStructureName()
@@ -1731,6 +1736,8 @@ namespace MoreMegaStructure
             LocalizationModule.RegisterTranslation("特化进程消退中", "Progress fading {0}%", "特化进程消退中 {0}%", "");
             LocalizationModule.RegisterTranslation("等待其他特化进程消退", "Stand by", "等待进程开始", "");
             LocalizationModule.RegisterTranslation("特化条件未满足", "Requirements not satisfied", "特化条件未满足", "");
+            LocalizationModule.RegisterTranslation("应用到全部", "Apply to the whole planet", "应用到整个行星", "");
+            LocalizationModule.RegisterTranslation("成功应用数量提示", "Successfully applied to {0} buildings.", "成功应用到{0}个建筑。", "");
 
 
             LocalizationModule.RegisterTranslation("PF巨构", "MoreMegaStructure", "更多巨构", "");
@@ -1795,6 +1802,21 @@ namespace MoreMegaStructure
             new StringProto
             {
                 Name = "戴森球壳面号", ZHCN = "巨构壳面 # {0}-{1}", ENUS = "Structure Shell # {0}-{1}" //Megastructure Shell # {0}-{1}
+            }.RegisterTranslation();
+
+
+            new StringProto
+            {
+                Name = "射线接收站",
+                ZHCN = "射线重构站",
+                ENUS = "Ray reconstructor"
+            }.RegisterTranslation(); 
+            
+            new StringProto
+            {
+                Name = "射线接收站描述",
+                ZHCN = "接收巨构上传输回来的高能射线或粒子流，将其能量输出到电网或重构为对应物质。",
+                ENUS = "Receive high-energy rays or particle streams transmitted back from the mega structure, output their energy to the power grid or reconstruct them into corresponding substances."
             }.RegisterTranslation();
         }
     }

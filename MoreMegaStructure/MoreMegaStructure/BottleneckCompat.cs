@@ -189,7 +189,7 @@ namespace MoreMegaStructure
                     }
 
                     __instance.AddPlanetaryUsage(
-                        itemId, GameMain.galaxy.PlanetById((starIndex + 1) * 100 + GameMain.galaxy.stars[starIndex].planetCount + 1), 0,
+                        itemId, UIStatisticsPatcher.MMSPlanetById((starIndex + 1) * 100 + GameMain.galaxy.stars[starIndex].planetCount + 1), 0,
                         true); // 解决筛选报key不存在的错误
                 }
 
@@ -210,7 +210,7 @@ namespace MoreMegaStructure
                     }
 
                     __instance.AddPlanetaryUsage(
-                        itemId, GameMain.galaxy.PlanetById((starIndex + 1) * 100 + GameMain.galaxy.stars[starIndex].planetCount + 1), 0);
+                        itemId, UIStatisticsPatcher.MMSPlanetById((starIndex + 1) * 100 + GameMain.galaxy.stars[starIndex].planetCount + 1), 0);
                 }
             }
         }

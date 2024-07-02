@@ -95,7 +95,7 @@ namespace MoreMegaStructure
             Array.Clear(PerformanceMonitor.timeCostsShowing, 43, num);
             Array.Clear(PerformanceMonitor.timeCostsAve, 43, num);
             Array.Clear(PerformanceMonitor.timeCostsFrame, 43, num);
-            Utils.Log($"cleared, and num is {num}, after, timeShowing is {PerformanceMonitor.timeCostsShowing[45]} / {PerformanceMonitor.timeCostsAve[45]} / {PerformanceMonitor.timeCostsFrame[45]}");
+            //Utils.Log($"cleared, and num is {num}, after, timeShowing is {PerformanceMonitor.timeCostsShowing[45]} / {PerformanceMonitor.timeCostsAve[45]} / {PerformanceMonitor.timeCostsFrame[45]}");
         }
 
         [HarmonyPostfix]
@@ -120,20 +120,6 @@ namespace MoreMegaStructure
                     PerformanceMonitor.timeCostsAve[i] = PerformanceMonitor.timeCostsAve[i] * (1.0 - num3) + PerformanceMonitor.timeCostsFrame[i] * num3;
                 }
             }
-        }
-
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(DysonSphere), "RocketGameTick", new Type[] {typeof(int), typeof(int), typeof(int)})]
-        public static void RocketMultiThreadPostPatch()
-        {
-            Utils.Log( Thread.CurrentThread.ManagedThreadId.ToString());
-        }
-
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(WorkerThreadExecutor), "ComputerThread")]
-        public static void CTest(WorkerThreadExecutor __instance)
-        {
-            Utils.Log($"multi Thread enabled with {__instance.threadMissionOrders}");
         }
     }
 

@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Windows;
 using BepInEx;
 using BepInEx.Configuration;
+//using BuildMenuTool;
 using CommonAPI;
 using CommonAPI.Systems;
 using CommonAPI.Systems.ModLocalization;
@@ -22,7 +23,7 @@ namespace MoreMegaStructure
     [BepInDependency(CommonAPIPlugin.GUID)]
     [BepInDependency(DSPModSavePlugin.MODGUID)]
     [CommonAPISubmoduleDependency(nameof(ProtoRegistry), nameof(TabSystem), nameof(LocalizationModule))]
-    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.4.1")]
+    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.5.3")]
     public class MoreMegaStructure : BaseUnityPlugin, IModCanSave
     {
         /// <summary>
@@ -74,6 +75,7 @@ namespace MoreMegaStructure
         public static ConfigEntry<bool> Support1000Stars;
         public static ConfigEntry<bool> NoWasteResources;
         public static ConfigEntry<bool> ReverseStarCannonShellAlignDirection;
+        public static ConfigEntry<bool> ShowIAUIWhenOpenDE;
         public static bool resolutionLower1080 = false;
 
         public static ResourceData resources;
@@ -242,6 +244,7 @@ namespace MoreMegaStructure
             NoWasteResources = Config.Bind("config", "NoWasteResources", true,
                                                  "Turn this to false might slightly increase the game speed. But this will cause: if one of the various materials required by a recipe in Interstellar Assembly is insufficient, (its supply cannot meet the speed of full-speed production). Although the actual output will slow down, other sufficient materials may still be consumed at full speed, which means that they may be wasted.  将此项设置为false可能会轻微提升游戏速度，但这会导致：当星际组装厂中的部分原材料不支持满速消耗时，虽然产出速度按照最低供应原材料的速度为准，但其他充足供应的原材料仍被满速消耗而产生浪费。");
             ReverseStarCannonShellAlignDirection = Config.Bind("config", "ReverseStarCannonShellAlignDirection", false, "Turn this to true will reverse the align direction of all the shell of star cannon when firing, which means the south pole (of the shells) will point to the target star rather than the north pole.  将此项设置为true会反转恒星炮开火时壳层的对齐方向，这意味着所有壳层的南极将指向目标恒星开火（而非默认的北极）。如果你的炮口造反了，可以尝试更改此项设置。");
+            ShowIAUIWhenOpenDE = Config.Bind("config", "AutoShowDEUI", true, "Set this to true will force to show the Interstellar Assembly's UI when opening/switching its Megastructure Editor Panel. Set to false will maintain the IA UI's last state. 将此项设置为true将在每次打开星际组装厂的巨构编辑器面板时，强制显示UI。设置为false则会维持上次的状态。");
 
             //var ab = AssetBundle.LoadFromStream(Assembly.GetExecutingAssembly().GetManifestResourceStream("MoreMegaStructure.megastructureicons"));
             iconRocketMattD = Resources.Load<Sprite>("Assets/MegaStructureTab/rocketMatter");
@@ -291,8 +294,8 @@ namespace MoreMegaStructure
             Harmony.CreateAndPatchAll(typeof(ReceiverPatchers));
             Harmony.CreateAndPatchAll(typeof(StarAssembly));
             Harmony.CreateAndPatchAll(typeof(UIReceiverPatchers));
-            if (UIStatisticsPatcher.active) Harmony.CreateAndPatchAll(typeof(UIStatisticsPatcher));
-            Harmony.CreateAndPatchAll(typeof(UIBuildMenuPatcher));
+            if (UIStatisticsPatcher.enabled) Harmony.CreateAndPatchAll(typeof(UIStatisticsPatcher));
+            if (UIBuildMenuPatcher.enabled) Harmony.CreateAndPatchAll(typeof(UIBuildMenuPatcher));
             Harmony.CreateAndPatchAll(typeof(UIStarCannon));
             Harmony.CreateAndPatchAll(typeof(UIMechaWindowPatcher));
             Harmony.CreateAndPatchAll(typeof(PerformanceMonitorPatcher));
@@ -333,7 +336,7 @@ namespace MoreMegaStructure
             StarAssembly.InitAll();
             ReceiverPatchers.InitRawData();
             UIReceiverPatchers.InitAll();
-            UIBuildMenuPatcher.InitAll();
+            if(UIBuildMenuPatcher.enabled) UIBuildMenuPatcher.InitAll();
             UIStarCannon.InitAll();
 
             if (isBattleActive)
@@ -921,18 +924,30 @@ namespace MoreMegaStructure
             {
                 postWork = true;
             }
-            else if (megaType == 1 && ((protoId >= 9493 && protoId <= 9497) || protoId == 9501)) //物质解压器
+            else if (megaType == 1) //物质解压器
             {
                 postWork = true;
             }
-            else if (megaType == 4 && protoId == 9499 && !isRemoteReceiveingGear) //星际组装厂
+            else if (megaType == 4 && protoId == 9499) //星际组装厂
             {
                 postWork = false; // 不再允许用射线接受器接收组件
             }
-            else if (megaType == 5 && (protoId == 9498 || protoId == 9502)) //晶体重构器
+            else if (megaType == 5) //晶体重构器
             {
                 postWork = true;
             }
+
+            int corresMegaType = -1;
+            if (ReceiverPatchers.ProductId2MegaType.TryGetValue(__instance.productId, out corresMegaType))
+            {
+                if (corresMegaType != megaType)
+                    postWork = false;
+            }
+            else
+            {
+                postWork = false;
+            }
+            
 
             //其他情况不允许接收器生成或输出物质
             if (postWork)
@@ -1430,11 +1445,11 @@ namespace MoreMegaStructure
 
             if (__instance.selection.viewStar != null)
             {
-                RefreshUILabels(__instance.selection.viewStar, true);
+                RefreshUILabels(__instance.selection.viewStar, ShowIAUIWhenOpenDE.Value);
             }
             else
             {
-                RefreshUILabels(__instance.gameData.localStar, true);
+                RefreshUILabels(__instance.gameData.localStar, ShowIAUIWhenOpenDE.Value);
             }
 
             try
@@ -1458,11 +1473,11 @@ namespace MoreMegaStructure
 
             if (__instance.selection.viewStar != null)
             {
-                RefreshUILabels(__instance.selection.viewStar, true);
+                RefreshUILabels(__instance.selection.viewStar, ShowIAUIWhenOpenDE.Value);
             }
             else
             {
-                RefreshUILabels(__instance.gameData.localStar, true);
+                RefreshUILabels(__instance.gameData.localStar, ShowIAUIWhenOpenDE.Value);
             }
 
             try

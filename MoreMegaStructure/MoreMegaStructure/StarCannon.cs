@@ -33,6 +33,7 @@ namespace MoreMegaStructure
         public static List<int> maxFireDurationByLevel = new List<int> { 0, 7200, 7200, 10800, 18000, 60000 }; // 一次开火最大持续时间
         public static ConcurrentDictionary<int, int> noExplodeBullets = new ConcurrentDictionary<int, int>();
         public static List<VectorLF3> laserThickerPosDelta = new List<VectorLF3>();
+        public static int damageSlice = 7; // 一个特殊的数值用于标明伤害来自于恒星炮，此外这个数值影响护甲的实际计算比例
 
         // 参数
         public static int laserBulletNum = 100;
@@ -770,16 +771,22 @@ namespace MoreMegaStructure
                         target.id = ptr0.id;
                         target.type = ETargetType.Enemy;
                         target.astroId = ptr0.originAstroId;
+                        SkillTarget caster = default(SkillTarget);
+                        caster.id = 1;
+                        caster.type = ETargetType.Craft;
+                        caster.astroId = 0;
                         VectorLF3 enemyUPos;
                         Vector3 vec;
                         spaceSector.skillSystem.GetObjectUPositionAndVelocity(ref target, out enemyUPos, out vec);
                         enemyUPos += (VectorLF3)vec * 0.016666667f;
-                        AddNewLaser(centerStarUPos, enemyUPos, target.id, (int)(damagePerTick * ratio), 30);
+                        AddNewLaser(centerStarUPos, enemyUPos, target.id, 1, 30);
+                        spaceSector.skillSystem.DamageObject((int)(damagePerTick * ratio), damageSlice, ref target, ref caster);
                         if (maxAimCount - count > 0 && i == count - 1) // 如果目标过少，少于可以同时射击的最大数量，溢出的可射击的激光将同时射击最后一个合法目标
                         {
                             for (int j = 0; j < maxAimCount - count; j++)
                             {
-                                AddNewLaser(centerStarUPos, enemyUPos, target.id, (int)(damagePerTick * ratio), 10);
+                                AddNewLaser(centerStarUPos, enemyUPos, target.id, 1, 10);
+                                spaceSector.skillSystem.DamageObject((int)(damagePerTick * ratio), damageSlice, ref target, ref caster);
                             }
                         }
                     }

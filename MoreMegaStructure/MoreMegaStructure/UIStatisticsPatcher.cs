@@ -4,12 +4,13 @@ using System.IO;
 using HarmonyLib;
 using UnityEngine;
 using System.Diagnostics;
+using Steamworks;
 
 namespace MoreMegaStructure
 {
     public class UIStatisticsPatcher
     {
-        public static bool active = true;
+        public static bool enabled = true;
         public static long time0 = 0;
         public static long time1 = 0;
         public static long time2 = 0;
@@ -120,7 +121,7 @@ namespace MoreMegaStructure
                         {
                             itemsData.Insert(i, oldStarId * 100 + GameMain.galaxy.StarById(oldStarId).planetCount + 1);
                             items.Insert(
-                                i, GameMain.galaxy.PlanetById(oldStarId * 100 + GameMain.galaxy.StarById(oldStarId).planetCount + 1).displayName);
+                                i, MMSPlanetById(oldStarId * 100 + GameMain.galaxy.StarById(oldStarId).planetCount + 1).displayName);
                             i++;
                         }
                     }
@@ -131,7 +132,7 @@ namespace MoreMegaStructure
                         if (oldStarId > 0 && oldStarId <= 1000 && MoreMegaStructure.StarMegaStructureType[oldStarId - 1] == 4)
                         {
                             itemsData.Add(oldStarId * 100 + GameMain.galaxy.StarById(oldStarId).planetCount + 1);
-                            items.Add(GameMain.galaxy.PlanetById(oldStarId * 100 + GameMain.galaxy.StarById(oldStarId).planetCount + 1).displayName);
+                            items.Add(MMSPlanetById(oldStarId * 100 + GameMain.galaxy.StarById(oldStarId).planetCount + 1).displayName);
                             break;
                         }
                     }
@@ -152,7 +153,7 @@ namespace MoreMegaStructure
         /// </summary>
         public static void RearrangeStatisticLists()
         {
-            if (!active) return;
+            if (!enabled) return;
             if (GameMain.data.statistics.production.factoryStatPool.Length <= GameMain.data.factories.Length) // 说明是游戏初始状态
             {
                 FactoryProductionStat[] old = GameMain.data.statistics.production.factoryStatPool;
@@ -184,70 +185,74 @@ namespace MoreMegaStructure
             }
         }
 
-        // 需要在调用PlanetId=指示巨构生产统计的虚空行星的时候返回一个factoryIndex正确的planetData，而非null
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(GalaxyData), "PlanetById")]
-        public static void PlanetByIdPostPatch(GalaxyData __instance, int planetId, ref PlanetData __result)
-        {
-            if (__result != null) // 已经找到的planetData不拦截
-                return;
-            try
-            {
-                int num = planetId / 100 - 1; // starIndex
-                if (num < 0 || num >= __instance.stars.Length)
-                {
-                    return;
-                }
-                int num2 = planetId % 100 - 1; // planet index in star system
-                if (num2 >= __instance.stars[num].planets.Length)
-                {
-                    if (__instance.stars[num] == null)
-                    {
-                        return;
-                    }
+        
 
+
+        public static PlanetData MMSPlanetById(int planetId)
+        {
+            GalaxyData __instance = GameMain.galaxy;
+            PlanetData planet = GameMain.galaxy.PlanetById(planetId);
+            if(planet == null)
+            {
+                try
+                {
+                    int num = planetId / 100 - 1; // starIndex
+                    if (num < 0 || num >= __instance.stars.Length)
+                    {
+                        return null;
+                    }
+                    int num2 = planetId % 100 - 1; // planet index in star system
                     if (num2 >= __instance.stars[num].planets.Length)
                     {
-                        PlanetData planet = new PlanetData();
-                        planet.factory = null;
-                        for (int i = num * 100 + 1; i < planetId; i++) // 这里是为了，bottleneck会用工厂信息，随便找一个不是null的factory搪塞一下，防止他报错。反正后面大概也许把需要处理的数据还得都覆盖一遍
+                        if (__instance.stars[num] == null)
                         {
-                            int index = i - num * 100 - 1;
-                            if (index >= 0 && index < __instance.stars[num].planets.Length)
+                            return null;
+                        }
+
+                        if (num2 >= __instance.stars[num].planets.Length)
+                        {
+                            planet = new PlanetData();
+                            planet.factory = null;
+                            for (int i = num * 100 + 1; i < planetId; i++) // 这里是为了，bottleneck会用工厂信息，随便找一个不是null的factory搪塞一下，防止他报错。反正后面大概也许把需要处理的数据还得都覆盖一遍
                             {
-                                PlanetData pd = __instance.stars[num].planets[index];
-                                if (pd != null && pd.factory != null)
+                                int index = i - num * 100 - 1;
+                                if (index >= 0 && index < __instance.stars[num].planets.Length)
                                 {
-                                    planet.factory = pd.factory;
-                                    break;
+                                    PlanetData pd = __instance.stars[num].planets[index];
+                                    if (pd != null && pd.factory != null)
+                                    {
+                                        planet.factory = pd.factory;
+                                        break;
+                                    }
+                                }
+                                if (i == planetId - 1)
+                                {
+                                    Utils.Log("planetById Postfix found no factory to replace null, now returning new PlanetData() as result");
                                 }
                             }
-                            if (i == planetId - 1)
+                            if (planet.factory == null)
                             {
-                                Utils.Log("planetById Postfix found no factory to replace null, now returning new PlanetData() as result");
+                                for (int i = 0; i < GameMain.data.factories.Length && i < GameMain.data.factoryCount; i++)
+                                {
+                                    if (GameMain.data.factories[i] != null)
+                                        planet.factory = GameMain.data.factories[i];
+                                }
                             }
+                            planet.factoryIndex = GameMain.data.factories.Length + GameMain.galaxy.starCount - num - 1;
+                            planet.overrideName = Utils.MegaNameByType(MoreMegaStructure.StarMegaStructureType[num]) +
+                                                  " " +
+                                                  GameMain.galaxy.StarById(num + 1).displayName;
+                            return planet;
                         }
-                        if (planet.factory == null)
-                        {
-                            for (int i = 0; i < GameMain.data.factories.Length && i < GameMain.data.factoryCount; i++)
-                            {
-                                if (GameMain.data.factories[i] != null)
-                                    planet.factory = GameMain.data.factories[i];
-                            }
-                        }
-                        planet.factoryIndex = GameMain.data.factories.Length + GameMain.galaxy.starCount - num - 1;
-                        planet.overrideName = Utils.MegaNameByType(MoreMegaStructure.StarMegaStructureType[num]) +
-                                              " " +
-                                              GameMain.galaxy.StarById(num + 1).displayName;
-                        __result = planet;
-                        return;
                     }
                 }
+                catch (Exception)
+                {
+                    Utils.Log("Error in MoreMegaStructure PalnetByIdPostPatch.");
+                }
+
             }
-            catch (Exception)
-            {
-                Utils.Log("Error in MoreMegaStructure PalnetByIdPostPatch.");
-            }
+            return planet;
         }
 
         /// <summary>
@@ -314,7 +319,7 @@ namespace MoreMegaStructure
             }
             else
             {
-                __instance.AddFactoryStatGroup(__instance.gameData.galaxy.PlanetById(__instance.astroFilter).factoryIndex);
+                __instance.AddFactoryStatGroup(MMSPlanetById(__instance.astroFilter).factoryIndex);
             }
 
             int num = __instance.timeLevel + 1;
@@ -621,7 +626,74 @@ namespace MoreMegaStructure
         public static void OnInitPostPatch()
         {
             Utils.Log("after on init");
-        }*/
+        }
+
+        // 需要在调用PlanetId=指示巨构生产统计的虚空行星的时候返回一个factoryIndex正确的planetData，而非null，由于和GS不兼容，已废弃
+        //[HarmonyPostfix]
+        //[HarmonyPatch(typeof(GalaxyData), "PlanetById")]
+        //public static void PlanetByIdPostPatch(GalaxyData __instance, int planetId, ref PlanetData __result)
+        //{
+        //    if (__result != null) // 已经找到的planetData不拦截
+        //        return;
+        //    try
+        //    {
+        //        int num = planetId / 100 - 1; // starIndex
+        //        if (num < 0 || num >= __instance.stars.Length)
+        //        {
+        //            return;
+        //        }
+        //        int num2 = planetId % 100 - 1; // planet index in star system
+        //        if (num2 >= __instance.stars[num].planets.Length)
+        //        {
+        //            if (__instance.stars[num] == null)
+        //            {
+        //                return;
+        //            }
+
+        //            if (num2 >= __instance.stars[num].planets.Length)
+        //            {
+        //                PlanetData planet = new PlanetData();
+        //                planet.factory = null;
+        //                for (int i = num * 100 + 1; i < planetId; i++) // 这里是为了，bottleneck会用工厂信息，随便找一个不是null的factory搪塞一下，防止他报错。反正后面大概也许把需要处理的数据还得都覆盖一遍
+        //                {
+        //                    int index = i - num * 100 - 1;
+        //                    if (index >= 0 && index < __instance.stars[num].planets.Length)
+        //                    {
+        //                        PlanetData pd = __instance.stars[num].planets[index];
+        //                        if (pd != null && pd.factory != null)
+        //                        {
+        //                            planet.factory = pd.factory;
+        //                            break;
+        //                        }
+        //                    }
+        //                    if (i == planetId - 1)
+        //                    {
+        //                        Utils.Log("planetById Postfix found no factory to replace null, now returning new PlanetData() as result");
+        //                    }
+        //                }
+        //                if (planet.factory == null)
+        //                {
+        //                    for (int i = 0; i < GameMain.data.factories.Length && i < GameMain.data.factoryCount; i++)
+        //                    {
+        //                        if (GameMain.data.factories[i] != null)
+        //                            planet.factory = GameMain.data.factories[i];
+        //                    }
+        //                }
+        //                planet.factoryIndex = GameMain.data.factories.Length + GameMain.galaxy.starCount - num - 1;
+        //                planet.overrideName = Utils.MegaNameByType(MoreMegaStructure.StarMegaStructureType[num]) +
+        //                                      " " +
+        //                                      GameMain.galaxy.StarById(num + 1).displayName;
+        //                __result = planet;
+        //                return;
+        //            }
+        //        }
+        //    }
+        //    catch (Exception)
+        //    {
+        //        Utils.Log("Error in MoreMegaStructure PalnetByIdPostPatch.");
+        //    }
+        //}
+        */
 
     }
 }

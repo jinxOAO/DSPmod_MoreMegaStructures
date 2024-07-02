@@ -99,7 +99,7 @@ namespace MoreMegaStructure
                 GigaFactoryUIObj.transform.SetParent(parentTrans);
                 GigaFactoryUIObj.transform.localScale = new Vector3(1, 1, 1);
                 GigaFactoryUIObj.transform.localPosition = new Vector3(300, -DSPGame.globalOption.uiLayoutHeight + 190, 0);
-                GigaFactoryUIObj.SetActive(true);
+                GigaFactoryUIObj.SetActive(false);
 
                 // 显示/隐藏按钮
                 GameObject addNewLayerButton = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Dyson Sphere Editor/Dyson Editor Control Panel/hierarchy/layers/buttons-group/buttons/add-button");
@@ -373,7 +373,7 @@ namespace MoreMegaStructure
                     specializeObj.transform.localPosition = new Vector3(400, -DSPGame.globalOption.uiLayoutHeight + 190, 0);
                 }
 
-                specializeObj.SetActive(true);
+                specializeObj.SetActive(false);
                 GameObject specMainTitleObj = GameObject.Instantiate(GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Assembler Window/produce/circle-back/cnt-text"), specializeObj.transform);
                 specMainTitleObj.name = "mainTitle";
                 specMainTitleObj.transform.localPosition = new Vector3(0, 40, 0);

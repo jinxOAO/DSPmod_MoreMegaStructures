@@ -9,6 +9,7 @@ namespace MoreMegaStructure
         internal static readonly Dictionary<int,int> ProductId2MegaType = new Dictionary<int,int>();
         public static Dictionary<int,int> RRId2OreId = new Dictionary<int,int>();
         public static Dictionary<int, int> MDOreModeFactor = new Dictionary<int,int>();
+        public static Dictionary<int, long> productHeat = new Dictionary<int, long>();
 
         internal static void InitRawData()
         {
@@ -16,6 +17,7 @@ namespace MoreMegaStructure
             ProductId2MegaType.Add(1208, 0);
             
             ProductId2MegaType.Add(1101, 1);
+            ProductId2MegaType.Add(1102, 1);
             ProductId2MegaType.Add(1104, 1);
             ProductId2MegaType.Add(1105, 1);
             ProductId2MegaType.Add(1106, 1);
@@ -37,6 +39,7 @@ namespace MoreMegaStructure
             RRId2OreId.Add(9496, 1004);
             RRId2OreId.Add(9497, 1016);
             RRId2OreId.Add(9501, 1006);
+            RRId2OreId.Add(2208, 0);
 
             MDOreModeFactor.Add(1001, 1);
             MDOreModeFactor.Add(1002, 1);
@@ -44,6 +47,23 @@ namespace MoreMegaStructure
             MDOreModeFactor.Add(1004, 2);
             MDOreModeFactor.Add(1006, 2);
 
+            productHeat.Add(1101, 6000000);
+            productHeat.Add(1102, 6000000);
+            productHeat.Add(1104, 6000000);
+            productHeat.Add(1105, 12000000);
+            productHeat.Add(1106, 12000000);
+            productHeat.Add(1109, 12000000);
+
+
+            productHeat.Add(1001, 5000000);
+            productHeat.Add(1002, 5000000);
+            productHeat.Add(1003, 5000000);
+            productHeat.Add(1004, 5000000);
+            productHeat.Add(1006, 5000000);
+            productHeat.Add(1016, 6000000); // 单极磁石
+
+            productHeat.Add(1126, 120000000);
+            productHeat.Add(1014, 12000000);
         }
 
 
@@ -121,15 +141,20 @@ namespace MoreMegaStructure
                     ItemProto itemProto4 = LDB.items.Select((int)entityPool[objectId].protoId);
                     if (itemProto4 != null)
                     {
-                        if (__instance.mode0 > 0 && __instance.mode0 != powerSystem.genPool[powerGenId].productId && __instance.mode0 != itemProto4.prefabDesc.powerProductId)
+                        if (__instance.mode0 > 0 && __instance.mode0 != powerSystem.genPool[powerGenId].productId && __instance.mode0 != itemProto4.prefabDesc.powerProductId && productHeat.ContainsKey(__instance.mode0))
                         {
-                            if (ReceiverPatchers.RRId2OreId.ContainsKey(itemProto4.ID) && __instance.mode0 == ReceiverPatchers.RRId2OreId[itemProto4.ID])
-                            {
-                                factory.TakeBackItemsInEntity(mainPlayer, objectId);
-                                powerSystem.genPool[powerGenId].productId = __instance.mode0;
-                                __result = true;
-                                return;
-                            }
+                            //if (ReceiverPatchers.RRId2OreId.ContainsKey(itemProto4.ID) && __instance.mode0 == ReceiverPatchers.RRId2OreId[itemProto4.ID])
+                            //{
+                            //    factory.TakeBackItemsInEntity(mainPlayer, objectId);
+                            //    powerSystem.genPool[powerGenId].productId = __instance.mode0;
+                            //    __result = true;
+                            //    return;
+                            //}
+                            factory.TakeBackItemsInEntity(mainPlayer, objectId);
+                            powerSystem.genPool[powerGenId].productId = __instance.mode0;
+                            powerSystem.genPool[powerGenId].productHeat = productHeat[__instance.mode0];
+                            __result = true;
+                            return;
                         }
                         // 此处可以限制mode0==0禁止复制到非原始接收器上，但是不写了，保留这种操作，目前未发现会产生bug
                     }
@@ -170,18 +195,20 @@ namespace MoreMegaStructure
                 {
                     if (powerSystem.genPool[powerGenId].gamma && parameters != null && parameters.Length >= 1)
                     {
-                        if (parameters[0] > 0 && parameters[0] != powerSystem.genPool[powerGenId].productId && ReceiverPatchers.RRId2OreId.ContainsKey(itemProto.ID) && parameters[0] == ReceiverPatchers.RRId2OreId[itemProto.ID] && history.ItemUnlocked(parameters[0]))
+                        if (parameters[0] > 0 && parameters[0] != powerSystem.genPool[powerGenId].productId && history.ItemUnlocked(parameters[0]))
                         {
                             powerSystem.genPool[powerGenId].productId = parameters[0];
+                            powerSystem.genPool[powerGenId].productHeat = productHeat[parameters[0]];
                         }
-                        else if (parameters[0] == 0 && parameters[0] != powerSystem.genPool[powerGenId].productId && itemProto.ID != 2208) // 不同的
-                        {
-                            powerSystem.genPool[powerGenId].productId = prefabDesc.powerProductId;
-                        }
+                        //else if (parameters[0] == 0 && parameters[0] != powerSystem.genPool[powerGenId].productId && itemProto.ID != 2208) // 不同的
+                        //{
+                        //    powerSystem.genPool[powerGenId].productId = prefabDesc.powerProductId;
+                        //}
                     }
-                    else if (powerSystem.genPool[powerGenId].gamma && parameters == null) // 不从任何现有建筑Shift过来建造的时候（即建造一个全新的建筑时），prarmeters是null，让其自动设置为物质合成模式
+                    else if (powerSystem.genPool[powerGenId].gamma && parameters == null) // 不从任何现有建筑Shift过来建造的时候（即建造一个全新的建筑时），prarmeters是null，让其自动设置为物质合成模式。
                     {
-                        powerSystem.genPool[powerGenId].productId = prefabDesc.powerProductId;
+                        // 因为将要将所有新的接收器删除，功能由游戏原本的接收器替代，因此已弃用。
+                        //powerSystem.genPool[powerGenId].productId = prefabDesc.powerProductId;
                     }
                 }
             }
