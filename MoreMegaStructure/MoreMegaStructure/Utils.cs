@@ -1,9 +1,10 @@
 ﻿using NGPT;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace MoreMegaStructure
 {
-    internal static class Utils
+    public static class Utils
     {
         private static readonly System.Random RandSeed = new System.Random();
         public static string _textColorVanillaBlue = "<color=\"#61D8FFc0\">{1}</color>";
@@ -173,6 +174,20 @@ namespace MoreMegaStructure
                 return max;
             else return ori;
         }
+        //public static bool RebindButtonOnClick(this GameObject go, UnityEngine.Events.UnityAction call)
+        //{
+        //    if (go == null)
+        //        return false;
+        //    Button button = go.GetComponent<Button>();
+        //    if (button == null)
+        //        return false;
+        //    GameObject.DestroyImmediate(button);
+
+        //    Button button2 = go.AddComponent<Button>();
+        //    button2.onClick.AddListener(call);
+        //    go.GetComponent<UIButton>().button = button2;
+        //    return true;
+        //}
     }
 
 }

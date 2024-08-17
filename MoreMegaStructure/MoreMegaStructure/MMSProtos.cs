@@ -4,7 +4,6 @@ using xiaoye97;
 using CommonAPI.Systems;
 using CommonAPI.Systems.ModLocalization;
 using UnityEngine;
-//using BuildMenuTool;
 
 // ReSharper disable once InconsistentNaming
 
@@ -655,6 +654,8 @@ namespace MoreMegaStructure
                 //LDBTool.SetBuildBar(13, 6, 9498);
                 LDBTool.SetBuildBar(6, 9, 9512);
                 //LDBTool.SetBuildBar(4, 4, 9499);
+
+
             }
         }
 
@@ -1197,11 +1198,6 @@ namespace MoreMegaStructure
             //Exchanger.makes = new List<RecipeProto> { ExchangerRecipe };
             Traverse.Create(Exchanger).Field("_iconSprite").SetValue(Resources.Load<Sprite>("Assets/MegaStructureTab/exchangeLS"));
 
-            //ReceiverIron.BuildIndex = 221;
-            //ReceiverCoal.BuildIndex = 222;
-            //Exchanger.BuildIndex = 127;
-            //ReceiverCopper.BuildIndex = 224;
-
             LDBTool.PostAddProto(ReceiverIron);
             LDBTool.PostAddProto(ReceiverIronRecipe);
             LDBTool.PostAddProto(ReceiverCopper);
@@ -1222,8 +1218,6 @@ namespace MoreMegaStructure
             LDBTool.PostAddProto(ReceiverGratingRecipe);
             LDBTool.PostAddProto(Exchanger);
             LDBTool.PostAddProto(ExchangerRecipe);
-            //Exchanger.BindBuildBar(102, 2);
-
         }
 
         public class StringProto
@@ -1632,6 +1626,7 @@ namespace MoreMegaStructure
             LocalizationModule.RegisterTranslation("恒星炮充能中警告", "Unable to fire because the star cannon is charging.", "恒星炮正在充能中，无法开火！", "");
             LocalizationModule.RegisterTranslation("目标无法定位警告", "Unable to locate any targets! Please check if this star system has surviving DF hive.", "无法定位任何目标！请确认该星系有存活的黑雾巢穴。", "");
             LocalizationModule.RegisterTranslation("恒星炮不能向自身所在星系开火！", "Star cannon cannot fire at its own star system!", "恒星炮无法向自身所在星系开火！", "");
+            LocalizationModule.RegisterTranslation("无法更改目标星系警告", "Unable to change the target star system when firing.", "恒星炮正在开火时无法更换目标星系！", "");
             LocalizationModule.RegisterTranslation("恒星级武器检测警告", "Star level weapon activation detected!", "检测到恒星级武器启动！", "");
             LocalizationModule.RegisterTranslation("尼科尔戴森光束", "Nicoll-Dyson beam", "尼科尔-戴森光束","");
             LocalizationModule.RegisterTranslation("尼科尔戴森光束描述", "Decoding a method to guide stellar energy from dark fog matrix, then use it to attack space dark fog hive.\nAfter built the star cannon, select a star system or a space dark fog hive in starmap mode, then launch the star cannon.\n<color=#FD965ECC>Warning:</color> This technology has been prohibited by the COSMO Technology Ethics Committee. <color=#FD965ECC>Please initiate such research manually.</color>", "从黑雾矩阵中解码引导恒星级能量的方法，并利用其攻击太空黑雾巢穴。\n建造恒星炮后，在星图模式中选择一个恒星系或太空黑雾巢穴进行开火。\n<color=#FD965ECC>警告：</color>该科技的相关技术已被COSMO技术伦理委员会禁用，<color=#FD965ECC>请手动研究。</color>","");

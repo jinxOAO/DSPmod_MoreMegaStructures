@@ -789,9 +789,26 @@ namespace MoreMegaStructure
                                 spaceSector.skillSystem.DamageObject((int)(damagePerTick * ratio), damageSlice, ref target, ref caster);
                             }
                         }
+                        // 为了让星图模式也显示恒星到敌人的攻击的激光，当玩家查看星图时，设置激光
+                        if (UIGame.viewMode == EViewMode.Starmap && UIRoot.instance.uiGame.starmap.viewStarSystem == GameMain.galaxy.StarById(currentTargetStarIndex + 1)) 
+                        {
+                            DysonSwarm swarm = GameMain.data.dysonSpheres[currentTargetStarIndex]?.swarm;
+                            if(swarm != null)
+                            {
+                                int bulletIndex = swarm.AddBullet(new SailBullet
+                                {
+                                    maxt = 0.3f,
+                                    lBegin = Vector3.zero,
+                                    uEndVel = ((Vector3)enemyUPos - centerStarUPos)*3,
+                                    uBegin = centerStarUPos,
+                                    uEnd = enemyUPos,
+                                }, 0);
+                                swarm.bulletPool[bulletIndex].state = 0;
+                            }
+                        }
                     }
 
-                    // 为了让星图模式也显示激光，用深空来敌老套路创建太阳帆发射轨迹
+                    // 为了让星图模式也显示恒星到恒星的激光激光，用深空来敌老套路创建太阳帆发射轨迹
                     StarData starData = __instance.starData;
                     int nearPoint = 400000;
                     if (__instance.starData.type == EStarType.GiantStar)
