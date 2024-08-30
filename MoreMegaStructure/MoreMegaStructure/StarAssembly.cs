@@ -774,7 +774,7 @@ namespace MoreMegaStructure
                                     if (productStorageInc[starIndex][returnItemId] > 4 * productStorage[starIndex][returnItemId])
                                         productStorageInc[starIndex][returnItemId] = 4 * productStorage[starIndex][returnItemId];
                                 }
-                                if(overReturned <= 0) 
+                                if(overReturned <= 0 && consumeRegister != null) 
                                 {
                                     int[] obj = consumeRegister;
                                     lock (obj)
@@ -782,7 +782,7 @@ namespace MoreMegaStructure
                                         consumeRegister[returnItemId] -= returnCount;
                                     }
                                 }
-                                else // 返还的比消耗的还多，多出的视为生产
+                                else if (consumeRegister != null && productRegister != null) // 返还的比消耗的还多，多出的视为生产
                                 {
                                     int[] obj = consumeRegister;
                                     lock (obj)
@@ -824,10 +824,13 @@ namespace MoreMegaStructure
                                         if (productStorageInc[starIndex][returnItemId] > 4 * productStorage[starIndex][returnItemId])
                                             productStorageInc[starIndex][returnItemId] = 4 * productStorage[starIndex][returnItemId];
                                     }
-                                    int[] obj = consumeRegister;
-                                    lock (obj)
+                                    if (consumeRegister != null)
                                     {
-                                        consumeRegister[returnItemId] -= 2;
+                                        int[] obj = consumeRegister;
+                                        lock (obj)
+                                        {
+                                            consumeRegister[returnItemId] -= 2;
+                                        }
                                     }
                                 }
                             }

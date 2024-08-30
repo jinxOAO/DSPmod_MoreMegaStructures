@@ -180,7 +180,7 @@ namespace MoreMegaStructure
         public static int[] GetStarCannonProperties(DysonSphere sphere)
         {
             if (sphere == null)
-                return new int[] { -1, -1, -1, -1, -1, -1 };
+                return new int[] { -1, -1, -1, -1, -1, -1, -1};
 
 			long cannonEnergy = sphere.energyGenCurrentTick - sphere.energyReqCurrentTick;
 			if (cannonEnergy < 0) cannonEnergy = 0;
