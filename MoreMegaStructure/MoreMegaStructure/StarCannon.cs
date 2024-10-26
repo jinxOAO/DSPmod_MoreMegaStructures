@@ -889,6 +889,8 @@ namespace MoreMegaStructure
 
             // 状态计时结算与转换
             time += 1;
+            if (time < -cooldownTimeNeed - chargingTimeNeed)
+                time = -cooldownTimeNeed - chargingTimeNeed;
             if (state == EStarCannonState.Align && time >= endAimTime * 0.98f)
             {
                 state = EStarCannonState.Heat;

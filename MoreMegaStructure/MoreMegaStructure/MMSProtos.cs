@@ -372,6 +372,9 @@ namespace MoreMegaStructure
 
             //快速组装配方
             var oriRecipe5 = LDB.recipes.Select(47);
+            //var oriRecipe5 = oriRecipe5_ori.Copy();
+            if (MoreMegaStructure.GenesisCompatibility)
+                oriRecipe5.Type = (ERecipeType)10;
             //传送带 快速组装
             var quickBeltRecipe = oriRecipe5.Copy();
             quickBeltRecipe.ID = recipeIdBias + 551;
@@ -465,9 +468,9 @@ namespace MoreMegaStructure
             quickRefineryRecipe.Description = "快速组装描述";
             quickRefineryRecipe.description = "快速组装描述".Translate();
             quickRefineryRecipe.Items = new int[] { 9500 };
-            quickRefineryRecipe.ItemCounts = new int[] { 1 };
-            quickRefineryRecipe.Results = new int[] { 2308 };
-            quickRefineryRecipe.ResultCounts = new int[] { 2 };
+            quickRefineryRecipe.ItemCounts = new int[] { 2 };
+            quickRefineryRecipe.Results = new int[] { 2307, 2308 };
+            quickRefineryRecipe.ResultCounts = new int[] { 1, 4 };
             quickRefineryRecipe.GridIndex = 407 + pagePlus;
             quickRefineryRecipe.TimeSpend = 6;
             Traverse.Create(quickRefineryRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconQuickRefinery);
@@ -545,6 +548,114 @@ namespace MoreMegaStructure
             quickILogRecipe.preTech = LDB.techs.Select(1605);
             Traverse.Create(quickILogRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconQuickILog);
 
+            // 集装分拣器快速组装 一直到362
+            var quickSorter4Recipe = oriRecipe5.Copy();
+            quickSorter4Recipe.ID = 352;
+            quickSorter4Recipe.Name = "集装分拣器 快速组装";
+            quickSorter4Recipe.name = "集装分拣器 快速组装".Translate();
+            quickSorter4Recipe.Description = "快速组装描述";
+            quickSorter4Recipe.description = "快速组装描述".Translate();
+            quickSorter4Recipe.Items = new int[] { 9500 };
+            quickSorter4Recipe.ItemCounts = new int[] { 1 };
+            quickSorter4Recipe.Results = new int[] { 2014 };
+            quickSorter4Recipe.ResultCounts = new int[] { 4 };
+            quickSorter4Recipe.GridIndex = 501 + pagePlus;
+            quickSorter4Recipe.TimeSpend = 6;
+            quickSorter4Recipe.preTech = LDB.techs.Select(1607);
+            if(MoreMegaStructure.GenesisCompatibility)
+                quickSorter4Recipe.preTech = LDB.techs.Select(1522);
+            Traverse.Create(quickSorter4Recipe).Field("_iconSprite").SetValue(Resources.Load<Sprite>("Assets/MegaStructureTab/Rsorter4"));
+
+            // 制造台4快速组装
+            var quickAssembly4Recipe = oriRecipe5.Copy();
+            quickAssembly4Recipe.ID = 353;
+            quickAssembly4Recipe.Name = "制造台4 快速组装";
+            quickAssembly4Recipe.name = "制造台4 快速组装".Translate();
+            quickAssembly4Recipe.Description = "快速组装描述";
+            quickAssembly4Recipe.description = "快速组装描述".Translate();
+            quickAssembly4Recipe.Items = new int[] { 9500 };
+            quickAssembly4Recipe.ItemCounts = new int[] { 2 };
+            quickAssembly4Recipe.Results = new int[] { 2318 };
+            quickAssembly4Recipe.ResultCounts = new int[] { 1 };
+            quickAssembly4Recipe.GridIndex = 502 + pagePlus;
+            quickAssembly4Recipe.TimeSpend = 6;
+            quickAssembly4Recipe.preTech = LDB.techs.Select(1902);
+            if (MoreMegaStructure.GenesisCompatibility)
+                quickAssembly4Recipe.preTech = LDB.techs.Select(1902);
+            Traverse.Create(quickAssembly4Recipe).Field("_iconSprite").SetValue(Resources.Load<Sprite>("Assets/MegaStructureTab/Rassembly4"));
+
+            // 熔炉3快速组装
+            var quickSmelter3Recipe = oriRecipe5.Copy();
+            quickSmelter3Recipe.ID = 354;
+            quickSmelter3Recipe.Name = "熔炉3 快速组装";
+            quickSmelter3Recipe.name = "熔炉3 快速组装".Translate();
+            quickSmelter3Recipe.Description = "快速组装描述";
+            quickSmelter3Recipe.description = "快速组装描述".Translate();
+            quickSmelter3Recipe.Items = new int[] { 9500 };
+            quickSmelter3Recipe.ItemCounts = new int[] { 2 };
+            quickSmelter3Recipe.Results = new int[] { 2319 };
+            quickSmelter3Recipe.ResultCounts = new int[] { 1 };
+            quickSmelter3Recipe.GridIndex = 503 + pagePlus;
+            quickSmelter3Recipe.TimeSpend = 6;
+            quickSmelter3Recipe.preTech = LDB.techs.Select(1903);
+            if (MoreMegaStructure.GenesisCompatibility)
+                quickSmelter3Recipe.preTech = LDB.techs.Select(1903);
+            Traverse.Create(quickSmelter3Recipe).Field("_iconSprite").SetValue(Resources.Load<Sprite>("Assets/MegaStructureTab/Rsmelter3"));
+
+            // 实验室2快速组装
+            var quickLab2Recipe = oriRecipe5.Copy();
+            quickLab2Recipe.ID = 355;
+            quickLab2Recipe.Name = "实验室2 快速组装";
+            quickLab2Recipe.name = "实验室2 快速组装".Translate();
+            quickLab2Recipe.Description = "快速组装描述";
+            quickLab2Recipe.description = "快速组装描述".Translate();
+            quickLab2Recipe.Items = new int[] { 9500 };
+            quickLab2Recipe.ItemCounts = new int[] { 1 };
+            quickLab2Recipe.Results = new int[] { 2902 };
+            quickLab2Recipe.ResultCounts = new int[] { 1 };
+            quickLab2Recipe.GridIndex = 504 + pagePlus;
+            quickLab2Recipe.TimeSpend = 6;
+            quickLab2Recipe.preTech = LDB.techs.Select(1901);
+            if (MoreMegaStructure.GenesisCompatibility)
+                quickLab2Recipe.preTech = LDB.techs.Select(1901);
+            Traverse.Create(quickLab2Recipe).Field("_iconSprite").SetValue(Resources.Load<Sprite>("Assets/MegaStructureTab/Rlab2"));
+
+            // 大矿机快速组装
+            var quickMiningRecipe = oriRecipe5.Copy();
+            quickMiningRecipe.ID = 356;
+            quickMiningRecipe.Name = "大矿机 快速组装";
+            quickMiningRecipe.name = "大矿机 快速组装".Translate();
+            quickMiningRecipe.Description = "快速组装描述";
+            quickMiningRecipe.description = "快速组装描述".Translate();
+            quickMiningRecipe.Items = new int[] { 9500 };
+            quickMiningRecipe.ItemCounts = new int[] { 2 };
+            quickMiningRecipe.Results = new int[] { 2316 };
+            quickMiningRecipe.ResultCounts = new int[] { 1 };
+            quickMiningRecipe.GridIndex = 505 + pagePlus;
+            quickMiningRecipe.TimeSpend = 6;
+            quickMiningRecipe.preTech = LDB.techs.Select(1304);
+            if (MoreMegaStructure.GenesisCompatibility)
+                quickMiningRecipe.preTech = LDB.techs.Select(1304);
+            Traverse.Create(quickMiningRecipe).Field("_iconSprite").SetValue(Resources.Load<Sprite>("Assets/MegaStructureTab/Rmining2"));
+
+            // 抽水泵快速组装
+            var quickPumpRecipe = oriRecipe5.Copy();
+            quickPumpRecipe.ID = 357;
+            quickPumpRecipe.Name = "抽水泵 快速组装";
+            quickPumpRecipe.name = "抽水泵 快速组装".Translate();
+            quickPumpRecipe.Description = "快速组装描述";
+            quickPumpRecipe.description = "快速组装描述".Translate();
+            quickPumpRecipe.Items = new int[] { 9500 };
+            quickPumpRecipe.ItemCounts = new int[] { 1 };
+            quickPumpRecipe.Results = new int[] { 2306 };
+            quickPumpRecipe.ResultCounts = new int[] { 5 };
+            quickPumpRecipe.GridIndex = 506 + pagePlus;
+            quickPumpRecipe.TimeSpend = 6;
+            quickPumpRecipe.preTech = LDB.techs.Select(1120);
+            if (MoreMegaStructure.GenesisCompatibility)
+                quickPumpRecipe.preTech = LDB.techs.Select(1120);
+            Traverse.Create(quickPumpRecipe).Field("_iconSprite").SetValue(Resources.Load<Sprite>("Assets/MegaStructureTab/Rpump"));
+
 
             if (MoreMegaStructure.GenesisCompatibility)
             {
@@ -574,6 +685,7 @@ namespace MoreMegaStructure
             LDB.items.Select(2317).recipes.Add(quickChemicalRecipe);
             LDB.items.Select(2212).recipes.Add(quickPowerRecipe);
             LDB.items.Select(2308).recipes.Add(quickRefineryRecipe);
+            LDB.items.Select(2307).recipes.Add(quickRefineryRecipe);
             LDB.items.Select(2310).recipes.Add(quickColliderRecipe);
             LDB.items.Select(2901).recipes.Add(quickLabRecipe);
             LDB.items.Select(2210).recipes.Add(quickReactorRecipe);
@@ -581,6 +693,12 @@ namespace MoreMegaStructure
             LDB.items.Select(5001).recipes.Add(quickPLogRecipe);
             LDB.items.Select(2104).recipes.Add(quickILogRecipe);
             LDB.items.Select(5002).recipes.Add(quickILogRecipe);
+            LDB.items.Select(2014).recipes.Add(quickSorter4Recipe);
+            LDB.items.Select(2318).recipes.Add(quickAssembly4Recipe);
+            LDB.items.Select(2319).recipes.Add(quickSmelter3Recipe);
+            LDB.items.Select(2902).recipes.Add(quickLab2Recipe);
+            LDB.items.Select(2316).recipes.Add(quickMiningRecipe);
+            LDB.items.Select(2306).recipes.Add(quickPumpRecipe);
 
             //LDBTool.PostAddProto(itemGravityGen);
             LDBTool.PreAddProto(itemGravityGenRecipe);
@@ -643,6 +761,13 @@ namespace MoreMegaStructure
             LDBTool.PostAddProto(quickRefineryRecipe);
             LDBTool.PostAddProto(quickSmelterRecipe);
             LDBTool.PostAddProto(quickSorterRecipe);
+            LDBTool.PostAddProto(quickSorter4Recipe);
+            LDBTool.PostAddProto(quickAssembly4Recipe);
+            LDBTool.PostAddProto(quickSmelter3Recipe);
+            LDBTool.PostAddProto(quickLab2Recipe);
+            LDBTool.PostAddProto(quickMiningRecipe);
+            LDBTool.PostAddProto(quickPumpRecipe);
+
 
             if (true)
             {
@@ -1548,6 +1673,7 @@ namespace MoreMegaStructure
             LocalizationModule.RegisterTranslation("无限制gm", "Infinite", "无限制", "");
 
             LocalizationModule.RegisterTranslation("警告巨构科技未解锁", "You must unlock the corresponding technology first", "你必须先解锁对应巨构的科技", "");
+            LocalizationModule.RegisterTranslation("游戏提示mms", "Message", "游戏提示", "");
 
             LocalizationModule.RegisterTranslation("力场发生器", "Force field generator", "力场发生器", "");
             LocalizationModule.RegisterTranslation(
@@ -1672,6 +1798,15 @@ namespace MoreMegaStructure
             LocalizationModule.RegisterTranslation("警告巨构不支持恒星系数量大于1000个",
                                                    "Warning! This MegaStructure does not support the galaxy with more than 1000 star systems.  Please find another star system with StarIndex lower than 1000",
                                                    "警告！此巨构不支持恒星系数量大于1000个！请寻找一个序号小于1000的恒星系。", "");
+            LocalizationModule.RegisterTranslation("警告mms",
+                                                   "Warning",
+                                                   "警告", "");
+            LocalizationModule.RegisterTranslation("我明白",
+                                                   "Understood",
+                                                   "我明白", "");
+            LocalizationModule.RegisterTranslation("警告未开启大于1000星系支持",
+                                                   "[MoreMegaStructure]: Warning! You are loading a save which has more than 100 stars, but you\nhaven't enabled the \"Support 1000 Stars\" configuration yet.\nPlease enable that configuration setting in config file \nor please load a save with less than 100 stars.\nOtherwise, errors or mistakes may occur.",
+                                                   "[更多巨构]：警告！你正在加载一个超过100星系的存档，\n但你尚未开启“支持1000星系”的配置项，请在config文件中开启“Support1000Stars”配置项\n或者加载一个少于100星系的存档，\n否则，游戏可能会出现报错或异常问题。", "");
             LocalizationModule.RegisterTranslation("警告选择了重复的配方", "Please don't select repeated recipes.", "请不要选择重复的配方。", "");
             LocalizationModule.RegisterTranslation("主产物巨构内部仓储", "Internal Storage (Primary Product)", "主产物内部仓储", "");
             LocalizationModule.RegisterTranslation("巨构内部仓储", "Internal Storage", "内部仓储", "");

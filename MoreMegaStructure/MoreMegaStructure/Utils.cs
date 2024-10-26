@@ -1,4 +1,6 @@
-﻿using NGPT;
+﻿using HarmonyLib;
+using NGPT;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,7 +11,7 @@ namespace MoreMegaStructure
         private static readonly System.Random RandSeed = new System.Random();
         public static string _textColorVanillaBlue = "<color=\"#61D8FFc0\">{1}</color>";
         public static string TextColorVanillaOrange = "<color=\"#FD965ECC\">{1}</color>";
-        
+
         public static VectorLF3 RandPosDelta()
         {
             return new VectorLF3(RandSeed.NextDouble() - 0.5, RandSeed.NextDouble() - 0.5, RandSeed.NextDouble() - 0.5);
@@ -23,7 +25,7 @@ namespace MoreMegaStructure
             //    return new VectorLF3(0, RandSeed.NextDouble() - 0.5, RandSeed.NextDouble() - 0.5);
             //else if (normal.x == 0 && normal.z == 0)
             //    return new VectorLF3(RandSeed.NextDouble() - 0.5, 0, RandSeed.NextDouble() - 0.5);
-           
+
             try
             {
                 return VectorLF3.Cross(normal, RandPosDelta()).normalized * (RandSeed.NextDouble() - 0.5);
@@ -40,7 +42,7 @@ namespace MoreMegaStructure
         }
 
         public static float RandF()
-        { 
+        {
             return (float)RandSeed.NextDouble();
         }
 
@@ -110,7 +112,7 @@ namespace MoreMegaStructure
             _this.totalCount = _totalCnt;
             _this.displayCount = _this.prevCount;
             ItemProto itemProto = LDB.items.Select(_itemId);
-            
+
             if (itemProto == null)
             {
                 _this._Close();
@@ -188,6 +190,8 @@ namespace MoreMegaStructure
         //    go.GetComponent<UIButton>().button = button2;
         //    return true;
         //}
+
+
     }
 
 }

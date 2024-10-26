@@ -96,6 +96,7 @@
     <Compile Include="RendererSphere.cs" />
     <Compile Include="StarAssembly.cs" />
     <Compile Include="StarCannon.cs" />
+    <Compile Include="UIDialogPatch.cs" />
     <Compile Include="UIMechaWindowPatcher.cs" />
     <Compile Include="UIPerformancePanelPatcher.cs" />
     <Compile Include="UIStarCannon.cs" />

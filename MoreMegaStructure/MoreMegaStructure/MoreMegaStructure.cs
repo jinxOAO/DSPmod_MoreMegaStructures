@@ -11,6 +11,7 @@ using CommonAPI.Systems;
 using CommonAPI.Systems.ModLocalization;
 using crecheng.DSPModSave;
 using HarmonyLib;
+using MonoMod.Cil;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -23,7 +24,7 @@ namespace MoreMegaStructure
     [BepInDependency(CommonAPIPlugin.GUID)]
     [BepInDependency(DSPModSavePlugin.MODGUID)]
     [CommonAPISubmoduleDependency(nameof(ProtoRegistry), nameof(TabSystem), nameof(LocalizationModule))]
-    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.5.7")]
+    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.5.9")]
     public class MoreMegaStructure : BaseUnityPlugin, IModCanSave
     {
         /// <summary>
@@ -300,6 +301,7 @@ namespace MoreMegaStructure
             Harmony.CreateAndPatchAll(typeof(UIMechaWindowPatcher));
             Harmony.CreateAndPatchAll(typeof(PerformanceMonitorPatcher));
             Harmony.CreateAndPatchAll(typeof(UIPerformancePanelPatcher));
+            Harmony.CreateAndPatchAll(typeof(UIDialogPatch));
 
             MMSProtos.ChangeReceiverRelatedStringProto();
             MMSProtos.AddTranslateUILabel();
@@ -2016,6 +2018,10 @@ namespace MoreMegaStructure
 
             // 放在最后
             UIStatisticsPatcher.Import(r);
+            if (GameMain.galaxy.starCount >= 100 && !Support1000Stars.Value)
+            {
+                UIMessageBox.Show("警告mms".Translate(), "警告未开启大于1000星系支持".Translate(), "我明白".Translate(), 1);
+            }
         }
 
         public void Export(BinaryWriter w)
