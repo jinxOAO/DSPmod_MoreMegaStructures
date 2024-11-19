@@ -633,6 +633,7 @@ namespace MoreMegaStructure
                     }
                 }
             }
+            AutoSprayInStation(starIndex, ref consumeRegister);
             // 生产进度计算
             for (int i = 1; i < maxSlotCount; i++)
             {
@@ -730,7 +731,7 @@ namespace MoreMegaStructure
                             for (int j = 0; j < products[starIndex][i].Count; j++)
                             {
                                 productStorage[starIndex][products[starIndex][i][j]] += minSatisfied * productCounts[starIndex][i][j];
-                                if (productStorage[starIndex][products[starIndex][i][j]] > 10000) productStorage[starIndex][products[starIndex][i][j]] = 10000;
+                                // if (productStorage[starIndex][products[starIndex][i][j]] > 10000) productStorage[starIndex][products[starIndex][i][j]] = 10000;
                                 // 恒星反应釜产物的增产点数储存 以及深空来敌女神泪效果
                                 if (curSpecType[starIndex] == 2 && specBuffLevel[starIndex][i] > 0 || r002ByTCFV > 0)
                                 {
@@ -763,7 +764,7 @@ namespace MoreMegaStructure
                                     productStorage[starIndex].Add(returnItemId, returnCount);
                                 else
                                     productStorage[starIndex][returnItemId] += returnCount;
-                                if (productStorage[starIndex][returnItemId] > 10000) productStorage[starIndex][returnItemId] = 10000;
+                                // if (productStorage[starIndex][returnItemId] > 10000) productStorage[starIndex][returnItemId] = 10000;
                                 if (minInc > 0) // 返还的输入原材料具有本次的增产等级
                                 {
                                     if (!productStorageInc[starIndex].ContainsKey(returnItemId))
@@ -813,7 +814,7 @@ namespace MoreMegaStructure
                                         productStorage[starIndex].Add(returnItemId, returnCount);
                                     else
                                         productStorage[starIndex][returnItemId] += returnCount;
-                                    if (productStorage[starIndex][returnItemId] > 10000) productStorage[starIndex][returnItemId] = 10000;
+                                    // if (productStorage[starIndex][returnItemId] > 10000) productStorage[starIndex][returnItemId] = 10000;
                                     if (minInc > 0) // 返还的输入原材料具有本次的增产等级
                                     {
                                         if (!productStorageInc[starIndex].ContainsKey(returnItemId))
@@ -853,7 +854,7 @@ namespace MoreMegaStructure
                                     for (int j = 0; j < products[starIndex][i].Count; j++)
                                     {
                                         productStorage[starIndex][products[starIndex][i][j]] += bonusProduct * productCounts[starIndex][i][j];
-                                        if (productStorage[starIndex][products[starIndex][i][j]] > 10000) productStorage[starIndex][products[starIndex][i][j]] = 10000;
+                                        // if (productStorage[starIndex][products[starIndex][i][j]] > 10000) productStorage[starIndex][products[starIndex][i][j]] = 10000;
                                         if (productRegister != null)
                                         {
                                             int[] obj = productRegister;
@@ -923,7 +924,100 @@ namespace MoreMegaStructure
             }
 
             SendProductToGround(starIndex);
-            
+            AutoSprayInStation(starIndex, ref consumeRegister);
+        }
+
+
+        public static void AutoSprayInStation(int starIndex, ref int[] consumeRegister)
+        {
+            int planetCount = GameMain.galaxy.stars[starIndex].planetCount;
+            for (int i = 0; i < planetCount; i++)
+            {
+                PlanetFactory factory = GameMain.galaxy.stars[starIndex].planets[i].factory;
+                if (factory != null)
+                {
+                    PlanetTransport transport = factory.transport;
+                    if (transport != null)
+                    {
+                        for (int j = 1; j < transport.stationCursor; j++)
+                        {
+                            StationComponent stationComponent = transport.stationPool[j];
+                            if (stationComponent == null) continue;
+                            int protoId = factory.entityPool[stationComponent.entityId].protoId;
+                            if (protoId != 9512) continue; // 只有物资交换建筑
+
+                            bool autoSpray = false; // 如果最后一个格子是增产剂，则自动喷涂
+                            int autoSprayLevel = 0; // 增产剂对应的增产登记
+                            int eachSprayCount = 1; // 每个增产剂可以喷多少个物品
+                            float consumeProb = 1; // 不足消耗一个增产剂时，喷涂每个物品消耗的几率
+                            int proliferatorId = stationComponent.storage[4].itemId;
+                            if (proliferatorId == 1141 || proliferatorId == 1142 || proliferatorId == 1143)
+                            {
+                                autoSpray = true;
+                                eachSprayCount = proliferatorId == 1143 ? 60 : proliferatorId == 1142 ? 24 : 12;
+                                autoSprayLevel = proliferatorId == 1143 ? 4 : proliferatorId == 1142 ? 2 : 1;
+                                eachSprayCount = (int)(eachSprayCount * (Cargo.incTableMilli[4] + 1));
+                                consumeProb = 1f / eachSprayCount;
+                            }
+                            for (int k = 0; k < 5; k++)
+                            {
+                                StationStore[] obj = stationComponent.storage;
+                                lock (obj)
+                                {
+                                    // 如果第五个位置是增产剂，则自动喷涂前四个位置
+                                    if (k != 4)
+                                    {
+                                        if (autoSpray && stationComponent.storage[4].count > 0)
+                                        {
+                                            int proliferatorCount = stationComponent.storage[4].count;
+                                            int itemCount = stationComponent.storage[k].count;
+                                            int alreadyHas = stationComponent.storage[k].inc;
+                                            if (alreadyHas < itemCount * autoSprayLevel)
+                                            {
+                                                int needIncPoints = itemCount * autoSprayLevel - alreadyHas;
+                                                int needProliferator = (int)(1.0f * needIncPoints / autoSprayLevel / eachSprayCount);
+                                                int needPointsLeft = needIncPoints - needProliferator * autoSprayLevel * eachSprayCount;
+                                                if (Utils.RandF() < (1f * needPointsLeft / autoSprayLevel) * consumeProb) // 不够整数消耗增产剂的部分按照几率消耗
+                                                    needProliferator++;
+
+                                                if (proliferatorCount >= needProliferator)
+                                                {
+                                                    stationComponent.storage[4].inc = (int)(1f * (proliferatorCount - needProliferator) / stationComponent.storage[4].count * stationComponent.storage[4].inc);
+                                                    stationComponent.storage[4].count = proliferatorCount - needProliferator;
+                                                    stationComponent.storage[k].inc = stationComponent.storage[k].inc + needIncPoints;
+                                                    if (consumeRegister != null)
+                                                    {
+                                                        int[] registerObj = consumeRegister;
+                                                        lock (registerObj)
+                                                        {
+                                                            consumeRegister[proliferatorId] += needProliferator;
+                                                        }
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    int realProliferatorConsume = stationComponent.storage[4].count;
+                                                    stationComponent.storage[k].inc = stationComponent.storage[k].inc + realProliferatorConsume * eachSprayCount * autoSprayLevel;
+                                                    stationComponent.storage[4].inc = 0;
+                                                    stationComponent.storage[4].count = 0;
+                                                    if (consumeRegister != null)
+                                                    {
+                                                        int[] registerObj = consumeRegister;
+                                                        lock (registerObj)
+                                                        {
+                                                            consumeRegister[proliferatorId] += realProliferatorConsume;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -1022,6 +1116,7 @@ namespace MoreMegaStructure
         /// <param name="starIndex"></param>
         public static void SendProductToGround(int starIndex)
         {
+            
             int planetCount = GameMain.galaxy.stars[starIndex].planetCount;
             for (int i = 0; i < planetCount; i++)
             {
@@ -1038,6 +1133,19 @@ namespace MoreMegaStructure
                             int protoId = factory.entityPool[stationComponent.entityId].protoId;
                             if (protoId != 9512) continue; // 只有物资交换建筑
 
+                            bool autoSpray = false; // 如果最后一个格子是增产剂，则自动喷涂
+                            int autoSprayLevel = 0; // 增产剂对应的增产登记
+                            int eachSprayCount = 1; // 每个增产剂可以喷多少个物品
+                            float consumeProb = 1; // 不足消耗一个增产剂时，喷涂每个物品消耗的几率
+                            int proliferatorId = stationComponent.storage[4].itemId;
+                            if (proliferatorId == 1141 || proliferatorId == 1142 || proliferatorId == 1143)
+                            {
+                                autoSpray = true;
+                                eachSprayCount = proliferatorId == 1143 ? 60 : proliferatorId == 1142 ? 24 : 12;
+                                autoSprayLevel = proliferatorId == 1143 ? 4 : proliferatorId == 1142 ? 2 : 1;
+                                eachSprayCount = (int)(eachSprayCount * (Cargo.incTableMilli[4] + 1));
+                                consumeProb = 1f / eachSprayCount;
+                            }
                             for (int k = 0; k < 5; k++)
                             {
                                 StationStore[] obj = stationComponent.storage;
@@ -1046,14 +1154,6 @@ namespace MoreMegaStructure
                                     int productId = stationComponent.storage[k].itemId;
                                     if (productStorage[starIndex].ContainsKey(productId) && productStorage[starIndex][productId] > 0)
                                     {
-                                        //if (productId == 9500)
-                                        //{
-                                        //    Utils.Log("Sending compo");
-                                        //}
-                                        //else
-                                        //{
-                                        //    Utils.Log("Sending others");
-                                        //}
                                         int waitingToSend = productStorage[starIndex][productId];
                                         if (stationComponent.storage[k].max - stationComponent.storage[k].count >= waitingToSend)
                                         {
@@ -1441,6 +1541,7 @@ namespace MoreMegaStructure
                     {
                         //incStr = $"<color=#FD965EE0>  +{extraProductRatio * 100} %</color>";
                         incStr = $"<color=#61D8FFC8>  +{extraProductRatio * 100} %</color>";
+                        incStr = string.Format("<color=#61D8FFC8>  +{0:N2} %</color>", extraProductRatio * 100);
                     }
 
                     if (productSpeedLimit[starIndex][i] > 0)

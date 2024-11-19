@@ -102,6 +102,7 @@
     <Compile Include="UIStarCannon.cs" />
     <Compile Include="UIBuildMenuPatcher.cs" />
     <Compile Include="UIReceiverPatchers.cs" />
+    <Compile Include="UIStationWindowPatcher.cs" />
     <Compile Include="UIStatisticsPatcher.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>

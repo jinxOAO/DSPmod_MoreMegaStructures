@@ -517,6 +517,12 @@ namespace MoreMegaStructure
             quickReactorRecipe.TimeSpend = 6;
             quickReactorRecipe.preTech = LDB.techs.Select(1144);
             Traverse.Create(quickReactorRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconQuickReactor);
+            if (MoreMegaStructure.GenesisCompatibility)
+            {
+                quickReactorRecipe.ItemCounts = new int[] { 20 };
+                quickReactorRecipe.Results = new int[] { 6261 };
+                Traverse.Create(quickReactorRecipe).Field("_iconSprite").SetValue(Resources.Load<Sprite>("Assets/MegaStructureTab/Rreactor2"));
+            }
             //行星内物流 快速组装
             var quickPLogRecipe = oriRecipe5.Copy();
             quickPLogRecipe.ID = 561;
@@ -652,14 +658,18 @@ namespace MoreMegaStructure
             quickPumpRecipe.GridIndex = 506 + pagePlus;
             quickPumpRecipe.TimeSpend = 6;
             quickPumpRecipe.preTech = LDB.techs.Select(1120);
-            if (MoreMegaStructure.GenesisCompatibility)
-                quickPumpRecipe.preTech = LDB.techs.Select(1120);
             Traverse.Create(quickPumpRecipe).Field("_iconSprite").SetValue(Resources.Load<Sprite>("Assets/MegaStructureTab/Rpump"));
+            if (MoreMegaStructure.GenesisCompatibility)
+            {
+                quickPumpRecipe.preTech = LDB.techs.Select(1304);
+                quickPumpRecipe.Results = new int[] { 6266 };
+                quickPumpRecipe.ResultCounts = new int[] { 1 };
+                Traverse.Create(quickPumpRecipe).Field("_iconSprite").SetValue(Resources.Load<Sprite>("Assets/MegaStructureTab/Rpump2"));
+            }
 
 
             if (MoreMegaStructure.GenesisCompatibility)
             {
-                quickReactorRecipe.preTech = LDB.techs.Select(1153);
                 quickPowerRecipe.GridIndex = 9999;
                 quickSmelterRecipe.GridIndex = 9999;
                 quickAssemblyRecipe.GridIndex = 9999;
@@ -1868,7 +1878,7 @@ namespace MoreMegaStructure
             LocalizationModule.RegisterTranslation("特化条件未满足", "Requirements not satisfied", "特化条件未满足", "");
             LocalizationModule.RegisterTranslation("应用到全部", "Apply to the whole planet", "应用到整个行星", "");
             LocalizationModule.RegisterTranslation("成功应用数量提示", "Successfully applied to {0} buildings.", "成功应用到{0}个建筑。", "");
-
+            LocalizationModule.RegisterTranslation("mms自动喷涂", "Auto Spray", "自动喷涂", "");
 
             LocalizationModule.RegisterTranslation("PF巨构", "MoreMegaStructure", "更多巨构", "");
             LocalizationModule.RegisterTranslation("PF巨构主要逻辑", "MainLogic (MMS)", "主要逻辑（巨构）", "");

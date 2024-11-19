@@ -24,7 +24,7 @@ namespace MoreMegaStructure
     [BepInDependency(CommonAPIPlugin.GUID)]
     [BepInDependency(DSPModSavePlugin.MODGUID)]
     [CommonAPISubmoduleDependency(nameof(ProtoRegistry), nameof(TabSystem), nameof(LocalizationModule))]
-    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.5.9")]
+    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.5.10")]
     public class MoreMegaStructure : BaseUnityPlugin, IModCanSave
     {
         /// <summary>
@@ -302,6 +302,7 @@ namespace MoreMegaStructure
             Harmony.CreateAndPatchAll(typeof(PerformanceMonitorPatcher));
             Harmony.CreateAndPatchAll(typeof(UIPerformancePanelPatcher));
             Harmony.CreateAndPatchAll(typeof(UIDialogPatch));
+            Harmony.CreateAndPatchAll(typeof(UIStationWindowPatcher));
 
             MMSProtos.ChangeReceiverRelatedStringProto();
             MMSProtos.AddTranslateUILabel();
@@ -340,6 +341,7 @@ namespace MoreMegaStructure
             UIReceiverPatchers.InitAll();
             if(UIBuildMenuPatcher.enabled) UIBuildMenuPatcher.InitAll();
             UIStarCannon.InitAll();
+            UIStationWindowPatcher.InitAll();
 
             if (isBattleActive)
             {
@@ -1119,7 +1121,8 @@ namespace MoreMegaStructure
             if (true)
             {
                 hashGenByAllSN *= 60;
-                int propertyGen = (int)(Math.Pow(hashGenByAllSN, 0.65) + 0.001 * hashGenByAllSN);
+                int propertyGen = (int)(Math.Pow(hashGenByAllSN, 0.65) + 0.001 * hashGenByAllSN * GameMain.data.gameDesc.propertyMultiplier);
+                
 
                 PropertyLogic p = GameMain.gameScenario?.propertyLogic;
                 if (p != null)

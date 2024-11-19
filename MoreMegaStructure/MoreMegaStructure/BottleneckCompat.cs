@@ -14,7 +14,8 @@ namespace MoreMegaStructure
 
         public void Awake()
         {
-            Harmony.CreateAndPatchAll(typeof(MMSBottleneckCompat));
+            if(UIStatisticsPatcher.enabled)
+                Harmony.CreateAndPatchAll(typeof(MMSBottleneckCompat));
         }
 
         [HarmonyPrefix]
