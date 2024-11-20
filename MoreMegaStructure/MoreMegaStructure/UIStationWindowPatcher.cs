@@ -44,6 +44,8 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(UIStationWindow), "_OnOpen")]
         public static void OnOpenPatch(ref UIStationWindow __instance)
         {
+            if (autoSprayActiveObj == null)
+                return;
             autoSprayActiveObj.transform.localPosition = new Vector3(35, -429, 0);
             RefreshAutoSprayText(ref __instance);
         }
