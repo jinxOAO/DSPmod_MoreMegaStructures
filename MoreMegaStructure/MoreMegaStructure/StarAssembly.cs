@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -18,7 +19,7 @@ namespace MoreMegaStructure
         public static List<int> curSpecType = new List<int>(); // 当前组装厂特化类型
         public static List<int> inProgressSpecType = new List<int>(); // 正处在特化进程中的类型
         public static List<int> satisfiedSpecType = new List<int>(); // 当前正满足要求的特化类型
-        public static List<List<int>> productSpeedLimit = new List<List<int>>(); // 手动限制最大生产速率
+        public static List<List<int>> productSpeedRequest = new List<List<int>>(); // 手动期望的（要求的）生产速率
 
         // 以下为不需要存档的数据，在载入时重置或者重新计算
         public static Dictionary<int, List<List<int>>> items = new Dictionary<int, List<List<int>>>(); // 存储recipe的原材料的Id
@@ -45,7 +46,8 @@ namespace MoreMegaStructure
         public static GameObject showHideButtonObj = null;
         public static Text showHideBtnText;
         public static GameObject showHideLimitButtonObj = null;
-        public static Text showHideLimitBtnText;
+        public static Text doubleAllBtnText;
+        public static Text halveAllBtnText;
 
         public static List<Image> recipeIcons = new List<Image>();
         public static List<Image> incIcons = new List<Image>();
@@ -115,17 +117,43 @@ namespace MoreMegaStructure
                 showHideButton.onClick.RemoveAllListeners();
                 showHideButton.onClick.AddListener(() => { ShowHideUI(); });
 
-                GameObject showHideLimitButtonObj = GameObject.Instantiate(addNewLayerButton, GigaFactoryUIObj.transform);
-                showHideLimitButtonObj.SetActive(true);
-                showHideLimitButtonObj.name = "show-hide"; //名字
-                showHideLimitButtonObj.transform.localPosition = new Vector3(280, -150, 0); //位置
-                showHideLimitButtonObj.GetComponent<RectTransform>().sizeDelta = new Vector2(200, 24); //按钮大小
-                showHideLimitBtnText = showHideLimitButtonObj.transform.Find("Text").gameObject.GetComponent<Text>();
-                showHideLimitBtnText.text = "配置最大生产速度限制".Translate();
-                Button showHideLimitButton = showHideLimitButtonObj.GetComponent<Button>();
-                showHideLimitButton.interactable = true;
-                showHideLimitButton.onClick.RemoveAllListeners();
-                showHideLimitButton.onClick.AddListener(() => { ShowHideLimitUI(); });
+                //GameObject showHideLimitButtonObj = GameObject.Instantiate(addNewLayerButton, GigaFactoryUIObj.transform);
+                //showHideLimitButtonObj.SetActive(true);
+                //showHideLimitButtonObj.name = "show-hide"; //名字
+                //showHideLimitButtonObj.transform.localPosition = new Vector3(280, -150, 0); //位置
+                //showHideLimitButtonObj.GetComponent<RectTransform>().sizeDelta = new Vector2(200, 24); //按钮大小
+                //showHideLimitBtnText = showHideLimitButtonObj.transform.Find("Text").gameObject.GetComponent<Text>();
+                //showHideLimitBtnText.text = "配置最大生产速度限制".Translate();
+                //Button showHideLimitButton = showHideLimitButtonObj.GetComponent<Button>();
+                //showHideLimitButton.interactable = true;
+                //showHideLimitButton.onClick.RemoveAllListeners();
+                //showHideLimitButton.onClick.AddListener(() => { RefreshLimitUI(); });
+
+                // 加倍全部速度预期 按钮
+                GameObject DoubleAllSpeedButtonObj = GameObject.Instantiate(addNewLayerButton, GigaFactoryUIObj.transform);
+                DoubleAllSpeedButtonObj.SetActive(true);
+                DoubleAllSpeedButtonObj.name = "double-all"; //名字
+                DoubleAllSpeedButtonObj.transform.localPosition = new Vector3(240, -150, 0); //位置
+                DoubleAllSpeedButtonObj.GetComponent<RectTransform>().sizeDelta = new Vector2(150, 24); //按钮大小
+                doubleAllBtnText = DoubleAllSpeedButtonObj.transform.Find("Text").gameObject.GetComponent<Text>();
+                doubleAllBtnText.text = "加倍所有速度设置".Translate();
+                Button DoubleAllSpeedButton = DoubleAllSpeedButtonObj.GetComponent<Button>();
+                DoubleAllSpeedButton.interactable = true;
+                DoubleAllSpeedButton.onClick.RemoveAllListeners();
+                DoubleAllSpeedButton.onClick.AddListener(() => { DoubleAllSpeedRequest(); });
+
+                // 加倍全部速度预期 按钮
+                GameObject HalveAllSpeedButtonObj = GameObject.Instantiate(addNewLayerButton, GigaFactoryUIObj.transform);
+                HalveAllSpeedButtonObj.SetActive(true);
+                HalveAllSpeedButtonObj.name = "halve-all"; //名字
+                HalveAllSpeedButtonObj.transform.localPosition = new Vector3(400, -150, 0); //位置
+                HalveAllSpeedButtonObj.GetComponent<RectTransform>().sizeDelta = new Vector2(150, 24); //按钮大小
+                halveAllBtnText = HalveAllSpeedButtonObj.transform.Find("Text").gameObject.GetComponent<Text>();
+                halveAllBtnText.text = "减半所有速度设置".Translate();
+                Button HalveAllSpeedButton = HalveAllSpeedButtonObj.GetComponent<Button>();
+                HalveAllSpeedButton.interactable = true;
+                HalveAllSpeedButton.onClick.RemoveAllListeners();
+                HalveAllSpeedButton.onClick.AddListener(() => { HalveAllSpeedRequest(); });
 
                 GameObject backObj = new GameObject("back");
                 backObj.transform.parent = GigaFactoryUIObj.transform;
@@ -195,6 +223,7 @@ namespace MoreMegaStructure
                     produceSpeedTxtObj.GetComponent<Text>().alignment = TextAnchor.LowerLeft;
                     produceSpeedTxtObj.GetComponent<Text>().supportRichText = true;
                     produceSpeedTxtObj.GetComponent<Text>().color = new Color(0.992f, 0.588f, 0.3686f, 0.8384f);
+                    produceSpeedTxtObj.GetComponent<Text>().lineSpacing = 0.7f;
                     speedTextObjs.Add(produceSpeedTxtObj);
 
                     GameObject incIconObj = GameObject.Instantiate(oriIncIconObj, slotObj.transform);
@@ -259,12 +288,12 @@ namespace MoreMegaStructure
                     spdLimitInputObj.GetComponent<InputField>().characterLimit = 9;
                     spdLimitInputObj.GetComponent<InputField>().onEndEdit.RemoveAllListeners();
                     string istr = i.ToString();
-                    spdLimitInputObj.GetComponent<InputField>().onEndEdit.AddListener((x) => { SetProductSpeedLimit(Convert.ToInt32(istr), x); });
+                    spdLimitInputObj.GetComponent<InputField>().onEndEdit.AddListener((x) => { SetProductSpeedRequest(Convert.ToInt32(istr), x); });
                     limitInputs.Add(spdLimitInputObj.GetComponent<InputField>());
+                    spdLimitInputObj.transform.Find("value-text").GetComponent<Text>().color = Color.white;
                     spdLimitObj.SetActive(false);
                     
 
-                    // 这里不能直接传入i，否则会导致所有的参数都变成了5，所以我该怎么写啊啊啊啊啊啊好麻烦
                     if (i == 0)
                     {
                         // circleButton.onClick.AddListener(() => { OnRecipeSelectClick(0); });
@@ -275,91 +304,91 @@ namespace MoreMegaStructure
                     {
                         circleButton.onClick.AddListener(() => { OnRecipeSelectClick(1); });
                         removeButton.onClick.AddListener(() => { OnRecipeRemoveClick(1); });
-                        slider.onValueChanged.AddListener((x) => { OnSliderValueChange(1, x); });
+                        //slider.onValueChanged.AddListener((x) => { OnSliderValueChange(1, x); });
                     }
                     else if (i == 2)
                     {
                         circleButton.onClick.AddListener(() => { OnRecipeSelectClick(2); });
                         removeButton.onClick.AddListener(() => { OnRecipeRemoveClick(2); });
-                        slider.onValueChanged.AddListener((x) => { OnSliderValueChange(2, x); });
+                        //slider.onValueChanged.AddListener((x) => { OnSliderValueChange(2, x); });
                     }
                     else if (i == 3)
                     {
                         circleButton.onClick.AddListener(() => { OnRecipeSelectClick(3); });
                         removeButton.onClick.AddListener(() => { OnRecipeRemoveClick(3); });
-                        slider.onValueChanged.AddListener((x) => { OnSliderValueChange(3, x); });
+                        //slider.onValueChanged.AddListener((x) => { OnSliderValueChange(3, x); });
                     }
                     else if (i == 4)
                     {
                         circleButton.onClick.AddListener(() => { OnRecipeSelectClick(4); });
                         removeButton.onClick.AddListener(() => { OnRecipeRemoveClick(4); });
-                        slider.onValueChanged.AddListener((x) => { OnSliderValueChange(4, x); });
+                        //slider.onValueChanged.AddListener((x) => { OnSliderValueChange(4, x); });
                     }
                     else if (i == 5)
                     {
                         circleButton.onClick.AddListener(() => { OnRecipeSelectClick(5); });
                         removeButton.onClick.AddListener(() => { OnRecipeRemoveClick(5); });
-                        slider.onValueChanged.AddListener((x) => { OnSliderValueChange(5, x); });
+                        //slider.onValueChanged.AddListener((x) => { OnSliderValueChange(5, x); });
                     }
                     else if (i == 6)
                     {
                         circleButton.onClick.AddListener(() => { OnRecipeSelectClick(6); });
                         removeButton.onClick.AddListener(() => { OnRecipeRemoveClick(6); });
-                        slider.onValueChanged.AddListener((x) => { OnSliderValueChange(6, x); });
+                        //slider.onValueChanged.AddListener((x) => { OnSliderValueChange(6, x); });
                     }
                     else if (i == 7)
                     {
                         circleButton.onClick.AddListener(() => { OnRecipeSelectClick(7); });
                         removeButton.onClick.AddListener(() => { OnRecipeRemoveClick(7); });
-                        slider.onValueChanged.AddListener((x) => { OnSliderValueChange(7, x); });
+                        //slider.onValueChanged.AddListener((x) => { OnSliderValueChange(7, x); });
                     }
                     else if (i == 8)
                     {
                         circleButton.onClick.AddListener(() => { OnRecipeSelectClick(8); });
                         removeButton.onClick.AddListener(() => { OnRecipeRemoveClick(8); });
-                        slider.onValueChanged.AddListener((x) => { OnSliderValueChange(8, x); });
+                        //slider.onValueChanged.AddListener((x) => { OnSliderValueChange(8, x); });
                     }
                     else if (i == 9)
                     {
                         circleButton.onClick.AddListener(() => { OnRecipeSelectClick(9); });
                         removeButton.onClick.AddListener(() => { OnRecipeRemoveClick(9); });
-                        slider.onValueChanged.AddListener((x) => { OnSliderValueChange(9, x); });
+                        //slider.onValueChanged.AddListener((x) => { OnSliderValueChange(9, x); });
                     }
                     else if (i == 10)
                     {
                         circleButton.onClick.AddListener(() => { OnRecipeSelectClick(10); });
                         removeButton.onClick.AddListener(() => { OnRecipeRemoveClick(10); });
-                        slider.onValueChanged.AddListener((x) => { OnSliderValueChange(10, x); });
+                        //slider.onValueChanged.AddListener((x) => { OnSliderValueChange(10, x); });
                     }
                     else if (i == 11)
                     {
                         circleButton.onClick.AddListener(() => { OnRecipeSelectClick(11); });
                         removeButton.onClick.AddListener(() => { OnRecipeRemoveClick(11); });
-                        slider.onValueChanged.AddListener((x) => { OnSliderValueChange(11, x); });
+                        //slider.onValueChanged.AddListener((x) => { OnSliderValueChange(11, x); });
                     }
                     else if (i == 12)
                     {
                         circleButton.onClick.AddListener(() => { OnRecipeSelectClick(12); });
                         removeButton.onClick.AddListener(() => { OnRecipeRemoveClick(12); });
-                        slider.onValueChanged.AddListener((x) => { OnSliderValueChange(12, x); });
+                        //slider.onValueChanged.AddListener((x) => { OnSliderValueChange(12, x); });
                     }
                     else if (i == 13)
                     {
                         circleButton.onClick.AddListener(() => { OnRecipeSelectClick(13); });
                         removeButton.onClick.AddListener(() => { OnRecipeRemoveClick(13); });
-                        slider.onValueChanged.AddListener((x) => { OnSliderValueChange(13, x); });
+                        //slider.onValueChanged.AddListener((x) => { OnSliderValueChange(13, x); });
                     }
                     else if (i == 14)
                     {
                         circleButton.onClick.AddListener(() => { OnRecipeSelectClick(14); });
                         removeButton.onClick.AddListener(() => { OnRecipeRemoveClick(14); });
-                        slider.onValueChanged.AddListener((x) => { OnSliderValueChange(14, x); });
+                        //slider.onValueChanged.AddListener((x) => { OnSliderValueChange(14, x); });
                     }
                     else if (i == 15)
                     {
                         circleButton.onClick.AddListener(() => { OnRecipeSelectClick(15); });
                         removeButton.onClick.AddListener(() => { OnRecipeRemoveClick(15); });
-                        slider.onValueChanged.AddListener((x) => { OnSliderValueChange(15, x); });
+                        //slider.onValueChanged.AddListener((x) => { OnSliderValueChange(15, x); });
                     }
                 }
 
@@ -443,7 +472,7 @@ namespace MoreMegaStructure
             weights = new List<List<double>>();
             progress = new List<List<double>>();
             incProgress = new List<List<double>>();
-            productSpeedLimit = new List<List<int>>();
+            productSpeedRequest = new List<List<int>>();
             specProgress = new List<int>();
             curSpecType = new List<int>();
             inProgressSpecType = new List<int>();
@@ -454,14 +483,14 @@ namespace MoreMegaStructure
                 weights.Add(new List<double> { 1 });
                 progress.Add(new List<double> { 0 });
                 incProgress.Add(new List<double> { 0 });
-                productSpeedLimit.Add(new List<int> { 0 });
+                productSpeedRequest.Add(new List<int> { 0 });
                 for (int i = 1; i < slotCount; i++)
                 {
                     recipeIds[starIndex].Add(0);
                     weights[starIndex].Add(0);
                     progress[starIndex].Add(0);
                     incProgress[starIndex].Add(0);
-                    productSpeedLimit[starIndex].Add(0);
+                    productSpeedRequest[starIndex].Add(0);
                 }
 
                 specProgress.Add(0);
@@ -481,7 +510,7 @@ namespace MoreMegaStructure
                     weights[i][j] = j == 0 ? 1 : 0;
                     progress[i][j] = 0;
                     incProgress[i][j] = 0;
-                    productSpeedLimit[i][j] = 0;
+                    productSpeedRequest[i][j] = 0;
                 }
             }
         }
@@ -634,12 +663,16 @@ namespace MoreMegaStructure
                 }
             }
             AutoSprayInStation(starIndex, ref consumeRegister);
+
+            double totalRedundantEnergy = 0; // 多余的能量被用于生产组件
+            long tickEnergy = GameMain.data.dysonSpheres[starIndex].energyGenCurrentTick - GameMain.data.dysonSpheres[starIndex].energyReqCurrentTick;
             // 生产进度计算
             for (int i = 1; i < maxSlotCount; i++)
             {
                 if (recipeIds[starIndex][i] > 0)
                 {
                     bool flag = false; // 是否能够继续生产，只有在所有产物都堆满的情况下停止生产
+                    bool stopDueToFullStorage = false;
                     for (int pd = 0; pd < products[starIndex][i].Count; pd++)
                     {
                         int productId = products[starIndex][i][pd];
@@ -656,13 +689,23 @@ namespace MoreMegaStructure
                     }
                     if (flag && timeSpend[starIndex][i] > 0)
                     {
-                        double prog = GetConsumeProduceSpeedRatio(starIndex, i);
+                        double redundantEnergy;
+                        double prog = GetConsumeProduceSpeedRatio(starIndex, i, out redundantEnergy);
+                        totalRedundantEnergy += redundantEnergy;
                         progress[starIndex][i] += prog;
+                    }
+                    else
+                    {
+                        // totalRedundantEnergy += (tickEnergy) * weights[starIndex][i]; // 如果有这项，会导致：产物堵住时，能量会转移到生产组件上
                     }
                 }
             }
             //Utils.Log("compo progress " +  progress[starIndex][0].ToString() + " + " + (energy * weights[starIndex][0] / MoreMegaStructure.multifunctionComponentHeat * (MoreMegaStructure.isRemoteReceiveingGear ? 0.1 : 1.0)).ToString());
-            progress[starIndex][0] += GetConsumeProduceSpeedRatio(starIndex, 0);
+            if(tickEnergy > 0)
+                weights[starIndex][0] = totalRedundantEnergy / tickEnergy;
+            else
+                weights[starIndex][0] = 0;
+            progress[starIndex][0] += GetConsumeProduceSpeedRatio(starIndex, 0, out _);
 
             // 生产进度填满，则立刻消耗原材料并根据消耗产出产物，存入巨构的产物暂存storage内
             for (int i = 1; i < maxSlotCount; i++)
@@ -731,7 +774,7 @@ namespace MoreMegaStructure
                             for (int j = 0; j < products[starIndex][i].Count; j++)
                             {
                                 productStorage[starIndex][products[starIndex][i][j]] += minSatisfied * productCounts[starIndex][i][j];
-                                // if (productStorage[starIndex][products[starIndex][i][j]] > 10000) productStorage[starIndex][products[starIndex][i][j]] = 10000;
+                                if (productStorage[starIndex][products[starIndex][i][j]] > 99999) productStorage[starIndex][products[starIndex][i][j]] = 99999;
                                 // 恒星反应釜产物的增产点数储存 以及深空来敌女神泪效果
                                 if (curSpecType[starIndex] == 2 && specBuffLevel[starIndex][i] > 0 || r002ByTCFV > 0)
                                 {
@@ -764,7 +807,7 @@ namespace MoreMegaStructure
                                     productStorage[starIndex].Add(returnItemId, returnCount);
                                 else
                                     productStorage[starIndex][returnItemId] += returnCount;
-                                // if (productStorage[starIndex][returnItemId] > 10000) productStorage[starIndex][returnItemId] = 10000;
+                                if (productStorage[starIndex][returnItemId] > 99999) productStorage[starIndex][returnItemId] = 99999;
                                 if (minInc > 0) // 返还的输入原材料具有本次的增产等级
                                 {
                                     if (!productStorageInc[starIndex].ContainsKey(returnItemId))
@@ -814,7 +857,7 @@ namespace MoreMegaStructure
                                         productStorage[starIndex].Add(returnItemId, returnCount);
                                     else
                                         productStorage[starIndex][returnItemId] += returnCount;
-                                    // if (productStorage[starIndex][returnItemId] > 10000) productStorage[starIndex][returnItemId] = 10000;
+                                    if (productStorage[starIndex][returnItemId] > 99999) productStorage[starIndex][returnItemId] = 99999;
                                     if (minInc > 0) // 返还的输入原材料具有本次的增产等级
                                     {
                                         if (!productStorageInc[starIndex].ContainsKey(returnItemId))
@@ -854,7 +897,7 @@ namespace MoreMegaStructure
                                     for (int j = 0; j < products[starIndex][i].Count; j++)
                                     {
                                         productStorage[starIndex][products[starIndex][i][j]] += bonusProduct * productCounts[starIndex][i][j];
-                                        // if (productStorage[starIndex][products[starIndex][i][j]] > 10000) productStorage[starIndex][products[starIndex][i][j]] = 10000;
+                                        if (productStorage[starIndex][products[starIndex][i][j]] > 99999) productStorage[starIndex][products[starIndex][i][j]] = 99999;
                                         if (productRegister != null)
                                         {
                                             int[] obj = productRegister;
@@ -1187,10 +1230,23 @@ namespace MoreMegaStructure
         }
 
         // 返回每帧理想的基础消耗产出系数：这是已被各种特化的加速效果加成过的结果，但还未被增产效果加成
-        public static double GetConsumeProduceSpeedRatio(int starIndex, int slotNum)
+        public static double GetConsumeProduceSpeedRatio(int starIndex, int slotNum, out double redundantEnergy)
         {
             long energy = GameMain.data.dysonSpheres[starIndex].energyGenCurrentTick - GameMain.data.dysonSpheres[starIndex].energyReqCurrentTick;
             double prog = energy * weights[starIndex][slotNum] / tickEnergyForFullSpeed / timeSpend[starIndex][slotNum];
+            redundantEnergy = 0;
+            if (slotNum != 0)
+            {
+                int mainProductCount = productCounts[starIndex][slotNum][0];
+                if (mainProductCount == 0)
+                    mainProductCount = 1;
+                double speedLimitProg = 1.0 * productSpeedRequest[starIndex][slotNum] / mainProductCount / 3600;
+                if (prog > speedLimitProg)
+                {
+                    redundantEnergy = energy * weights[starIndex][slotNum] * (prog - speedLimitProg) / prog; // 多余的能量
+                    prog = speedLimitProg;
+                }
+            }
             // 特化速度加成或其他影响
             if (specBuffLevel[starIndex][slotNum] > 0)
             {
@@ -1209,11 +1265,6 @@ namespace MoreMegaStructure
                     return 0;
                 else
                     return energy * weights[starIndex][0] / MoreMegaStructure.multifunctionComponentHeat * (MoreMegaStructure.isRemoteReceiveingGear ? 0.1 : 1.0);
-            }
-            if (productSpeedLimit[starIndex][slotNum] > 0 && slotNum != 0)
-            {
-                if (prog * 3600 * productCounts[starIndex][slotNum][0] > productSpeedLimit[starIndex][slotNum])
-                    prog = productSpeedLimit[starIndex][slotNum] * 1.0 / productCounts[starIndex][slotNum][0] / 3600;
             }
             return prog;
         }
@@ -1447,6 +1498,7 @@ namespace MoreMegaStructure
         public static void RefreshUI(bool forceShowUI = false)
         {
             if (MoreMegaStructure.curStar == null) return;
+            showingLimit = true;
             int starIndex = MoreMegaStructure.curStar.index;
             if (starIndex < 1000 && MoreMegaStructure.StarMegaStructureType[starIndex] == 4)
             {
@@ -1461,7 +1513,8 @@ namespace MoreMegaStructure
                 }
                 showHideButtonObj.SetActive(true);
                 showHideBtnText.text = "显示/隐藏星际组装厂配置".Translate();
-                showHideLimitBtnText.text = "配置最大生产速度限制".Translate();
+                doubleAllBtnText.text = "加倍所有速度设置".Translate();
+                halveAllBtnText.text = "减半所有速度设置".Translate();
                 lockSliderListener = true;
                 int maxSlotIndex = CalcMaxSlotIndex(GameMain.data.dysonSpheres[MoreMegaStructure.curStar.index]);
                 for (int i = 1; i < slotCount; i++)
@@ -1498,8 +1551,9 @@ namespace MoreMegaStructure
 
                 RefreshProduceSpeedContent();
                 RefreshStorageText();
-                RefreshSpecializeUI();
-                lockSliderListener = false;
+                RefreshSpecializeUI(); 
+                RefreshLimitInputUI();
+                lockSliderListener = false; 
 
             }
             else
@@ -1513,7 +1567,7 @@ namespace MoreMegaStructure
         public static void UIFrameUpdate(long timei)
         {
             RefreshStorageText();
-            if (timei % 60 == 0)
+            if (timei % 10 == 0)
             {
                 RefreshProduceSpeedContent();
                 RefreshUI();
@@ -1533,21 +1587,19 @@ namespace MoreMegaStructure
             {
                 if (recipeIds[starIndex][i] > 0 && i<= maxSlotIndex)
                 {
-                    double PPM = GetConsumeProduceSpeedRatio(starIndex, i) * 3600 * productCounts[starIndex][i][0];
-                    string value = PPM > 10 ? PPM.ToString("N0") : (PPM > 1 ? PPM.ToString("N1") : (PPM > 0 ? PPM.ToString("N2") : "0.00"));
+                    double PPM = GetConsumeProduceSpeedRatio(starIndex, i, out _) * 3600 * productCounts[starIndex][i][0];
                     string incStr = "";
                     double extraProductRatio = GetFullIncMilli(starIndex, i, currentStarIncs[i] > 10 ? 10 : currentStarIncs[i]);
                     if (extraProductRatio > 0)
                     {
-                        //incStr = $"<color=#FD965EE0>  +{extraProductRatio * 100} %</color>";
-                        incStr = $"<color=#61D8FFC8>  +{extraProductRatio * 100} %</color>";
-                        incStr = string.Format("<color=#61D8FFC8>  +{0:N2} %</color>", extraProductRatio * 100);
+                        incStr = string.Format("<color=#61D8FFC8>+{0:N2} %</color>\n", extraProductRatio * 100);
                     }
-
-                    if (productSpeedLimit[starIndex][i] > 0)
-                        produceSpeedTxts[i].text = "受限理论最大速度".Translate() + " " +  value + "/min" + incStr;
-                    else
-                        produceSpeedTxts[i].text = "理论最大速度".Translate() + " " + value + "/min" + incStr;
+                    PPM = PPM * (1 + extraProductRatio);
+                    string value = PPM > 10 ? PPM.ToString("N0") : (PPM > 1 ? PPM.ToString("N1") : (PPM > 0 ? PPM.ToString("N2") : "0.00"));
+                    //if (productSpeedRequest[starIndex][i] > 0)
+                    //    produceSpeedTxts[i].text = "理论最大速度".Translate() + " " +  value + "/min" + incStr; // produceSpeedTxts[i].text = "受限理论最大速度".Translate() + " " +  value + "/min" + incStr;
+                    //else
+                    produceSpeedTxts[i].text = incStr + "理论最大速度".Translate() + " " + value + "/min" ;
                     weightTxts[i].text = "能量分配".Translate() + " " + ((weights[starIndex][i] * 100)).ToString() + "%";
                 }
                 else
@@ -1561,7 +1613,7 @@ namespace MoreMegaStructure
             if (MoreMegaStructure.isRemoteReceiveingGear)
                 remoteTransportingStr = "已开启优先传输至机甲".Translate();
             produceSpeedTxts[0].text = "理论最大速度".Translate() + " " + value2 + "/min   " + remoteTransportingStr;
-            weightTxts[0].text = "剩余能量".Translate() + " " + ((weights[starIndex][0] * 100)).ToString() + "%";
+            weightTxts[0].text = "剩余能量".Translate() + " " + ((weights[starIndex][0] * 100)).ToString("N0") + "%";
 
             // 增产图标刷新
             for (int i = 1; i <slotCount; i++)
@@ -1691,14 +1743,10 @@ namespace MoreMegaStructure
             incProgress[starIndex][slotIndex] = 0;
             progress[starIndex][slotIndex] = 0;
             weights[starIndex][slotIndex] = 0;
-            productSpeedLimit[starIndex][slotIndex] = 0;
+            productSpeedRequest[starIndex][slotIndex] = 0;
             currentStarIncs[slotIndex] = 0;
             double total = 1;
-            for (int i = 1; i < slotCount; i++)
-            {
-                total -= weights[starIndex][i];
-            }
-            weights[starIndex][0] = total;
+            SetProductSpeedRequest(slotIndex, "0");
             RefreshUI();
         }
 
@@ -1750,7 +1798,7 @@ namespace MoreMegaStructure
             incProgress[starIndex][currentRecipeSlot] = 0;
             progress[starIndex][currentRecipeSlot] = 0;
             currentStarIncs[currentRecipeSlot] = 0;
-            productSpeedLimit[starIndex][currentRecipeSlot] = 0;
+            productSpeedRequest[starIndex][currentRecipeSlot] = 0;
             if (!recipe.productive) // 不能增产的配方，其incProgress标记为负数
                 incProgress[starIndex][currentRecipeSlot] = -1;
             if (!items.ContainsKey(starIndex))
@@ -1799,17 +1847,19 @@ namespace MoreMegaStructure
                     timeSpend[starIndex][i] *= recipeType1213TimeSpendRatio;
                 }
             }
+            SetProductSpeedRequest(currentRecipeSlot, "0");
             CheckSpecializeState(GameMain.data.dysonSpheres[starIndex]);
             RefreshUI();
         }
 
         /// <summary>
-        /// 调整能量分配滑动条
+        /// 调整能量分配滑动条，已弃用
         /// </summary>
         /// <param name="slotIndex"></param>
         /// <param name="sv"></param>
         public static void OnSliderValueChange(int slotIndex, float sv)
         {
+            return;
             if (MoreMegaStructure.curStar == null || lockSliderListener) return;
             int starIndex = MoreMegaStructure.curStar.index;
             weights[starIndex][slotIndex] = S2W(sliders[slotIndex].value);
@@ -1940,16 +1990,16 @@ namespace MoreMegaStructure
             }
         }
 
-        public static void ShowHideLimitUI()
+        public static void RefreshLimitInputUI()
         {
             if (GigaFactoryUIObj == null) return;
-            showingLimit = !showingLimit;
-            RefreshUI();
             int starIndex = MoreMegaStructure.curStar.index;
             for (int i = 1; i < slotCount; i++)
             {
-                limitInputs[i].text = productSpeedLimit[starIndex][i].ToString();
+                if (!limitInputs[i].isFocused)
+                    limitInputs[i].text = productSpeedRequest[starIndex][i].ToString();
             }
+
         }
 
         /// <summary>
@@ -1971,7 +2021,7 @@ namespace MoreMegaStructure
             return 4;
         }
 
-        public static void SetProductSpeedLimit(int index, string text)
+        public static void SetProductSpeedRequest(int index, string text)
         {
             if (MoreMegaStructure.curStar == null)
                 return;
@@ -1979,19 +2029,80 @@ namespace MoreMegaStructure
             int value = 0;
             if (text.Length == 0 || text == "")
                 text = "0";
-            try
+            if (index > 0)
             {
-                value = Convert.ToInt32(text);
+                try
+                {
+                    value = Convert.ToInt32(text);
+                }
+                catch (Exception)
+                {
+                    value = 0;
+                }
+                if (value < 0)
+                    value = 0;
+                productSpeedRequest[starIndex][index] = value;
+                limitInputs[index].text = value.ToString();
             }
-            catch (Exception)
+            double sum = 0;
+            for (int i = 1; i < slotCount; i++)
             {
-                value = 0;
+                if (recipeIds[starIndex][i] > 0 && productCounts[starIndex][i][0] > 0)
+                {
+                    sum += 1.0 * productSpeedRequest[starIndex][i] / productCounts[starIndex][i][0] * timeSpend[starIndex][i];
+                }
             }
-            if (value < 0)
-                value = 0;
-            productSpeedLimit[starIndex][index] = value;
-            limitInputs[index].text = value.ToString();
+            for (int i = 1; i < slotCount; i++)
+            {
+                if (recipeIds[starIndex][i] > 0 && productCounts[starIndex][i][0] > 0 && sum > 0.000000001)
+                {
+                    weights[starIndex][i] = 1.0 * productSpeedRequest[starIndex][i] / productCounts[starIndex][i][0] * timeSpend[starIndex][i] / sum;
+                }
+                else
+                {
+                    weights[starIndex][i] = 0;
+                }
+            }
+            RefreshLimitInputUI();
+            RefreshProduceSpeedContent();
         }
+
+        public static void DoubleAllSpeedRequest()
+        {
+            int starIndex = MoreMegaStructure.curStar.index;
+            for (int i = 1; i < slotCount; i++)
+            {
+                if (recipeIds[starIndex][i] > 0)
+                {
+                    if (productSpeedRequest[starIndex][i] >= 499999999)
+                    {
+                        UIRealtimeTip.Popup(string.Format(("有过大数值警告".Translate()), LDB.recipes.Select(recipeIds[starIndex][i]).Name.Translate()));
+                        return;
+                    }
+                }
+            }
+            for (int i = 1; i < slotCount; i++)
+            {
+                if (recipeIds[starIndex][i] > 0)
+                {
+                    productSpeedRequest[starIndex][i] = productSpeedRequest[starIndex][i] * 2 < 0 ? 0 : productSpeedRequest[starIndex][i] * 2;
+                }
+            }
+            SetProductSpeedRequest(0, "");
+            RefreshUI();
+        }
+
+        public static void HalveAllSpeedRequest()
+        {
+            int starIndex = MoreMegaStructure.curStar.index;
+            for (int i = 1; i < slotCount; i++)
+            {
+                productSpeedRequest[starIndex][i] = productSpeedRequest[starIndex][i] / 2;
+            }
+            SetProductSpeedRequest(0, "");
+            RefreshUI();
+        }
+
 
         /// <summary>
         /// 根据是否线性调整能量分配比例，将SliderValue转变为Weights的数值
@@ -2094,7 +2205,7 @@ namespace MoreMegaStructure
                 {
                     for (int j = 0; j < slotCountInSave; j++)
                     {
-                        productSpeedLimit[i][j] = r.ReadInt32();
+                        productSpeedRequest[i][j] = r.ReadInt32();
                     }
                 }
             }
@@ -2141,7 +2252,7 @@ namespace MoreMegaStructure
             {
                 for (int j = 0; j < slotCount; j++)
                 {
-                    w.Write(productSpeedLimit[i][j]);
+                    w.Write(productSpeedRequest[i][j]);
                 }
             }
         }

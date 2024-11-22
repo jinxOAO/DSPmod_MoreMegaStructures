@@ -95,7 +95,7 @@ namespace MoreMegaStructure
                 calcIncLevel = ResearchTechHelper.GetMaxIncIndex();
                 for (int s = 1; s < maxSlot; s++)
                 {
-                    double cRatio = StarAssembly.GetConsumeProduceSpeedRatio(starIndex, s);
+                    double cRatio = StarAssembly.GetConsumeProduceSpeedRatio(starIndex, s, out _);
                     double pRatio; // 这个对于每个物品在显示时可能是不同的，因为玩家可能选择不计算增产模式或者计算增产加速模式
                     for (int i = 0; i < StarAssembly.items[starIndex][s].Count; i++)
                     {
@@ -135,7 +135,7 @@ namespace MoreMegaStructure
                                 incLevel = 0;
                         }
 
-                        pRatio = StarAssembly.GetConsumeProduceSpeedRatio(starIndex, s);
+                        pRatio = StarAssembly.GetConsumeProduceSpeedRatio(starIndex, s, out _);
                         pRatio = pRatio + StarAssembly.GetIncProduceSpeedRatio(pRatio, starIndex, s, incLevel);
 
                         if (BetterStats.counter.ContainsKey(itemId))
@@ -154,7 +154,7 @@ namespace MoreMegaStructure
                 }
 
                 // 特别地，集成组件
-                double icRatio = StarAssembly.GetConsumeProduceSpeedRatio(starIndex, 0);
+                double icRatio = StarAssembly.GetConsumeProduceSpeedRatio(starIndex, 0, out _);
                 if (BetterStats.counter.ContainsKey(9500))
                 {
                     if (isExactlyStarAssembly)

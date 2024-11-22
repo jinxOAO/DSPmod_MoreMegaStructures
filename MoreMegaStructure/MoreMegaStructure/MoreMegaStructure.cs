@@ -24,15 +24,15 @@ namespace MoreMegaStructure
     [BepInDependency(CommonAPIPlugin.GUID)]
     [BepInDependency(DSPModSavePlugin.MODGUID)]
     [CommonAPISubmoduleDependency(nameof(ProtoRegistry), nameof(TabSystem), nameof(LocalizationModule))]
-    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.5.11")]
+    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.6.0")]
     public class MoreMegaStructure : BaseUnityPlugin, IModCanSave
     {
         /// <summary>
         /// mod版本会进行存档
         /// </summary>
-        public static int modVersion = 135;
+        public static int modVersion = 160;
 
-        public static int savedModVersion = 135;
+        public static int savedModVersion = 160;
 
         public static bool CompatibilityPatchUnlocked = false;
 
@@ -2024,6 +2024,10 @@ namespace MoreMegaStructure
             if (GameMain.galaxy.starCount >= 100 && !Support1000Stars.Value)
             {
                 UIMessageBox.Show("警告mms".Translate(), "警告未开启大于1000星系支持".Translate(), "我明白".Translate(), 1);
+            }
+            if(savedModVersion < 160)
+            {
+                UIMessageBox.Show("警告mms".Translate(), "星际组装厂逻辑更新警告".Translate(), "我明白".Translate(), 1);
             }
         }
 
