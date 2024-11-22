@@ -665,12 +665,15 @@ namespace MoreMegaStructure
             AutoSprayInStation(starIndex, ref consumeRegister);
 
             double totalRedundantEnergy = 0; // 多余的能量被用于生产组件
+            bool allEnergyNotUsed = true; // 指示是否所有配方都没有分配速度，如果这样，redundantEnergy应该是组装厂的全部energy而不是0
             long tickEnergy = GameMain.data.dysonSpheres[starIndex].energyGenCurrentTick - GameMain.data.dysonSpheres[starIndex].energyReqCurrentTick;
             // 生产进度计算
             for (int i = 1; i < maxSlotCount; i++)
             {
                 if (recipeIds[starIndex][i] > 0)
                 {
+                    if (allEnergyNotUsed && weights[starIndex][i] > 0) // 如果有一个配方分配了能量，就不是“所有配方都没有分配速度”
+                        allEnergyNotUsed = false;
                     bool flag = false; // 是否能够继续生产，只有在所有产物都堆满的情况下停止生产
                     bool stopDueToFullStorage = false;
                     for (int pd = 0; pd < products[starIndex][i].Count; pd++)
@@ -701,7 +704,9 @@ namespace MoreMegaStructure
                 }
             }
             //Utils.Log("compo progress " +  progress[starIndex][0].ToString() + " + " + (energy * weights[starIndex][0] / MoreMegaStructure.multifunctionComponentHeat * (MoreMegaStructure.isRemoteReceiveingGear ? 0.1 : 1.0)).ToString());
-            if(tickEnergy > 0)
+            if (allEnergyNotUsed)
+                weights[starIndex][0] = 1;
+            else if(tickEnergy > 0)
                 weights[starIndex][0] = totalRedundantEnergy / tickEnergy;
             else
                 weights[starIndex][0] = 0;
@@ -1607,7 +1612,7 @@ namespace MoreMegaStructure
                     produceSpeedTxts[i].text = "";
                 }
             }
-            double PPM2 = (GameMain.data.dysonSpheres[starIndex].energyGenCurrentTick - GameMain.data.dysonSpheres[starIndex].energyReqCurrentTick) * weights[starIndex][0] / MoreMegaStructure.multifunctionComponentHeat * 3600;
+            double PPM2 = GetConsumeProduceSpeedRatio(starIndex, 0, out _) * 3600;
             string value2 = PPM2 > 10 ? PPM2.ToString("N0") : (PPM2 > 1 ? PPM2.ToString("N1") : (PPM2 > 0 ? PPM2.ToString("N2") : "0.00"));
             string remoteTransportingStr = "";
             if (MoreMegaStructure.isRemoteReceiveingGear)
