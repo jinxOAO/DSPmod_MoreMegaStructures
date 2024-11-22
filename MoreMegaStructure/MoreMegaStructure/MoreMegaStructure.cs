@@ -303,6 +303,8 @@ namespace MoreMegaStructure
             Harmony.CreateAndPatchAll(typeof(UIPerformancePanelPatcher));
             Harmony.CreateAndPatchAll(typeof(UIDialogPatch));
             Harmony.CreateAndPatchAll(typeof(UIStationWindowPatcher));
+            Harmony.CreateAndPatchAll(typeof(WarpArray));
+            Harmony.CreateAndPatchAll(typeof(UIWarpArray));
 
             MMSProtos.ChangeReceiverRelatedStringProto();
             MMSProtos.AddTranslateUILabel();
@@ -1240,47 +1242,47 @@ namespace MoreMegaStructure
             }
             else if (StarMegaStructureType[idx] == 3) //如果是折跃场广播阵列
             {
-                GameHistoryData history = GameMain.history;
+                //GameHistoryData history = GameMain.history;
 
-                int curTechLevel = 2;
+                //int curTechLevel = 2;
 
-                //TechProto techProto = LDB.techs.Select(3407);
-                try
-                {
-                    TechState ts = history.techStates[3407];
-                    curTechLevel = ts.curLevel > 2 ? ts.curLevel : 2;
-                }
-                catch (Exception)
-                {
-                    //Debug.LogWarning("No history techStates of 3407.");
-                }
+                ////TechProto techProto = LDB.techs.Select(3407);
+                //try
+                //{
+                //    TechState ts = history.techStates[3407];
+                //    curTechLevel = ts.curLevel > 2 ? ts.curLevel : 2;
+                //}
+                //catch (Exception)
+                //{
+                //    //Debug.LogWarning("No history techStates of 3407.");
+                //}
 
-                try
-                {
-                    if (__instance != null)
-                    {
-                        long DysonEnergy
-                            = (__instance.energyGenCurrentTick - __instance.energyReqCurrentTick) /
-                              WarpAccDivisor; //根据巨构的能量减去需求量，除以1000000后，如果再乘60，单位就是MW。现在除10^7也就是每60MW提供10%的额外曲速速度
-                        DysonEnergy = DysonEnergy > WarpAccMax ? WarpAccMax : DysonEnergy; //3TW为上限加成，即+250ly/s
-                        if (DysonEnergy <= 0) // 原来有|| __instance.energyGenCurrentTick_Layers <= 0，但是不需要了因为energyGenCurrentTick的计算方式已被我改了
-                        {
-                            history.logisticShipSpeedScale = 1f + (curTechLevel - 2) * 0.5f;
-                        }
-                        else
-                        {
-                            history.logisticShipSpeedScale = 1f + (curTechLevel - 2) * 0.5f + DysonEnergy;
-                        }
-                    }
-                    else
-                    {
-                        history.logisticShipSpeedScale = 1f + (curTechLevel - 2) * 0.5f;
-                    }
-                }
-                catch (Exception)
-                {
-                    //Debug.LogWarning("Error on RefreshShipSpeedScale");
-                }
+                //try
+                //{
+                //    if (__instance != null)
+                //    {
+                //        long DysonEnergy
+                //            = (__instance.energyGenCurrentTick - __instance.energyReqCurrentTick) /
+                //              WarpAccDivisor; //根据巨构的能量减去需求量，除以1000000后，如果再乘60，单位就是MW。现在除10^7也就是每60MW提供10%的额外曲速速度
+                //        DysonEnergy = DysonEnergy > WarpAccMax ? WarpAccMax : DysonEnergy; //3TW为上限加成，即+250ly/s
+                //        if (DysonEnergy <= 0) // 原来有|| __instance.energyGenCurrentTick_Layers <= 0，但是不需要了因为energyGenCurrentTick的计算方式已被我改了
+                //        {
+                //            history.logisticShipSpeedScale = 1f + (curTechLevel - 2) * 0.5f;
+                //        }
+                //        else
+                //        {
+                //            history.logisticShipSpeedScale = 1f + (curTechLevel - 2) * 0.5f + DysonEnergy;
+                //        }
+                //    }
+                //    else
+                //    {
+                //        history.logisticShipSpeedScale = 1f + (curTechLevel - 2) * 0.5f;
+                //    }
+                //}
+                //catch (Exception)
+                //{
+                //    //Debug.LogWarning("Error on RefreshShipSpeedScale");
+                //}
             }
             else if (StarMegaStructureType[idx] == 4) //如果是星际组装厂
             {
@@ -1758,10 +1760,10 @@ namespace MoreMegaStructure
 
                 if (type == 3 && WarpBuiltStarIndex >= 0)
                 {
-                    string systemName = GameMain.galaxy.stars[WarpBuiltStarIndex].displayName;
-                    //SetMegaStructureWarningText.text = "警告最多一个".Translate() + " " + systemName;
-                    UIRealtimeTip.Popup("警告最多一个".Translate() + " " + systemName);
-                    return;
+                    //string systemName = GameMain.galaxy.stars[WarpBuiltStarIndex].displayName;
+                    ////SetMegaStructureWarningText.text = "警告最多一个".Translate() + " " + systemName;
+                    //UIRealtimeTip.Popup("警告最多一个".Translate() + " " + systemName);
+                    //return;
                 }
 
                 if (type == 5 && curStar.type != EStarType.NeutronStar && curStar.type != EStarType.WhiteDwarf)
@@ -1865,10 +1867,11 @@ namespace MoreMegaStructure
         //查看折跃场广播阵列是否达到建造上限
         public static int CheckWarpArrayBuilt()
         {
-            for (int i = 0; i < 1000; i++)
-            {
-                if (StarMegaStructureType[i] == 3) return i;
-            }
+            WarpArray.UpdateSectorWarpArrays();
+            //for (int i = 0; i < 1000; i++)
+            //{
+            //    if (StarMegaStructureType[i] == 3) return i;
+            //}
 
             return -1;
         }
@@ -2018,6 +2021,8 @@ namespace MoreMegaStructure
             {
                 StarCannon.IntoOtherSave();
             }
+            WarpArray.Import(r);
+            UIWarpArray.Import(r);
 
             // 放在最后
             UIStatisticsPatcher.Import(r);
@@ -2044,6 +2049,8 @@ namespace MoreMegaStructure
 
             StarAssembly.Export(w);
             StarCannon.Export(w);
+            WarpArray.Export(w);
+            UIWarpArray.Export(w);
 
             // 放在最后
             UIStatisticsPatcher.Export(w);
@@ -2068,6 +2075,8 @@ namespace MoreMegaStructure
             //EffectRenderer.InitAll();
             UIBuildMenuPatcher.InitDataWhenLoad();
             StarCannon.IntoOtherSave();
+            WarpArray.IntoOtherSave();
+            UIWarpArray.IntoOtherSave();
 
             // 放在最后
             UIStatisticsPatcher.IntoOtherSave();
