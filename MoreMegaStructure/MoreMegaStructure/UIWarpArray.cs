@@ -47,15 +47,6 @@ namespace MoreMegaStructure
             {
                 arrayCircles = new List<GameObject>();
             }
-            else
-            {
-                for (int i = 0; i < arrayCircles.Count; i++)
-                {
-                    if (arrayCircles[i] != null)
-                        GameObject.Destroy(arrayCircles[i]);
-                }
-                arrayCircles.Clear();
-            }
         }
 
 
@@ -64,6 +55,9 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(UIStarmap), "_OnOpen")]
         public static void RefreshAndShowAll(ref UIStarmap __instance)
         {
+            if (MoreMegaStructure.HideWarpFieldUI.Value)
+                return;
+
             UIStarmap = __instance;
 
             int warpArrayCount = WarpArray.arrays.Count;
@@ -106,6 +100,9 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(UIStarmap), "_OnUpdate")]
         public static void RefreshUI(ref UIStarmap __instance)
         {
+            if (MoreMegaStructure.HideWarpFieldUI.Value)
+                return;
+
             Camera camera = __instance.screenCamera;
             for (int i = 0; i < WarpArray.arrays.Count; i++)
             {
@@ -136,8 +133,12 @@ namespace MoreMegaStructure
                             sizeOri = 1;
                         float scale = radiusInScreen / sizeOri;
                         circle.transform.localScale = new Vector3 (scale, scale, scale);
-
-                        circle.transform.localRotation = circle.transform.localRotation * Quaternion.AngleAxis(2.0f / ((float)radius / 40000 / 60), new Vector3(0, 0, 1));
+                        float rotateSpeed = 2 / ((float)radius / 40000 / 60);
+                        if (rotateSpeed < 0.1f)
+                            rotateSpeed = 0.1f;
+                        if(rotateSpeed > 2)
+                            rotateSpeed = 2;
+                        circle.transform.localRotation = circle.transform.localRotation * Quaternion.AngleAxis(rotateSpeed, new Vector3(0, 0, 1));
 
                         // 船通过变亮效果，已弃用
                         //float lighterFactor = 20.0f * WarpArray.arrays[i].activeCountThisFrame / (WarpArray.arrays[i].activeCountThisFrame + 10) + 1.0f;
@@ -162,8 +163,54 @@ namespace MoreMegaStructure
         此外，圆圈图片的边缘达到1080像素时，实际的sizedelta达到1100（是1.0185倍）
          */
 
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(UIStarmap), "UpdateCursorView")]
+        public static void UIStarmapUpdateCursorViewPatch(ref UIStarmap __instance)
+        {
+            int curStarIndex = -1;
+            if (__instance.mouseHoverPlanet != null)
+            {
+                curStarIndex = __instance.mouseHoverPlanet.planet.star.index;
+            }
+            if (__instance.mouseHoverStar != null)
+            {
+                curStarIndex = __instance.mouseHoverStar.star.index;
+            }
+            if (__instance.focusPlanet != null)
+            {
+                curStarIndex = __instance.focusPlanet.planet.star.index;
+            }
+            if (__instance.focusStar != null)
+            {
+                curStarIndex = __instance.focusStar.star.index;
+            }
 
-        
+            if (curStarIndex < 0)
+                return;
+
+            if(curStarIndex >= 0 && curStarIndex < WarpArray.starIsInWhichWarpArray.Length)
+            {
+                if (__instance.cursorViewText.text.Length > 5 && __instance.cursorViewText.text[__instance.cursorViewText.text.Length - 1] != ' ')
+                {
+                    if (WarpArray.starIsInWhichWarpArray[curStarIndex] >= 0)
+                    {
+                        int listIndex = WarpArray.starIsInWhichWarpArray[curStarIndex];
+                        int warpFieldStarIndex = WarpArray.arrays[WarpArray.starIsInWhichWarpArray[curStarIndex]].starIndex;
+                        double energyConsumptionReduction = 1.0 - WarpArray.tripEnergyCostRatioByStarIndex[curStarIndex];
+                        __instance.cursorViewText.text += "\n" + string.Format("折跃场已覆盖信息".Translate(), GameMain.galaxy.StarById(warpFieldStarIndex + 1).displayName, energyConsumptionReduction * 100);
+                    }
+                    else
+                    {
+                        __instance.cursorViewText.text += "\n" + string.Format("折跃场未覆盖信息".Translate());
+                    }
+                }
+            }
+
+            __instance.cursorViewTrans.sizeDelta = new Vector2(__instance.cursorViewText.preferredWidth * 0.5f + 44f, __instance.cursorViewText.preferredHeight * 0.5f + 14f);
+            __instance.cursorRightDeco.sizeDelta = new Vector2(__instance.cursorViewTrans.sizeDelta.y - 12f, 5f);
+
+        }
+
 
         public static void Import(BinaryReader r)
         {

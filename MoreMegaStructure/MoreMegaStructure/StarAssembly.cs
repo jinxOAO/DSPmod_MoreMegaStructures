@@ -84,7 +84,7 @@ namespace MoreMegaStructure
         public static Color UITextRed = new Color(1.0f, 0.12f, 0.12f, 0.744f);
         public static Color UITextGray = new Color(0.5f, 0.5f, 0.5f, 0.5f);
         public static List<int> specializeRequirements = new List<int> { 0, 5, 3, 3, 5, 5 };
-        public static int specializeTimeNeed = 36000; // 特化进程需要的基础时间，随着星际组装厂总能量水平的增加，特化完成需要的时间可能成倍增加
+        public static int specializeTimeNeed = 36000; // 特化进程需要的基础时间，随着星际组装厂总能量水平的增加，特化完成需要的时间可能成倍增加 36000
 
         public static void InitAll()
         {
