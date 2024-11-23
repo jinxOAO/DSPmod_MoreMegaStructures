@@ -801,10 +801,60 @@ namespace MoreMegaStructure
                                     }
                                 }
                             }
+
+                            int actualProduct = minSatisfied;
+
+                            // 增产效果
+                            if (incProgress[starIndex][i] >= 0 || specBuffLevel[starIndex][i] > 0) // 负数则视为是无法增产的配方，但是如果能够享受特化Buff，那么可以无视recipe设定，强行允许增产！
+                            {
+                                incProgress[starIndex][i] += minSatisfied * GetFullIncMilli(starIndex, i, minInc);
+                                if (MoreMegaStructure.curStar != null && starIndex == MoreMegaStructure.curStar.index)
+                                {
+                                    currentStarIncs[i] = minInc; // 将这一帧的增产效果暂存，方便刷新
+                                    if (curSpecType[starIndex] == 2 && specBuffLevel[starIndex][i] > 0)
+                                        currentStarIncs[i] = 4;
+                                }
+
+                                // 增产点数满了之后
+                                if (incProgress[starIndex][i] >= 1)
+                                {
+                                    int bonusProduct = (int)incProgress[starIndex][i];
+                                    for (int j = 0; j < products[starIndex][i].Count; j++)
+                                    {
+                                        productStorage[starIndex][products[starIndex][i][j]] += bonusProduct * productCounts[starIndex][i][j];
+                                        if (productStorage[starIndex][products[starIndex][i][j]] > 99999) productStorage[starIndex][products[starIndex][i][j]] = 99999;
+                                        if (curSpecType[starIndex] == 2 && specBuffLevel[starIndex][i] > 0 || r002ByTCFV > 0)
+                                        {
+                                            if (!productStorageInc.ContainsKey(starIndex))
+                                                productStorageInc.Add(starIndex, new Dictionary<int, int>());
+                                            if (!productStorageInc[starIndex].ContainsKey(products[starIndex][i][j]))
+                                                productStorageInc[starIndex].Add(products[starIndex][i][j], bonusProduct * productCounts[starIndex][i][j] * 4);
+                                            else
+                                                productStorageInc[starIndex][products[starIndex][i][j]] += bonusProduct * productCounts[starIndex][i][j] * 4;
+                                            if (productStorageInc[starIndex][products[starIndex][i][j]] > 4 * productStorage[starIndex][products[starIndex][i][j]])
+                                                productStorageInc[starIndex][products[starIndex][i][j]] = 4 * productStorage[starIndex][products[starIndex][i][j]];
+                                        }
+                                        if (productRegister != null)
+                                        {
+                                            int[] obj = productRegister;
+                                            lock (obj)
+                                            {
+                                                productRegister[products[starIndex][i][j]] += bonusProduct * productCounts[starIndex][i][j];
+                                            }
+                                        }
+                                    }
+                                    incProgress[starIndex][i] -= (int)incProgress[starIndex][i];
+                                    if (incProgress[starIndex][i] < 0)
+                                        incProgress[starIndex][i] = 0;
+
+                                    actualProduct += bonusProduct; // 用于后续处理蓝buff等效果
+                                }
+                            }
+
                             // 深空来敌蓝buff效果
                             if (blueBuffByTCFV > 0 && itemCounts[starIndex][i].Count > 1 && products[starIndex][i][0] != 1803)
                             {
-                                int returnCount = minSatisfied * productCounts[starIndex][i][0];
+                                int returnCount = actualProduct * productCounts[starIndex][i][0];
                                 int realConsume = minSatisfied * itemCounts[starIndex][i][0];
                                 int overReturned = returnCount - realConsume;
                                 int returnItemId = items[starIndex][i][0];
@@ -823,7 +873,7 @@ namespace MoreMegaStructure
                                     if (productStorageInc[starIndex][returnItemId] > 4 * productStorage[starIndex][returnItemId])
                                         productStorageInc[starIndex][returnItemId] = 4 * productStorage[starIndex][returnItemId];
                                 }
-                                if(overReturned <= 0 && consumeRegister != null) 
+                                if (overReturned <= 0 && consumeRegister != null)
                                 {
                                     int[] obj = consumeRegister;
                                     lock (obj)
@@ -845,8 +895,9 @@ namespace MoreMegaStructure
                                     }
                                 }
                             }
+
                             // 深空来敌能量迸发效果
-                            if(r106ByTCFV > 0)
+                            if (r106ByTCFV > 0)
                             {
                                 int rocketId = products[starIndex][i][0];
                                 int rodNum = -1;
@@ -856,8 +907,9 @@ namespace MoreMegaStructure
                                     rodNum = 1;
                                 if (rodNum > 0) // 判断原材料是否已满
                                 {
-                                    int returnItemId = 1802; 
-                                    int returnCount = minSatisfied * 2;
+                                    int returnItemId = 1802;
+                                    int returnCount = actualProduct * 2;
+                                    int overReturnCount = 0;
                                     if (!productStorage[starIndex].ContainsKey(returnItemId))
                                         productStorage[starIndex].Add(returnItemId, returnCount);
                                     else
@@ -873,51 +925,31 @@ namespace MoreMegaStructure
                                         if (productStorageInc[starIndex][returnItemId] > 4 * productStorage[starIndex][returnItemId])
                                             productStorageInc[starIndex][returnItemId] = 4 * productStorage[starIndex][returnItemId];
                                     }
+                                    // 如果返还的比消耗的还多（只会且必定会出现在增产情况下，因为所有火箭都是2）
+                                    if(actualProduct > minSatisfied)
+                                    {
+                                        returnCount = minSatisfied * 2;
+                                        overReturnCount = (actualProduct - minSatisfied) * 2;
+                                        if(productRegister != null)
+                                        {
+                                            int[] obj = productRegister;
+                                            lock(obj)
+                                            {
+                                                productRegister[returnItemId] += overReturnCount;
+                                            }
+                                        }
+                                    }
                                     if (consumeRegister != null)
                                     {
                                         int[] obj = consumeRegister;
                                         lock (obj)
                                         {
-                                            consumeRegister[returnItemId] -= 2;
+                                            consumeRegister[returnItemId] -= returnCount;
                                         }
                                     }
                                 }
                             }
 
-                            // 增产效果
-                            if (incProgress[starIndex][i] >= 0 || specBuffLevel[starIndex][i] > 0) // 负数则视为是无法增产的配方，但是如果能够享受特化Buff，那么可以无视recipe设定，强行允许增产！
-                            {
-                                incProgress[starIndex][i] += minSatisfied * GetFullIncMilli(starIndex, i, minInc);
-                                if (MoreMegaStructure.curStar != null && starIndex == MoreMegaStructure.curStar.index)
-                                {
-                                    currentStarIncs[i] = minInc; // 将这一帧的增产效果暂存，方便刷新
-                                    if (curSpecType[starIndex] == 2 && specBuffLevel[starIndex][i] > 0)
-                                        currentStarIncs[i] = 4;
-                                }
-
-                                // 增产点数满了之后
-                                if (incProgress[starIndex][i] >= 1)
-                                {
-                                    int bonusProduct = (int)incProgress[starIndex][i];
-                                    for (int j = 0; j < products[starIndex][i].Count; j++)
-                                    {
-                                        productStorage[starIndex][products[starIndex][i][j]] += bonusProduct * productCounts[starIndex][i][j];
-                                        if (productStorage[starIndex][products[starIndex][i][j]] > 99999) productStorage[starIndex][products[starIndex][i][j]] = 99999;
-                                        if (productRegister != null)
-                                        {
-                                            int[] obj = productRegister;
-                                            lock (obj)
-                                            {
-                                                productRegister[products[starIndex][i][j]] += bonusProduct * productCounts[starIndex][i][j];
-                                            }
-                                        }
-                                    }
-                                    incProgress[starIndex][i] -= (int)incProgress[starIndex][i];
-                                    if (incProgress[starIndex][i] < 0)
-                                        incProgress[starIndex][i] = 0;
-                                }
-                            }
-                            
                         }
 
                         progress[starIndex][i] -= (int)progress[starIndex][i];
@@ -1181,19 +1213,6 @@ namespace MoreMegaStructure
                             int protoId = factory.entityPool[stationComponent.entityId].protoId;
                             if (protoId != 9512) continue; // 只有物资交换建筑
 
-                            bool autoSpray = false; // 如果最后一个格子是增产剂，则自动喷涂
-                            int autoSprayLevel = 0; // 增产剂对应的增产登记
-                            int eachSprayCount = 1; // 每个增产剂可以喷多少个物品
-                            float consumeProb = 1; // 不足消耗一个增产剂时，喷涂每个物品消耗的几率
-                            int proliferatorId = stationComponent.storage[4].itemId;
-                            if (proliferatorId == 1141 || proliferatorId == 1142 || proliferatorId == 1143)
-                            {
-                                autoSpray = true;
-                                eachSprayCount = proliferatorId == 1143 ? 60 : proliferatorId == 1142 ? 24 : 12;
-                                autoSprayLevel = proliferatorId == 1143 ? 4 : proliferatorId == 1142 ? 2 : 1;
-                                eachSprayCount = (int)(eachSprayCount * (Cargo.incTableMilli[4] + 1));
-                                consumeProb = 1f / eachSprayCount;
-                            }
                             for (int k = 0; k < 5; k++)
                             {
                                 StationStore[] obj = stationComponent.storage;

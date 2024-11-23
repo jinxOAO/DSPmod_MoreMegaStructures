@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace MoreMegaStructure
 {
@@ -17,6 +18,12 @@ namespace MoreMegaStructure
         public static List<GameObject> arrayCircles;
         public static Transform circleParent = null;
         public static UIStarmap UIStarmap = null;
+        public static float circleColorR = 0.399f;
+        public static float circleColorG = 0.902f;
+        public static float circleColorB = 0.555f;
+        public static float circleColorA = 0.315f;
+        public static Color warpCircleColor = new Color(circleColorR, circleColorG, circleColorB, circleColorA);
+
 
         public static void InitAll()
         {
@@ -24,6 +31,7 @@ namespace MoreMegaStructure
             {
                 GameObject oriOriCircle = GameObject.Find("UI Root/Overlay Canvas/In Game/Starmap UIs/starmap-screen-ui/cursor-view/functions/func-deco-mask/func-deco-1");
                 oriCircle = GameObject.Instantiate(oriOriCircle);
+                oriCircle.GetComponent<Image>().color = warpCircleColor;
                 GameObject.Destroy(oriCircle.GetComponent<TweenEulerAngles>());
                 GameObject starmapUIObj = GameObject.Find("UI Root/Overlay Canvas/In Game/Starmap UIs");
                 GameObject warpCirclesObj = new GameObject();
@@ -56,24 +64,34 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(UIStarmap), "_OnOpen")]
         public static void RefreshAndShowAll(ref UIStarmap __instance)
         {
-            Camera camera = __instance.screenCamera;
-            if(camera == null) { Debug.Log("null camera"); }
-            for (int i = 0; i < arrayCircles.Count; i++)
-            {
-                if (arrayCircles[i] != null)
-                    GameObject.Destroy(arrayCircles[i]);
-            }
-            arrayCircles.Clear();
-            for (int i = 0; i < WarpArray.warpArrays.Count; i++)
+            UIStarmap = __instance;
+
+            int warpArrayCount = WarpArray.arrays.Count;
+            int circleCount = arrayCircles.Count;
+            for (int i = 0; i < warpArrayCount && i < circleCount; i++)
             {
                 GameObject circle = GameObject.Instantiate(oriCircle);
-                circle.name = "warp-field-circle";
-                circle.transform.localScale = Vector3.one;
-                circle.transform.SetParent(circleParent);
                 circle.SetActive(true);
-                arrayCircles.Add(circle);
             }
-            UIStarmap = __instance;
+            if(warpArrayCount > circleCount)
+            {
+                for (int i = 0;i < warpArrayCount - circleCount; i++)
+                {
+                    GameObject circle = GameObject.Instantiate(oriCircle);
+                    circle.name = "warp-field-circle";
+                    circle.transform.localScale = Vector3.one;
+                    circle.transform.SetParent(circleParent);
+                    circle.SetActive(true);
+                    arrayCircles.Add(circle);
+                }
+            }
+            else if (warpArrayCount < circleCount)
+            {
+                for (int i = warpArrayCount; i < circleCount; i++)
+                {
+                    arrayCircles[i].SetActive(false);
+                }
+            }
         }
 
         [HarmonyPostfix]
@@ -89,12 +107,12 @@ namespace MoreMegaStructure
         public static void RefreshUI(ref UIStarmap __instance)
         {
             Camera camera = __instance.screenCamera;
-            for (int i = 0; i < WarpArray.warpArrays.Count; i++)
+            for (int i = 0; i < WarpArray.arrays.Count; i++)
             {
                 if (i < arrayCircles.Count)
                 {
                     GameObject circle = arrayCircles[i];
-                    int starIndex = WarpArray.warpArrays[i].starIndex;
+                    int starIndex = WarpArray.arrays[i].starIndex;
                     if(__instance.starUIs.Length > starIndex)
                     {
                         Vector2 screenPos;
@@ -105,26 +123,31 @@ namespace MoreMegaStructure
 
                         // 算圈圈大小
                         // 获取一个与摄像机方向垂直的向量，长度为折跃场半径（换算到屏幕的星球距离还要乘0.00025），然后转换为屏幕坐标
-                        double radius = WarpArray.warpArrays[i].radius;
-                        Vector3 radiusPos = Utils.GetVertical(camera.transform.forward) * (float)radius * 0.00025f;
-                        Vector2 radiusV2;
-                        __instance.WorldPointIntoScreen(radiusPos, out radiusV2);
+                        double radius = WarpArray.arrays[i].radius;
+                        Vector3 radiusPos = Utils.GetVertical(camera.transform.forward) * (float)radius * 0.00025f + __instance.starUIs[starIndex].starObject.vpos;
+                        Vector2 edgeScreenPos;
+                        __instance.WorldPointIntoScreen(radiusPos, out edgeScreenPos);
 
                         // 该坐标在屏幕上距离中心的距离就是下面，也就是宇宙中这个半径在星图屏幕中的像素长度
-                        float radiusInScreen = radiusV2.magnitude;
+                        float radiusInScreen = (edgeScreenPos - screenPos).magnitude;
                         // 设置图片scale（图片半径）
                         float sizeOri = circle.GetComponent<RectTransform>().sizeDelta.x / 2 / 1.0185f;
                         if (sizeOri == 0)
                             sizeOri = 1;
-                        float scale = radiusInScreen / sizeOri * 1.15f; // 再变大一点，更符合船的曲速启停位置
+                        float scale = radiusInScreen / sizeOri;
                         circle.transform.localScale = new Vector3 (scale, scale, scale);
+
+                        circle.transform.localRotation = circle.transform.localRotation * Quaternion.AngleAxis(2.0f / ((float)radius / 40000 / 60), new Vector3(0, 0, 1));
+
+                        // 船通过变亮效果，已弃用
+                        //float lighterFactor = 20.0f * WarpArray.arrays[i].activeCountThisFrame / (WarpArray.arrays[i].activeCountThisFrame + 10) + 1.0f;
+                        //circle.GetComponent<Image>().color = new Color(circleColorR, circleColorG, circleColorB, circleColorA * lighterFactor);
                     }
                 }
             }
+
+            // WarpArray.UpdateStarmapActiveCount();
         }
-
-
-
 
         /*  笔记
          *  Vector3 vector2 = (this.hive.sector.astros[this.hive.hiveAstroId - 1000000].uPos - this.starmap.viewTargetUPos) * 0.00025; 注意距离乘0.00025
@@ -138,6 +161,9 @@ namespace MoreMegaStructure
 
         此外，圆圈图片的边缘达到1080像素时，实际的sizedelta达到1100（是1.0185倍）
          */
+
+
+        
 
         public static void Import(BinaryReader r)
         {

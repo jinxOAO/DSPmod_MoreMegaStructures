@@ -8,67 +8,173 @@ using System.Threading.Tasks;
 using UnityEngine;
 
 namespace MoreMegaStructure
-{    public struct WarpArrayData
+{
+    public class WarpArrayData
     {
         public int starIndex;
         public VectorLF3 uPos;
         public double radius;
         public double squaredRadius;
+        public double tripEnergyCostRatio;
+        // public int activeCountThisFrame;
     }
 
     public class WarpArray
     {
         // 配置项常数
-        public static long factor1 = 10000;
         public static bool enabled = true;
+        public static double radiusEnergyPowIndex = 0.666666667;
+        public static int radiusEnergyDivisor = 200000;
+        public static long tripCostEnergyDivisor = 2000000000;
+        public const float warpSpeedInWarpField = 250 * 60 * 40000;
+        public const float sailSpeedInWarpField = 400 * 500;
 
         // 运行时更新系数 无需存档
-        public static List<WarpArrayData> warpArrays;
+        public static List<WarpArrayData> arrays;
+        public static int[] starIsInWhichWarpArray;
+        public static double[] tripEnergyCostRatioByStarIndex; // 根据星系是否处在折跃场范围内，降低该星系出发的飞船的能量消耗
 
         public static void InitBeforeLoad()
         {
-            warpArrays = new List<WarpArrayData>();
+            arrays = new List<WarpArrayData>();
+            tripEnergyCostRatioByStarIndex = new double[1024];
+            starIsInWhichWarpArray = new int[1024];
+            for (int i = 0; i < tripEnergyCostRatioByStarIndex.Length; i++)
+            {
+                tripEnergyCostRatioByStarIndex[i] = 1;
+                starIsInWhichWarpArray[i] = -1;
+            }
         }
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(GameData), "GameTick")]
         public static void WarpArrayLogicUpdate(long time)
         {
-            if (time % 60 == 0)
-                UpdateSectorWarpArrays();
+            UpdateSectorTripCostRatio(time); // 每帧更新一部分星系，一秒全部更新一次
+
+            if (time % 60 == 44)
+                UpdateWarpArrayDatas();
+            if (time % 3600 == 45)
+                SortWarpArray();
+
         }
 
-        public static void UpdateSectorWarpArrays()
+        public static void CheckSectorWarpArrays()
         {
-            warpArrays = new List<WarpArrayData>();
-            for (int starIndex = 0; starIndex < GameMain.galaxy.starCount && starIndex < 1000; starIndex++)
+            List<WarpArrayData> obj = arrays;
+            lock (obj)
             {
-                if (MoreMegaStructure.StarMegaStructureType[starIndex] == 3)
+                arrays.Clear();
+                for (int starIndex = 0; starIndex < GameMain.galaxy.starCount && starIndex < 1000; starIndex++)
                 {
-                    WarpArrayData data = new WarpArrayData();
-                    data.starIndex = starIndex;
-                    data.uPos = GameMain.galaxy.StarById(starIndex + 1).uPosition;
-                    //data.radius = GameMain.data.dysonSpheres[starIndex].energyGenCurrentTick / factor1;
-                    data.radius = 5 * 60 * 40000;
-                    data.squaredRadius = data.radius * data.radius; // 测试用
-                    warpArrays.Add(data);
+                    if (MoreMegaStructure.StarMegaStructureType[starIndex] == 3)
+                    {
+                        WarpArrayData data = new WarpArrayData();
+                        data.starIndex = starIndex;
+                        data.uPos = GameMain.galaxy.StarById(starIndex + 1).uPosition;
+                        if (GameMain.data.dysonSpheres[starIndex] != null)
+                        {
+                            data.radius = GetRadiusByEnergyPerFrame(GameMain.data.dysonSpheres[starIndex].energyGenCurrentTick);
+                            data.tripEnergyCostRatio = GetTripEnergyCostRatioByEnergyPerFrame(GameMain.data.dysonSpheres[starIndex].energyGenCurrentTick);
+                        }
+                        else
+                            continue;
+                        //data.radius = 5 * 60 * 40000;
+                        data.squaredRadius = data.radius * data.radius;
+                        arrays.Add(data);
+                    }
                 }
             }
         }
 
 
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(StationComponent), "InternalTickRemote")]
-        public static void POSTFIXTEST()
+        public static void UpdateWarpArrayDatas()
         {
+            if (arrays != null)
+            {
+                for (int i = 0; i < arrays.Count; i++)
+                {
+                    int starIndex = arrays[i].starIndex;
+                    if (starIndex >= 0 && starIndex < 1000 && MoreMegaStructure.StarMegaStructureType[starIndex] == 3)
+                    {
+                        if (GameMain.data.dysonSpheres[starIndex] != null)
+                        {
+                            arrays[i].uPos = GameMain.galaxy.StarById(starIndex + 1).uPosition;
+                            arrays[i].radius = GetRadiusByEnergyPerFrame(GameMain.data.dysonSpheres[starIndex].energyGenCurrentTick);
+                            arrays[i].tripEnergyCostRatio = GetTripEnergyCostRatioByEnergyPerFrame(GameMain.data.dysonSpheres[starIndex].energyGenCurrentTick);
+                            arrays[i].squaredRadius = arrays[i].radius * arrays[i].radius;
+                        }
+                    }
+                    else
+                    {
+                        CheckSectorWarpArrays();
+                        return;
+                    }
+                }
+            }
         }
 
+        public static void SortWarpArray()
+        {
+            if(arrays != null && arrays.Count > 1)
+            {
+                arrays = arrays.OrderByDescending(a => a.radius).ToList();
+            }
+        }
+
+        public static void UpdateSectorTripCostRatio(long time)
+        {
+            int beginStarIndex = GameMain.galaxy.starCount / 60 * (int)(time % 60);
+            int endStarIndex = GameMain.galaxy.starCount / 60 * ((int)(time % 60) + 1);
+            if (time % 60 == 59)
+                endStarIndex = GameMain.galaxy.starCount;
+            for (int starIndex = beginStarIndex; starIndex < endStarIndex; starIndex++)
+            {
+                tripEnergyCostRatioByStarIndex[starIndex] = 1;
+                starIsInWhichWarpArray[starIndex] = -1;
+                VectorLF3 starUPos = GameMain.galaxy.StarById(starIndex + 1).uPosition;
+                for (int i = 0; i < arrays.Count; i++) // 因为列表是有序的，所以最先找到的是能量最高的折跃场，因此是降低能量效果最好的，因此找到了就可以break
+                {
+                    Vector3 disVector = starUPos - arrays[i].uPos;
+                    if(disVector.x * disVector.x + disVector.y * disVector.y + disVector.z * disVector.z < arrays[i].squaredRadius)
+                    {
+                        tripEnergyCostRatioByStarIndex[starIndex] = arrays[i].tripEnergyCostRatio;
+                        starIsInWhichWarpArray[starIndex] = i;
+                        break;
+                    }
+                }
+            }
+        }
+
+
+        //public static void UpdateStarmapActiveCount()
+        //{
+        //    if(UIGame.viewMode == EViewMode.Starmap)
+        //    {
+        //        for (int i = 0; i < arrays.Count; i++)
+        //        {
+        //            if(arrays[i].activeCountThisFrame > 0)
+        //            {
+        //                arrays[i].activeCountThisFrame = (int)(arrays[i].activeCountThisFrame * 0.8);
+        //                if (arrays[i].activeCountThisFrame < 0)
+        //                    arrays[i].activeCountThisFrame = 0;
+        //            }
+        //        }
+        //    }
+        //}
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(StationComponent), "InternalTickRemote")]
         public static bool StationShipUpdatesPrePatch(ref StationComponent __instance, PlanetFactory factory, int timeGene, float shipSailSpeed, float shipWarpSpeed, int shipCarries, StationComponent[] gStationPool, AstroData[] astroPoses, ref VectorLF3 relativePos, ref Quaternion relativeRot, bool starmap, int[] consumeRegister)
         {
+            //------------------------------------------------------------------------------
             float oriShipWarpSpeed = shipWarpSpeed;
+            if (factory.planet.star.index < tripEnergyCostRatioByStarIndex.Length && tripEnergyCostRatioByStarIndex[factory.planet.star.index] < 1) // 代表它处在折跃场中
+                shipSailSpeed = sailSpeedInWarpField > shipSailSpeed ? sailSpeedInWarpField : shipSailSpeed;
+            // 注意这里不能像曲速速度修改一样在后面的每个船处修改，因为在那里修改之前会根据shipSailSpeed计算很多的中间变量，这影响启用曲速的时机。
+            // 如果前面这些中间变量还是慢的sailSpeed计算出来的，然后在后面改了SailSpeed，会导致船迟迟不进入曲速状态
+            //------------------------------------------------------------------------------
+
             bool flag = shipWarpSpeed > shipSailSpeed + 1f;
             __instance.warperFree = DSPGame.IsMenuDemo;
             if (__instance.warperCount < __instance.warperMaxCount)
@@ -123,24 +229,35 @@ namespace MoreMegaStructure
             int j = 0;
             while (j < __instance.workShipCount)
             {
-                
-                ref ShipData ship = ref __instance.workShipDatas[j]; 
+
+                ref ShipData ship = ref __instance.workShipDatas[j];
+                // ---------------------------------------------------------------------------------
                 shipWarpSpeed = oriShipWarpSpeed;
                 int enteredWarpArrayListIndex = -1; // 确认进入的折跃场的列表中的地址
                 if (enabled)
                 {
-                    for (int wa = 0; wa < warpArrays.Count; wa++)
+                    for (int wa = 0; wa < arrays.Count; wa++)
                     {
-                        WarpArrayData data = warpArrays[wa];
+                        WarpArrayData data = arrays[wa];
                         Vector3 disVector = ship.uPos - data.uPos;
-                        if (disVector.x * disVector.x + disVector.y * disVector.y + disVector.z * disVector.z <= data.squaredRadius)
+                        if (shipWarpSpeed < warpSpeedInWarpField && disVector.x * disVector.x + disVector.y * disVector.y + disVector.z * disVector.z <= data.squaredRadius)
                         {
                             enteredWarpArrayListIndex = wa;
-                            shipWarpSpeed = 250 * 60 * 40000;
+                            shipWarpSpeed = warpSpeedInWarpField;
+                            //// 进入折跃场，星图界面让折跃场更亮的特效的计数。如果起飞星球就在折跃场内，则不计数
+                            //if (UIGame.viewMode == EViewMode.Starmap && enteredWarpArrayListIndex >= 0 && ship.warpState > 0 && starIsInWhichWarpArray[ship.planetA / 100 - 1] != wa && starIsInWhichWarpArray[ship.planetB / 100 - 1] != wa)
+                            //{
+                            //    List<WarpArrayData> obj = arrays;
+                            //    lock (obj)
+                            //    {
+                            //        arrays[enteredWarpArrayListIndex].activeCountThisFrame += 1;
+                            //    }
+                            //}
                             break;
                         }
                     }
                 }
+                // ---------------------------------------------------------------------------------
                 ref ShipRenderingData ptr3 = ref __instance.shipRenderers[ship.shipIndex];
                 bool flag3 = false;
                 uRot.x = (uRot.y = (uRot.z = 0f));
@@ -375,7 +492,7 @@ namespace MoreMegaStructure
                         }
                     }
                     //---------------------------------------------
-                    if(enabled && ship.warpState > 0f) // 判断速度必须更频繁判断
+                    if (enabled && ship.warpState > 0f) // 判断速度必须更频繁判断
                     {
                         ship.uSpeed = shipSailSpeed + positiveCorrWarpStateSpd;
                     }
@@ -666,11 +783,11 @@ namespace MoreMegaStructure
                     //-------------------------------------------------------------------------- 这里是为了超出折跃场时，别冲出去太多
                     if (enabled && enteredWarpArrayListIndex >= 0)
                     {
-                        VectorLF3 realDisVector = ship.uPos - warpArrays[enteredWarpArrayListIndex].uPos;
+                        VectorLF3 realDisVector = ship.uPos - arrays[enteredWarpArrayListIndex].uPos;
                         double squaredRealDis = realDisVector.x * realDisVector.x + realDisVector.y * realDisVector.y + realDisVector.z * realDisVector.z;
-                        if (squaredRealDis > warpArrays[enteredWarpArrayListIndex].squaredRadius)
+                        if (squaredRealDis > arrays[enteredWarpArrayListIndex].squaredRadius)
                         {
-                            double backwardDist = Math.Sqrt(squaredRealDis) - warpArrays[enteredWarpArrayListIndex].radius;
+                            double backwardDist = Math.Sqrt(squaredRealDis) - arrays[enteredWarpArrayListIndex].radius;
                             double shouldSpeed = num72 - backwardDist;
                             ship.uPos.x = oriX + (double)ship.uVel.x * shouldSpeed + vectorLF5.x;
                             ship.uPos.y = oriY + (double)ship.uVel.y * shouldSpeed + vectorLF5.y;
@@ -1057,11 +1174,43 @@ namespace MoreMegaStructure
             return false;
         }
 
+        /// <summary>
+        /// 修成物流船能量消耗比例
+        /// </summary>
+        /// <param name="__instance"></param>
+        /// <param name="__result"></param>
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(StationComponent), "CalcTripEnergyCost")]
+        public static void TripCostPatcher(ref StationComponent __instance, ref long __result)
+        {
+            int starIndex = __instance.planetId / 100 - 1;
+            if (starIndex >= 0 && starIndex < tripEnergyCostRatioByStarIndex.Length)
+            {
+                if (tripEnergyCostRatioByStarIndex[starIndex] < 1)
+                {
+                    __result = (long)(__result * tripEnergyCostRatioByStarIndex[starIndex]);
+                }
+            }
+        }
 
+
+        public static double GetRadiusByEnergyPerFrame(long energyPerFrame)
+        {
+            double radiusLightYear = Math.Pow(1.0 * energyPerFrame, radiusEnergyPowIndex) / radiusEnergyDivisor;
+            if (radiusLightYear > 300)
+                radiusLightYear = 300;
+            return radiusLightYear * 60 * 40000;
+        }
+
+        public static double GetTripEnergyCostRatioByEnergyPerFrame(long energyPerFrame)
+        {
+            return 1.0 * tripCostEnergyDivisor / (tripCostEnergyDivisor + energyPerFrame);
+        }
 
         public static void Import(BinaryReader r)
         {
             InitBeforeLoad();
+            CheckSectorWarpArrays();
         }
 
         public static void Export(BinaryWriter w)
@@ -1072,7 +1221,6 @@ namespace MoreMegaStructure
         public static void IntoOtherSave()
         {
             InitBeforeLoad();
-
         }
     }
 }

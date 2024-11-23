@@ -24,7 +24,7 @@ namespace MoreMegaStructure
     [BepInDependency(CommonAPIPlugin.GUID)]
     [BepInDependency(DSPModSavePlugin.MODGUID)]
     [CommonAPISubmoduleDependency(nameof(ProtoRegistry), nameof(TabSystem), nameof(LocalizationModule))]
-    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.6.0")]
+    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.7.0")]
     public class MoreMegaStructure : BaseUnityPlugin, IModCanSave
     {
         /// <summary>
@@ -1592,6 +1592,11 @@ namespace MoreMegaStructure
 
                     DysonEditorPowerDescLabel4BarObj.SetActive(false);
                 }
+                else if (curDysonSphere != null && StarMegaStructureType[curStar.index] == 3)
+                {
+                    SpSailAmountText.text = "折跃场内曲速速率".Translate();
+                    SpNodeAmountText.text = "折跃场内能量消耗".Translate();
+                }
                 else
                 {
                     SpEnergySatisfiedLabelText.text = "供电率".Translate();
@@ -1682,7 +1687,7 @@ namespace MoreMegaStructure
                         RightDysonTitle.text = "折跃场广播阵列".Translate() + " " + star.displayName;
                         set2WarpFieldGenButtonTextTrans.GetComponent<Text>().color = currentTextColor;
                         set2WarpFieldGenButtonTextTrans.GetComponent<Text>().text = "当前".Translate() + " " + "折跃场广播阵列".Translate();
-                        RightMaxPowGenText.text = "折跃场加速".Translate();
+                        RightMaxPowGenText.text = "折跃场半径".Translate();
                         break;
 
                     case 4:
@@ -1758,13 +1763,12 @@ namespace MoreMegaStructure
                     return;
                 }
 
-                if (type == 3 && WarpBuiltStarIndex >= 0)
-                {
-                    //string systemName = GameMain.galaxy.stars[WarpBuiltStarIndex].displayName;
-                    ////SetMegaStructureWarningText.text = "警告最多一个".Translate() + " " + systemName;
-                    //UIRealtimeTip.Popup("警告最多一个".Translate() + " " + systemName);
-                    //return;
-                }
+                //if (type == 3 && WarpBuiltStarIndex >= 0)
+                //{
+                //    string systemName = GameMain.galaxy.stars[WarpBuiltStarIndex].displayName;
+                //    UIRealtimeTip.Popup("警告最多一个".Translate() + " " + systemName);
+                //    return;
+                //}
 
                 if (type == 5 && curStar.type != EStarType.NeutronStar && curStar.type != EStarType.WhiteDwarf)
                 {
@@ -1789,16 +1793,17 @@ namespace MoreMegaStructure
                 //根据是否有现存框架，是否允许改变巨构类型
                 if (curDysonSphere != null)
                 {
-                    if (curDysonSphere.totalNodeCount > 0 && !developerMode) //如果有框架，则不允许修改巨构类型，在后续的UI刷新时对应修改按钮状态和文本
+                    if (curDysonSphere.totalNodeCount > 0 && !developerMode && !GameMain.data.gameDesc.isSandboxMode) //如果有框架，则不允许修改巨构类型，在后续的UI刷新时对应修改按钮状态和文本
                     {
                         UIRealtimeTip.Popup("警告先拆除".Translate());
                         return;
                     }
                 }
 
-                //Debug.LogWarning("Can change type because of null refrence.");
                 //条件满足
                 StarMegaStructureType[idx] = type;
+                OnMegaTypeChanged();
+
                 if (type == 4)
                 {
                     StarAssembly.ResetArchiveDataByStarIndex(idx);
@@ -1812,6 +1817,7 @@ namespace MoreMegaStructure
 
                 if (type == 2 && GenesisCompatibility) // 改成科学枢纽后删除所有太阳帆，目前只对创世之书生效
                     curDysonSphere.swarm.RemoveSailsByOrbit(-1);
+
             }
             catch (Exception)
             {
@@ -1819,6 +1825,11 @@ namespace MoreMegaStructure
                 UIRealtimeTip.Popup("警告未知错误".Translate());
                 return;
             }
+        }
+
+        public static void OnMegaTypeChanged()
+        {
+            WarpArray.CheckSectorWarpArrays();
         }
 
         //每秒刷新巨构UI的总Capacity数值的显示，主要用于科学枢纽和广播阵列（这两个不需要接收器）显示其效率
@@ -1838,9 +1849,8 @@ namespace MoreMegaStructure
                 }
                 else if (StarMegaStructureType[curDysonSphere.starData.id - 1] == 3) //如果是折跃场广播阵列
                 {
-                    long DysonEnergy = (curDysonSphere.energyGenCurrentTick - curDysonSphere.energyReqCurrentTick) / WarpAccDivisor;
-                    DysonEnergy = DysonEnergy > WarpAccMax ? WarpAccMax : DysonEnergy;
-                    RightMaxPowGenValueText.text = Capacity2SpeedAcc((int)DysonEnergy) + "ly/s";
+                    long DysonEnergy = (curDysonSphere.energyGenCurrentTick - curDysonSphere.energyReqCurrentTick);
+                    RightMaxPowGenValueText.text = (WarpArray.GetRadiusByEnergyPerFrame(DysonEnergy)/60/40000).ToString("N1") + " ly";
                 }
                 else if (StarMegaStructureType[curDysonSphere.starData.id - 1] == 4) //如果是星际组装厂
                 {
@@ -1864,15 +1874,29 @@ namespace MoreMegaStructure
             }
         }
 
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(UIDESphereInfo), "_OnUpdate")]
+        public static void UIValueUpdate2(ref UIDESphereInfo __instance)
+        {
+            if (curDysonSphere != null)
+            {
+                if (StarMegaStructureType[curDysonSphere.starData.index] == 3)
+                {
+                    __instance.sailCntText.text = (WarpArray.warpSpeedInWarpField / 60 / 40000).ToString() + " ly/s";
+                    __instance.nodeCntText.text = "-" + ((1 - WarpArray.GetTripEnergyCostRatioByEnergyPerFrame(curDysonSphere.energyGenCurrentTick)) * 100).ToString("N0") + " %";
+                }
+                else if (StarMegaStructureType[curDysonSphere.starData.index] == 6)
+                {
+                    int[] curData = StarCannon.GetStarCannonProperties(curDysonSphere);
+                    __instance.sailCntText.text = curData[2] < 9000 ? curData[2].ToString() : "无限制gm".Translate();
+                    __instance.nodeCntText.text = "-" + curData[5].ToString() + "% / ly";
+                }
+            }
+        }
+
         //查看折跃场广播阵列是否达到建造上限
         public static int CheckWarpArrayBuilt()
         {
-            WarpArray.UpdateSectorWarpArrays();
-            //for (int i = 0; i < 1000; i++)
-            //{
-            //    if (StarMegaStructureType[i] == 3) return i;
-            //}
-
             return -1;
         }
 

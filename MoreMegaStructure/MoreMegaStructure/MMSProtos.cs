@@ -1774,7 +1774,7 @@ namespace MoreMegaStructure
                 "产出单极磁石和一些基础资源（例如铁块），可被对应的物质重构器接收。", "");
             LocalizationModule.RegisterTranslation("科学枢纽功能文本", "Upload hash points for research without requiring any matrix.", "无需矩阵即可上传hash点数进行研究。",
                                                    "");
-            LocalizationModule.RegisterTranslation("折跃场广播阵列功能文本", "Increase the warp speed of logistics vessels.", "提高物流运输船的曲速速度。", "");
+            LocalizationModule.RegisterTranslation("折跃场广播阵列功能文本", "Create a warp field centered on this megastructure. When any logistics vessels enters the warp field, it will <color=#FD965ECC>instantly pass through the warp field</color> at a speed of 250 ly/s. In addition, if a interstellar logistics vessel takes off in a warp field, its energy consumption will be reduced.\n<color=#FD965ECC>The radius of the warp field and the effect of reducing energy consumption depend on the energy level</color> of the megastructure. But the acceleration effect within the warp field is not affected by the megastructure energy.", "在以巨构为中心的一定半径内创建一个折跃场，任何物流船经过折跃场时，会以250ly/s的速度<color=#FD965ECC>瞬间穿过折跃场</color>。此外，若星际物流飞船起飞时处在折跃场内，其消耗的能量还会被降低。\n<color=#FD965ECC>折跃场半径</color>和<color=#FD965ECC>能耗降低效果</color>取决于<color=#FD965ECC>巨构能量水平</color>，折跃场内的加速效果不受能量水平影响。", "");
             LocalizationModule.RegisterTranslation(
                 "星际组装厂功能文本",
                 "You can set up to 15 recipes, this megastructure will automatically obtain materials from the exchange logistic stations on the ground, produce products and transport them back to the ground. The production speed depends on the assignment of energy and the recipe's time cost. And you can use proliferator to get extra products without consuming extra energy, if the recipe allows extra production. In any cases, you can not choose the production speedup mode. Unused energy will automatically produce multi-functional integration components.\nIn addition to receive by the exchange logistic station, components can also be transmitted directly to the mecha (but only 10%efficiency). You can set this function in the mecha panel.",
@@ -1838,6 +1838,10 @@ namespace MoreMegaStructure
             LocalizationModule.RegisterTranslation("巨建快速组装描述", "Quickly assemble constructions using multi-functional integrated components",
                                                    "使用多功能集成组件快速递组装成目标巨建。", "");
 
+
+            LocalizationModule.RegisterTranslation("折跃场半径", "Warp Field Radius", "折跃场半径", ""); 
+            LocalizationModule.RegisterTranslation("折跃场内曲速速率", "Warp Speed In Warp Field", "折跃场内曲速速率", "");
+            LocalizationModule.RegisterTranslation("折跃场内能量消耗", "Energy Cost In Warp Field", "折跃场内能量消耗", "");
 
             LocalizationModule.RegisterTranslation("巨构状态", "Mega structure status", "巨构状态", "");
             LocalizationModule.RegisterTranslation("巨构类型不符", "type not match", "巨构不符", "");
