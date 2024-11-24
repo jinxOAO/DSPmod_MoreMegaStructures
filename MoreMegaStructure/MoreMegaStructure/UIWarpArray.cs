@@ -24,10 +24,13 @@ namespace MoreMegaStructure
         public static float circleColorA = 0.315f;
         public static Color warpCircleColor = new Color(circleColorR, circleColorG, circleColorB, circleColorA);
 
+        public static GameObject showHideButtonObj = null;
+        public static UIButton showHideUIBtn;
+        public static bool showWarpFieldCircle = true;
 
         public static void InitAll()
         {
-            if(oriCircle == null)
+            if (oriCircle == null)
             {
                 GameObject oriOriCircle = GameObject.Find("UI Root/Overlay Canvas/In Game/Starmap UIs/starmap-screen-ui/cursor-view/functions/func-deco-mask/func-deco-1");
                 oriCircle = GameObject.Instantiate(oriOriCircle);
@@ -43,6 +46,61 @@ namespace MoreMegaStructure
                 // circleParent = starmapUIObj.transform;
                 circleParent = warpCirclesObj.transform;
             }
+            if (showHideButtonObj == null)
+            {
+                GameObject oriButtonObj1 = GameObject.Find("UI Root/Overlay Canvas/In Game/Starmap UIs/starmap-screen-ui/btn-1");
+                GameObject oriButtonObj2 = GameObject.Find("UI Root/Overlay Canvas/In Game/Starmap UIs/starmap-screen-ui/btn-2");
+                GameObject oriButtonObj3 = GameObject.Find("UI Root/Overlay Canvas/In Game/Starmap UIs/starmap-screen-ui/btn-3");
+                GameObject parentObj = GameObject.Find("UI Root/Overlay Canvas/In Game/Starmap UIs/starmap-screen-ui");
+                if (oriButtonObj2 != null && oriButtonObj3 != null && parentObj != null)
+                {
+                    showHideButtonObj = GameObject.Instantiate(oriButtonObj3, parentObj.transform);
+                    showHideButtonObj.name = "btn-4";
+                    float x = oriButtonObj3.transform.localPosition.x;
+                    float y = oriButtonObj3.transform.localPosition.y + (oriButtonObj3.transform.localPosition.y - oriButtonObj2.transform.localPosition.y);
+                    showHideButtonObj.transform.localPosition = new Vector3(x, y, 0);
+                    showHideButtonObj.transform.localScale = Vector3.one;
+                    GameObject.DestroyImmediate(showHideButtonObj.GetComponent<UIButton>());
+                    GameObject.DestroyImmediate(showHideButtonObj.GetComponent<Button>());
+                    showHideButtonObj.AddComponent<Button>();
+                    showHideUIBtn = showHideButtonObj.AddComponent<UIButton>();
+                    showHideUIBtn.tips.tipTitle = "折跃场范围显示".Translate();
+                    showHideUIBtn.tips.tipText = "折跃场范围显示描述".Translate();
+                    showHideUIBtn.tips.corner = oriButtonObj3.GetComponent<UIButton>().tips.corner;
+                    showHideUIBtn.tips.offset = oriButtonObj3.GetComponent<UIButton>().tips.offset;
+                    showHideUIBtn.tips.delay = oriButtonObj3.GetComponent<UIButton>().tips.delay;
+                    showHideUIBtn.tips.width = oriButtonObj3.GetComponent<UIButton>().tips.width;
+                    UIButton oriUIBtn = oriButtonObj1.GetComponent<UIButton>();
+                    showHideUIBtn.transitions = new UIButton.Transition[oriUIBtn.transitions.Length];
+                    for (int i = 0; i < showHideUIBtn.transitions.Length; i++)
+                    {
+                        showHideUIBtn.transitions[i] = new UIButton.Transition();
+                        showHideUIBtn.transitions[i].damp = oriUIBtn.transitions[i].damp;
+                        showHideUIBtn.transitions[i].mouseoverSize = oriUIBtn.transitions[i].mouseoverSize;
+                        showHideUIBtn.transitions[i].pressedSize = oriUIBtn.transitions[i].pressedSize;
+                        showHideUIBtn.transitions[i].normalColor = oriUIBtn.transitions[i].normalColor;
+                        showHideUIBtn.transitions[i].mouseoverColor = oriUIBtn.transitions[i].mouseoverColor;
+                        showHideUIBtn.transitions[i].pressedColor = oriUIBtn.transitions[i].pressedColor;
+                        showHideUIBtn.transitions[i].disabledColor = oriUIBtn.transitions[i].disabledColor;
+                        showHideUIBtn.transitions[i].alphaOnly = oriUIBtn.transitions[i].alphaOnly;
+                        showHideUIBtn.transitions[i].highlightSizeMultiplier = oriUIBtn.transitions[i].highlightSizeMultiplier;
+                        showHideUIBtn.transitions[i].highlightColorMultiplier = oriUIBtn.transitions[i].highlightColorMultiplier;
+                        showHideUIBtn.transitions[i].highlightAlphaMultiplier = oriUIBtn.transitions[i].highlightAlphaMultiplier;
+                        showHideUIBtn.transitions[i].highlightColorOverride = oriUIBtn.transitions[i].highlightColorOverride;
+                        if (i == 0)
+                            showHideUIBtn.transitions[i].target = showHideButtonObj.GetComponent<Graphic>();
+                        else if (i == 1)
+                            showHideUIBtn.transitions[i].target = showHideButtonObj.transform.Find("icon").GetComponent<Graphic>();
+                        Debug.Log($"----\n\n\n\n\n{showHideButtonObj.transform.Find("icon").GetComponent<Graphic>() != null}");
+                    }
+                    showHideButtonObj.GetComponent<Button>().onClick.RemoveAllListeners();
+                    showHideButtonObj.GetComponent<Button>().onClick.AddListener(() => { ShowHideWarpFieldCircle(); });
+
+
+
+                    showHideButtonObj.transform.Find("icon").GetComponent<Image>().sprite = Resources.Load<Sprite>("ui/textures/sprites/starmap/target");
+                }
+            }
             if (arrayCircles == null)
             {
                 arrayCircles = new List<GameObject>();
@@ -55,9 +113,6 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(UIStarmap), "_OnOpen")]
         public static void RefreshAndShowAll(ref UIStarmap __instance)
         {
-            if (MoreMegaStructure.HideWarpFieldUI.Value)
-                return;
-
             UIStarmap = __instance;
 
             int warpArrayCount = WarpArray.arrays.Count;
@@ -65,7 +120,7 @@ namespace MoreMegaStructure
             for (int i = 0; i < warpArrayCount && i < circleCount; i++)
             {
                 GameObject circle = GameObject.Instantiate(oriCircle);
-                circle.SetActive(true);
+                circle.SetActive(showWarpFieldCircle);
             }
             if(warpArrayCount > circleCount)
             {
@@ -75,7 +130,7 @@ namespace MoreMegaStructure
                     circle.name = "warp-field-circle";
                     circle.transform.localScale = Vector3.one;
                     circle.transform.SetParent(circleParent);
-                    circle.SetActive(true);
+                    circle.SetActive(showWarpFieldCircle);
                     arrayCircles.Add(circle);
                 }
             }
@@ -100,8 +155,12 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(UIStarmap), "_OnUpdate")]
         public static void RefreshUI(ref UIStarmap __instance)
         {
-            if (MoreMegaStructure.HideWarpFieldUI.Value)
+            showHideUIBtn.highlighted = showWarpFieldCircle;
+
+            if (!showWarpFieldCircle)
+            {
                 return;
+            }
 
             Camera camera = __instance.screenCamera;
             for (int i = 0; i < WarpArray.arrays.Count; i++)
@@ -209,6 +268,27 @@ namespace MoreMegaStructure
             __instance.cursorViewTrans.sizeDelta = new Vector2(__instance.cursorViewText.preferredWidth * 0.5f + 44f, __instance.cursorViewText.preferredHeight * 0.5f + 14f);
             __instance.cursorRightDeco.sizeDelta = new Vector2(__instance.cursorViewTrans.sizeDelta.y - 12f, 5f);
 
+        }
+
+        public static void ShowHideWarpFieldCircle()
+        {
+            showWarpFieldCircle = !showWarpFieldCircle;
+            if(showWarpFieldCircle)
+            {
+                int warpArrayCount = WarpArray.arrays.Count;
+                for (int i = 0; i < warpArrayCount && i < arrayCircles.Count ; i++)
+                {
+                    arrayCircles[i].SetActive(true);
+                }
+            }
+            else
+            {
+                for (int i = 0;i < arrayCircles.Count; i++)
+                {
+                    arrayCircles[i].SetActive(false);
+                }
+
+            }
         }
 
 

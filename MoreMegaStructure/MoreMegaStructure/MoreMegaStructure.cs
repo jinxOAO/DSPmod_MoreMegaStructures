@@ -24,7 +24,7 @@ namespace MoreMegaStructure
     [BepInDependency(CommonAPIPlugin.GUID)]
     [BepInDependency(DSPModSavePlugin.MODGUID)]
     [CommonAPISubmoduleDependency(nameof(ProtoRegistry), nameof(TabSystem), nameof(LocalizationModule))]
-    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.7.0")]
+    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.7.1")]
     public class MoreMegaStructure : BaseUnityPlugin, IModCanSave
     {
         /// <summary>
@@ -77,7 +77,7 @@ namespace MoreMegaStructure
         public static ConfigEntry<bool> NoWasteResources;
         public static ConfigEntry<bool> ReverseStarCannonShellAlignDirection;
         public static ConfigEntry<bool> ShowIAUIWhenOpenDE;
-        public static ConfigEntry<bool> HideWarpFieldUI;
+        // public static ConfigEntry<bool> HideWarpFieldUI;
         public static bool resolutionLower1080 = false;
 
         public static ResourceData resources;
@@ -248,7 +248,7 @@ namespace MoreMegaStructure
             ReverseStarCannonShellAlignDirection = Config.Bind("config", "ReverseStarCannonShellAlignDirection", false, "Turn this to true will reverse the align direction of all the shell of star cannon when firing, which means the south pole (of the shells) will point to the target star rather than the north pole.  将此项设置为true会反转恒星炮开火时壳层的对齐方向，这意味着所有壳层的南极将指向目标恒星开火（而非默认的北极）。如果你的炮口造反了，可以尝试更改此项设置。");
             ShowIAUIWhenOpenDE = Config.Bind("config", "AutoShowDEUI", true, "Set this to true will force to show the Interstellar Assembly's UI when opening/switching its Megastructure Editor Panel. Set to false will maintain the IA UI's last state. 将此项设置为true将在每次打开星际组装厂的巨构编辑器面板时，强制显示UI。设置为false则会维持上次的状态。");
 
-            HideWarpFieldUI = Config.Bind("config", "HideWarpFieldUI", false, "Hide the warp field area in starmap UI. 是否隐藏星图界面的折跃场范围显示。");
+            // HideWarpFieldUI = Config.Bind("config", "HideWarpFieldUI", false, "Hide the warp field area in starmap UI. 是否隐藏星图界面的折跃场范围显示。");
 
 
             //var ab = AssetBundle.LoadFromStream(Assembly.GetExecutingAssembly().GetManifestResourceStream("MoreMegaStructure.megastructureicons"));

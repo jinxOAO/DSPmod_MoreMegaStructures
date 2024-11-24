@@ -1844,6 +1844,8 @@ namespace MoreMegaStructure
             LocalizationModule.RegisterTranslation("折跃场内能量消耗", "Energy Cost In Warp Field", "折跃场内能量消耗", "");
             LocalizationModule.RegisterTranslation("折跃场已覆盖信息", "Covered By Warp Field From {0}\nLogistic Vessel Energy Consumption -{1:N0}% ", "已被来自{0}的折跃场覆盖\n物流船消耗 -{1:N0}% ", "");
             LocalizationModule.RegisterTranslation("折跃场未覆盖信息", "Warp Field Not Covered ", "折跃场未覆盖 ", "");
+            LocalizationModule.RegisterTranslation("折跃场范围显示", "Warp Field Not Covered ", "折跃场范围显示", "");
+            LocalizationModule.RegisterTranslation("折跃场范围显示描述", "Click to switch on/off the display of the warp field area in the starmap.", "点击以开启/关闭星图界面的折跃场范围显示。", "");
 
             LocalizationModule.RegisterTranslation("巨构状态", "Mega structure status", "巨构状态", "");
             LocalizationModule.RegisterTranslation("巨构类型不符", "type not match", "巨构不符", "");

@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -65,6 +66,7 @@ namespace MoreMegaStructure
         public static List<Text> specializeTitleTxts = new List<Text>();
         public static List<Text> specializeStateTxts = new List<Text>();
         public static List<Text> tipButtonTxts = new List<Text>();
+        public static List<UIButton> recipeCircleUIBtns = new List<UIButton>();
         public static Sprite noRecipeSelectedSprit = null;
 
         public static bool lowUIResolution = false;
@@ -194,6 +196,13 @@ namespace MoreMegaStructure
                     recipeSelectTips.Add(recipeSelectionObj.transform.Find("tip-group").gameObject);
                     Button circleButton = circleButtonObj.GetComponent<Button>();
                     circleButton.onClick.RemoveAllListeners();
+                    UIButton recipeUIBtn = circleButtonObj.GetComponent<UIButton>();
+                    recipeUIBtn.tips.corner = 3;
+                    if (i == 0)
+                    {
+                        recipeUIBtn.tips.itemId = 9500;
+                    }
+                    recipeCircleUIBtns.Add(recipeUIBtn);
 
                     GameObject removeButtonObj = GameObject.Instantiate(circleButtonObj, recipeSelectionObj.transform);
                     removeButtonObj.name = "stop-btn";
@@ -1552,6 +1561,12 @@ namespace MoreMegaStructure
                         setLimitObjs[i].SetActive(showingLimit);
                         sliders[i].value = W2S(weights[starIndex][i]);
                         removeRecipeBtnObjs[i].SetActive(true);
+                        recipeCircleUIBtns[i].tips.itemId = products[starIndex][i][0];
+                        // recipeCircleUIBtns[i].tips.type = UIButton.ItemTipType.Recipe; // 没效果
+                        if (LDB.recipes.Select(recipeIds[starIndex][i]) != null && LDB.recipes.Select(recipeIds[starIndex][i]).Explicit)
+                        {
+                            recipeCircleUIBtns[i].tips.itemId = -recipeIds[starIndex][i];
+                        }
                     }
                     else
                     {
@@ -1561,6 +1576,7 @@ namespace MoreMegaStructure
                         speedTextObjs[i].SetActive(false);
                         setLimitObjs[i].SetActive(false);
                         removeRecipeBtnObjs[i].SetActive(false);
+                        recipeCircleUIBtns[i].tips.itemId = 0;
                         if (maxSlotIndex < i)
                             recipePickerTxts[i].text = String.Format("组装厂槽位解锁于".Translate(), MoreMegaStructure.Capacity2Str(speedNeededToUnlockSlot[i]));
                         else
