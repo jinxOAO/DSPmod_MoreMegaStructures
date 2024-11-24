@@ -36,9 +36,8 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>..\dependencies\Assembly-CSharp-publicized.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="Assembly-CSharp-nstrip">
+      <HintPath>..\dependencies\Assembly-CSharp-nstrip.dll</HintPath>
     </Reference>
     <Reference Include="Bottleneck-nstrip">
       <HintPath>..\dependencies\Bottleneck-nstrip.dll</HintPath>
@@ -104,7 +103,9 @@
     <Compile Include="UIReceiverPatchers.cs" />
     <Compile Include="UIStationWindowPatcher.cs" />
     <Compile Include="UIStatisticsPatcher.cs" />
+    <Compile Include="UIWarpArray.cs" />
     <Compile Include="Utils.cs" />
+    <Compile Include="WarpArray.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="BepInEx.Core" Version="5.4.17" />

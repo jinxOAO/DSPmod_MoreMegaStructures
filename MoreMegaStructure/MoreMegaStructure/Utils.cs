@@ -11,7 +11,7 @@ namespace MoreMegaStructure
         private static readonly System.Random RandSeed = new System.Random();
         public static string _textColorVanillaBlue = "<color=\"#61D8FFc0\">{1}</color>";
         public static string TextColorVanillaOrange = "<color=\"#FD965ECC\">{1}</color>";
-
+        // 1ly = 60AU = 60 * 40000 m
         public static VectorLF3 RandPosDelta()
         {
             return new VectorLF3(RandSeed.NextDouble() - 0.5, RandSeed.NextDouble() - 0.5, RandSeed.NextDouble() - 0.5);
@@ -191,7 +191,13 @@ namespace MoreMegaStructure
         //    return true;
         //}
 
-
+        public static Vector3 GetVertical(Vector3 ori)
+        {
+            if (ori.x == 0)
+                return new Vector3(1, 0, 0);
+            else
+                return new Vector3(-ori.z / ori.x, 0, 1).normalized;
+        }
     }
 
 }

@@ -426,23 +426,7 @@ namespace MoreMegaStructure
             }
         }
 
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(UIDESphereInfo), "_OnUpdate")]
-        public static void UIDESphereInfoOnUpdatePatch(ref UIDESphereInfo __instance)
-        {
-            if (MoreMegaStructure.curDysonSphere == null)
-            {
-                //MoreMegaStructure.curDysonSphere = (DysonSphere)Traverse.Create(__instance).Field("dysonSphere").GetValue();
-                //if (MoreMegaStructure.curDysonSphere != null)
-                //	MoreMegaStructure.curStar = MoreMegaStructure.curDysonSphere.starData;
-            }
-            if (MoreMegaStructure.curDysonSphere != null && MoreMegaStructure.StarMegaStructureType[MoreMegaStructure.curDysonSphere.starData.index] == 6)
-            {
-                int[] curData = StarCannon.GetStarCannonProperties(MoreMegaStructure.curDysonSphere);
-                __instance.sailCntText.text = curData[2] < 9000 ? curData[2].ToString() : "无限制gm".Translate();
-                __instance.nodeCntText.text = "-" + curData[5].ToString() + "% / ly";
-            }
-        }
+        
 
         /// <summary>
         /// 为了星图模式下底部字幕显示恒星炮状态

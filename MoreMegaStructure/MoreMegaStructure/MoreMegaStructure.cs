@@ -24,15 +24,15 @@ namespace MoreMegaStructure
     [BepInDependency(CommonAPIPlugin.GUID)]
     [BepInDependency(DSPModSavePlugin.MODGUID)]
     [CommonAPISubmoduleDependency(nameof(ProtoRegistry), nameof(TabSystem), nameof(LocalizationModule))]
-    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.5.11")]
+    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.7.1")]
     public class MoreMegaStructure : BaseUnityPlugin, IModCanSave
     {
         /// <summary>
         /// mod版本会进行存档
         /// </summary>
-        public static int modVersion = 135;
+        public static int modVersion = 160;
 
-        public static int savedModVersion = 135;
+        public static int savedModVersion = 160;
 
         public static bool CompatibilityPatchUnlocked = false;
 
@@ -77,6 +77,7 @@ namespace MoreMegaStructure
         public static ConfigEntry<bool> NoWasteResources;
         public static ConfigEntry<bool> ReverseStarCannonShellAlignDirection;
         public static ConfigEntry<bool> ShowIAUIWhenOpenDE;
+        // public static ConfigEntry<bool> HideWarpFieldUI;
         public static bool resolutionLower1080 = false;
 
         public static ResourceData resources;
@@ -247,6 +248,9 @@ namespace MoreMegaStructure
             ReverseStarCannonShellAlignDirection = Config.Bind("config", "ReverseStarCannonShellAlignDirection", false, "Turn this to true will reverse the align direction of all the shell of star cannon when firing, which means the south pole (of the shells) will point to the target star rather than the north pole.  将此项设置为true会反转恒星炮开火时壳层的对齐方向，这意味着所有壳层的南极将指向目标恒星开火（而非默认的北极）。如果你的炮口造反了，可以尝试更改此项设置。");
             ShowIAUIWhenOpenDE = Config.Bind("config", "AutoShowDEUI", true, "Set this to true will force to show the Interstellar Assembly's UI when opening/switching its Megastructure Editor Panel. Set to false will maintain the IA UI's last state. 将此项设置为true将在每次打开星际组装厂的巨构编辑器面板时，强制显示UI。设置为false则会维持上次的状态。");
 
+            // HideWarpFieldUI = Config.Bind("config", "HideWarpFieldUI", false, "Hide the warp field area in starmap UI. 是否隐藏星图界面的折跃场范围显示。");
+
+
             //var ab = AssetBundle.LoadFromStream(Assembly.GetExecutingAssembly().GetManifestResourceStream("MoreMegaStructure.megastructureicons"));
             iconRocketMattD = Resources.Load<Sprite>("Assets/MegaStructureTab/rocketMatter");
             iconRocketScieN = Resources.Load<Sprite>("Assets/MegaStructureTab/rocketScience");
@@ -303,6 +307,8 @@ namespace MoreMegaStructure
             Harmony.CreateAndPatchAll(typeof(UIPerformancePanelPatcher));
             Harmony.CreateAndPatchAll(typeof(UIDialogPatch));
             Harmony.CreateAndPatchAll(typeof(UIStationWindowPatcher));
+            Harmony.CreateAndPatchAll(typeof(WarpArray));
+            Harmony.CreateAndPatchAll(typeof(UIWarpArray));
 
             MMSProtos.ChangeReceiverRelatedStringProto();
             MMSProtos.AddTranslateUILabel();
@@ -1240,47 +1246,47 @@ namespace MoreMegaStructure
             }
             else if (StarMegaStructureType[idx] == 3) //如果是折跃场广播阵列
             {
-                GameHistoryData history = GameMain.history;
+                //GameHistoryData history = GameMain.history;
 
-                int curTechLevel = 2;
+                //int curTechLevel = 2;
 
-                //TechProto techProto = LDB.techs.Select(3407);
-                try
-                {
-                    TechState ts = history.techStates[3407];
-                    curTechLevel = ts.curLevel > 2 ? ts.curLevel : 2;
-                }
-                catch (Exception)
-                {
-                    //Debug.LogWarning("No history techStates of 3407.");
-                }
+                ////TechProto techProto = LDB.techs.Select(3407);
+                //try
+                //{
+                //    TechState ts = history.techStates[3407];
+                //    curTechLevel = ts.curLevel > 2 ? ts.curLevel : 2;
+                //}
+                //catch (Exception)
+                //{
+                //    //Debug.LogWarning("No history techStates of 3407.");
+                //}
 
-                try
-                {
-                    if (__instance != null)
-                    {
-                        long DysonEnergy
-                            = (__instance.energyGenCurrentTick - __instance.energyReqCurrentTick) /
-                              WarpAccDivisor; //根据巨构的能量减去需求量，除以1000000后，如果再乘60，单位就是MW。现在除10^7也就是每60MW提供10%的额外曲速速度
-                        DysonEnergy = DysonEnergy > WarpAccMax ? WarpAccMax : DysonEnergy; //3TW为上限加成，即+250ly/s
-                        if (DysonEnergy <= 0) // 原来有|| __instance.energyGenCurrentTick_Layers <= 0，但是不需要了因为energyGenCurrentTick的计算方式已被我改了
-                        {
-                            history.logisticShipSpeedScale = 1f + (curTechLevel - 2) * 0.5f;
-                        }
-                        else
-                        {
-                            history.logisticShipSpeedScale = 1f + (curTechLevel - 2) * 0.5f + DysonEnergy;
-                        }
-                    }
-                    else
-                    {
-                        history.logisticShipSpeedScale = 1f + (curTechLevel - 2) * 0.5f;
-                    }
-                }
-                catch (Exception)
-                {
-                    //Debug.LogWarning("Error on RefreshShipSpeedScale");
-                }
+                //try
+                //{
+                //    if (__instance != null)
+                //    {
+                //        long DysonEnergy
+                //            = (__instance.energyGenCurrentTick - __instance.energyReqCurrentTick) /
+                //              WarpAccDivisor; //根据巨构的能量减去需求量，除以1000000后，如果再乘60，单位就是MW。现在除10^7也就是每60MW提供10%的额外曲速速度
+                //        DysonEnergy = DysonEnergy > WarpAccMax ? WarpAccMax : DysonEnergy; //3TW为上限加成，即+250ly/s
+                //        if (DysonEnergy <= 0) // 原来有|| __instance.energyGenCurrentTick_Layers <= 0，但是不需要了因为energyGenCurrentTick的计算方式已被我改了
+                //        {
+                //            history.logisticShipSpeedScale = 1f + (curTechLevel - 2) * 0.5f;
+                //        }
+                //        else
+                //        {
+                //            history.logisticShipSpeedScale = 1f + (curTechLevel - 2) * 0.5f + DysonEnergy;
+                //        }
+                //    }
+                //    else
+                //    {
+                //        history.logisticShipSpeedScale = 1f + (curTechLevel - 2) * 0.5f;
+                //    }
+                //}
+                //catch (Exception)
+                //{
+                //    //Debug.LogWarning("Error on RefreshShipSpeedScale");
+                //}
             }
             else if (StarMegaStructureType[idx] == 4) //如果是星际组装厂
             {
@@ -1590,6 +1596,11 @@ namespace MoreMegaStructure
 
                     DysonEditorPowerDescLabel4BarObj.SetActive(false);
                 }
+                else if (curDysonSphere != null && StarMegaStructureType[curStar.index] == 3)
+                {
+                    SpSailAmountText.text = "折跃场内曲速速率".Translate();
+                    SpNodeAmountText.text = "折跃场内能量消耗".Translate();
+                }
                 else
                 {
                     SpEnergySatisfiedLabelText.text = "供电率".Translate();
@@ -1680,7 +1691,7 @@ namespace MoreMegaStructure
                         RightDysonTitle.text = "折跃场广播阵列".Translate() + " " + star.displayName;
                         set2WarpFieldGenButtonTextTrans.GetComponent<Text>().color = currentTextColor;
                         set2WarpFieldGenButtonTextTrans.GetComponent<Text>().text = "当前".Translate() + " " + "折跃场广播阵列".Translate();
-                        RightMaxPowGenText.text = "折跃场加速".Translate();
+                        RightMaxPowGenText.text = "折跃场半径".Translate();
                         break;
 
                     case 4:
@@ -1756,13 +1767,12 @@ namespace MoreMegaStructure
                     return;
                 }
 
-                if (type == 3 && WarpBuiltStarIndex >= 0)
-                {
-                    string systemName = GameMain.galaxy.stars[WarpBuiltStarIndex].displayName;
-                    //SetMegaStructureWarningText.text = "警告最多一个".Translate() + " " + systemName;
-                    UIRealtimeTip.Popup("警告最多一个".Translate() + " " + systemName);
-                    return;
-                }
+                //if (type == 3 && WarpBuiltStarIndex >= 0)
+                //{
+                //    string systemName = GameMain.galaxy.stars[WarpBuiltStarIndex].displayName;
+                //    UIRealtimeTip.Popup("警告最多一个".Translate() + " " + systemName);
+                //    return;
+                //}
 
                 if (type == 5 && curStar.type != EStarType.NeutronStar && curStar.type != EStarType.WhiteDwarf)
                 {
@@ -1787,16 +1797,17 @@ namespace MoreMegaStructure
                 //根据是否有现存框架，是否允许改变巨构类型
                 if (curDysonSphere != null)
                 {
-                    if (curDysonSphere.totalNodeCount > 0 && !developerMode) //如果有框架，则不允许修改巨构类型，在后续的UI刷新时对应修改按钮状态和文本
+                    if (curDysonSphere.totalNodeCount > 0 && !developerMode && !GameMain.data.gameDesc.isSandboxMode) //如果有框架，则不允许修改巨构类型，在后续的UI刷新时对应修改按钮状态和文本
                     {
                         UIRealtimeTip.Popup("警告先拆除".Translate());
                         return;
                     }
                 }
 
-                //Debug.LogWarning("Can change type because of null refrence.");
                 //条件满足
                 StarMegaStructureType[idx] = type;
+                OnMegaTypeChanged();
+
                 if (type == 4)
                 {
                     StarAssembly.ResetArchiveDataByStarIndex(idx);
@@ -1810,6 +1821,7 @@ namespace MoreMegaStructure
 
                 if (type == 2 && GenesisCompatibility) // 改成科学枢纽后删除所有太阳帆，目前只对创世之书生效
                     curDysonSphere.swarm.RemoveSailsByOrbit(-1);
+
             }
             catch (Exception)
             {
@@ -1817,6 +1829,11 @@ namespace MoreMegaStructure
                 UIRealtimeTip.Popup("警告未知错误".Translate());
                 return;
             }
+        }
+
+        public static void OnMegaTypeChanged()
+        {
+            WarpArray.CheckSectorWarpArrays();
         }
 
         //每秒刷新巨构UI的总Capacity数值的显示，主要用于科学枢纽和广播阵列（这两个不需要接收器）显示其效率
@@ -1836,9 +1853,8 @@ namespace MoreMegaStructure
                 }
                 else if (StarMegaStructureType[curDysonSphere.starData.id - 1] == 3) //如果是折跃场广播阵列
                 {
-                    long DysonEnergy = (curDysonSphere.energyGenCurrentTick - curDysonSphere.energyReqCurrentTick) / WarpAccDivisor;
-                    DysonEnergy = DysonEnergy > WarpAccMax ? WarpAccMax : DysonEnergy;
-                    RightMaxPowGenValueText.text = Capacity2SpeedAcc((int)DysonEnergy) + "ly/s";
+                    long DysonEnergy = (curDysonSphere.energyGenCurrentTick - curDysonSphere.energyReqCurrentTick);
+                    RightMaxPowGenValueText.text = (WarpArray.GetRadiusByEnergyPerFrame(DysonEnergy)/60/40000).ToString("N1") + " ly";
                 }
                 else if (StarMegaStructureType[curDysonSphere.starData.id - 1] == 4) //如果是星际组装厂
                 {
@@ -1862,14 +1878,29 @@ namespace MoreMegaStructure
             }
         }
 
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(UIDESphereInfo), "_OnUpdate")]
+        public static void UIValueUpdate2(ref UIDESphereInfo __instance)
+        {
+            if (curDysonSphere != null)
+            {
+                if (StarMegaStructureType[curDysonSphere.starData.index] == 3)
+                {
+                    __instance.sailCntText.text = (WarpArray.warpSpeedInWarpField / 60 / 40000).ToString() + " ly/s";
+                    __instance.nodeCntText.text = "-" + ((1 - WarpArray.GetTripEnergyCostRatioByEnergyPerFrame(curDysonSphere.energyGenCurrentTick)) * 100).ToString("N0") + " %";
+                }
+                else if (StarMegaStructureType[curDysonSphere.starData.index] == 6)
+                {
+                    int[] curData = StarCannon.GetStarCannonProperties(curDysonSphere);
+                    __instance.sailCntText.text = curData[2] < 9000 ? curData[2].ToString() : "无限制gm".Translate();
+                    __instance.nodeCntText.text = "-" + curData[5].ToString() + "% / ly";
+                }
+            }
+        }
+
         //查看折跃场广播阵列是否达到建造上限
         public static int CheckWarpArrayBuilt()
         {
-            for (int i = 0; i < 1000; i++)
-            {
-                if (StarMegaStructureType[i] == 3) return i;
-            }
-
             return -1;
         }
 
@@ -2018,12 +2049,18 @@ namespace MoreMegaStructure
             {
                 StarCannon.IntoOtherSave();
             }
+            WarpArray.Import(r);
+            UIWarpArray.Import(r);
 
             // 放在最后
             UIStatisticsPatcher.Import(r);
             if (GameMain.galaxy.starCount >= 100 && !Support1000Stars.Value)
             {
                 UIMessageBox.Show("警告mms".Translate(), "警告未开启大于1000星系支持".Translate(), "我明白".Translate(), 1);
+            }
+            if(savedModVersion < 160)
+            {
+                UIMessageBox.Show("警告mms".Translate(), "星际组装厂逻辑更新警告".Translate(), "我明白".Translate(), 1);
             }
         }
 
@@ -2040,6 +2077,8 @@ namespace MoreMegaStructure
 
             StarAssembly.Export(w);
             StarCannon.Export(w);
+            WarpArray.Export(w);
+            UIWarpArray.Export(w);
 
             // 放在最后
             UIStatisticsPatcher.Export(w);
@@ -2064,6 +2103,8 @@ namespace MoreMegaStructure
             //EffectRenderer.InitAll();
             UIBuildMenuPatcher.InitDataWhenLoad();
             StarCannon.IntoOtherSave();
+            WarpArray.IntoOtherSave();
+            UIWarpArray.IntoOtherSave();
 
             // 放在最后
             UIStatisticsPatcher.IntoOtherSave();

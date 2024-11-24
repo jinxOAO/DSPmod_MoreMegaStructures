@@ -1774,7 +1774,7 @@ namespace MoreMegaStructure
                 "产出单极磁石和一些基础资源（例如铁块），可被对应的物质重构器接收。", "");
             LocalizationModule.RegisterTranslation("科学枢纽功能文本", "Upload hash points for research without requiring any matrix.", "无需矩阵即可上传hash点数进行研究。",
                                                    "");
-            LocalizationModule.RegisterTranslation("折跃场广播阵列功能文本", "Increase the warp speed of logistics vessels.", "提高物流运输船的曲速速度。", "");
+            LocalizationModule.RegisterTranslation("折跃场广播阵列功能文本", "Create a warp field centered on this megastructure. When any logistics vessels enters the warp field, it will <color=#FD965ECC>instantly pass through the warp field</color> at a speed of 250 ly/s. In addition, if a interstellar logistics vessel takes off in a warp field, its energy consumption will be reduced.\n<color=#FD965ECC>The radius of the warp field and the effect of reducing energy consumption depend on the energy level</color> of the megastructure. But the acceleration effect within the warp field is not affected by the megastructure energy.", "在以巨构为中心的一定半径内创建一个折跃场，任何物流船经过折跃场时，会以250ly/s的速度<color=#FD965ECC>瞬间穿过折跃场</color>。此外，若星际物流飞船起飞时处在折跃场内，其消耗的能量还会被降低。\n<color=#FD965ECC>折跃场半径</color>和<color=#FD965ECC>能耗降低效果</color>取决于<color=#FD965ECC>巨构能量水平</color>，折跃场内的加速效果不受能量水平影响。", "");
             LocalizationModule.RegisterTranslation(
                 "星际组装厂功能文本",
                 "You can set up to 15 recipes, this megastructure will automatically obtain materials from the exchange logistic stations on the ground, produce products and transport them back to the ground. The production speed depends on the assignment of energy and the recipe's time cost. And you can use proliferator to get extra products without consuming extra energy, if the recipe allows extra production. In any cases, you can not choose the production speedup mode. Unused energy will automatically produce multi-functional integration components.\nIn addition to receive by the exchange logistic station, components can also be transmitted directly to the mecha (but only 10%efficiency). You can set this function in the mecha panel.",
@@ -1822,9 +1822,14 @@ namespace MoreMegaStructure
             LocalizationModule.RegisterTranslation("巨构内部仓储", "Internal Storage", "内部仓储", "");
             LocalizationModule.RegisterTranslation("显示/隐藏星际组装厂配置", "Show/Hide Star Assembly Recipes", "显示/隐藏 星际组装厂配置", "");
             LocalizationModule.RegisterTranslation("配置最大生产速度限制", "Configure production speed limit", "配置生产速度限制", "");
-            LocalizationModule.RegisterTranslation("最大生产速度限制", "Speed limit (/min)", "生产速度限制(/min)", "");
-            LocalizationModule.RegisterTranslation("最大生产速度限制题目", "Production speed limit", "生产速度限制", "");
-            LocalizationModule.RegisterTranslation("最大生产速度限制描述", "By changing this value, the maximum production speed of this recipe can be limited. Even if the allocated energy and raw material supply can meet higher production speed, the interstellar assembly will still consume raw materials for production according to this speed limit.\nCancel this limitation by set it to 0 (default).", "通过该数值，可以限制此配方在星际组装厂的最大生产速度，即使分配的能量和地面原材料的供给均可以满足更高的生产速度，星际组装厂也会按照此设置中限制的速度消耗原材料进行生产。\n设置为0（默认）则代表取消限制。", "");
+            LocalizationModule.RegisterTranslation("最大生产速度限制", "Expected Speed (/min)", "目标生产速度(/min)", "");
+            LocalizationModule.RegisterTranslation("最大生产速度限制题目", "Expected Speed", "目标生产速度", "");
+            LocalizationModule.RegisterTranslation("最大生产速度限制描述", "When the energy of the interstellar assembly is sufficient to let all recipes' <color=#FD965ECC>basic production speed</color> achieve the expected speed, the excess energy will be used to make multifunctional integrated components. When the energy is insufficient, it will allocate energy according to the proportions of the requested speeds of each recipe, keeping their <color=#FD965ECC>basic production speeds' proportion</color> consistent with the expected speeds' proportion.\nNote that this setting only applies to the <color=#FD965ECC>basic production speed</color>, and <color=#FD965ECC>does not consider the effects of proliferator or specialization</color>. Therefore, the actual production speed may exceed the set value due to proliferator or specialization.", "当星际组装厂的能量足以使得所有配方的<color=#FD965ECC>基础生产速度</color>达到设定的目标生产速度需求时，多余的能量将被用于制造多功能集成组件。当星际组装厂能量不足时，将按照各配方的速度配比去分配能量，保持他们的基础速度比例与目标生产速度的比例一致。\n注意，此设置仅作用于<color=#FD965ECC>基础生产速度</color>，<color=#FD965ECC>不会考虑增产或特化的影响</color>，因此实际产量可能会由于增产或特化超出设定值。", "");
+            LocalizationModule.RegisterTranslation("星际组装厂逻辑更新警告", "Due to the updates to the More Megastructure, the energy allocation logic of the interstellar assembly has been changed. Please confirm the speed settings of each recipe in each interstellar assembly to prevent them from shutting down.", "由于更多巨构版本更新，星际组装厂的能量分配逻辑已重构，\n请确认每个星际组装厂的速度设置，以防星际组装厂停摆。", "");
+
+            LocalizationModule.RegisterTranslation("加倍所有速度设置", "Double All Expected Spd.", "加倍所有速度设置", "");
+            LocalizationModule.RegisterTranslation("减半所有速度设置", "Halve All Expected Spd.", "减半所有速度设置", "");
+            LocalizationModule.RegisterTranslation("有过大数值警告", "The requested speed of recipe {0} is too high to double, please check.", "配方{0}的目标速度过大，无法加倍，请检查。", "");
             LocalizationModule.RegisterTranslation("组装厂槽位解锁于", "Locked. Unlock at {0}x speed", "已锁定，解锁于 {0}x 速度", "");
             LocalizationModule.RegisterTranslation("星际组装厂槽位未解锁警告", "This slot is locked!", "此栏位尚未解锁！", "");
 
@@ -1833,6 +1838,14 @@ namespace MoreMegaStructure
             LocalizationModule.RegisterTranslation("巨建快速组装描述", "Quickly assemble constructions using multi-functional integrated components",
                                                    "使用多功能集成组件快速递组装成目标巨建。", "");
 
+
+            LocalizationModule.RegisterTranslation("折跃场半径", "Warp Field Radius", "折跃场半径", ""); 
+            LocalizationModule.RegisterTranslation("折跃场内曲速速率", "Warp Speed In Warp Field", "折跃场内曲速速率", "");
+            LocalizationModule.RegisterTranslation("折跃场内能量消耗", "Energy Cost In Warp Field", "折跃场内能量消耗", "");
+            LocalizationModule.RegisterTranslation("折跃场已覆盖信息", "Covered By Warp Field From {0}\nLogistic Vessel Energy Consumption -{1:N0}% ", "已被来自{0}的折跃场覆盖\n物流船消耗 -{1:N0}% ", "");
+            LocalizationModule.RegisterTranslation("折跃场未覆盖信息", "Warp Field Not Covered ", "折跃场未覆盖 ", "");
+            LocalizationModule.RegisterTranslation("折跃场范围显示", "Warp Field Not Covered ", "折跃场范围显示", "");
+            LocalizationModule.RegisterTranslation("折跃场范围显示描述", "Click to switch on/off the display of the warp field area in the starmap.", "点击以开启/关闭星图界面的折跃场范围显示。", "");
 
             LocalizationModule.RegisterTranslation("巨构状态", "Mega structure status", "巨构状态", "");
             LocalizationModule.RegisterTranslation("巨构类型不符", "type not match", "巨构不符", "");
