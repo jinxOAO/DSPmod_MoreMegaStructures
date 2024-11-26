@@ -91,7 +91,6 @@ namespace MoreMegaStructure
                             showHideUIBtn.transitions[i].target = showHideButtonObj.GetComponent<Graphic>();
                         else if (i == 1)
                             showHideUIBtn.transitions[i].target = showHideButtonObj.transform.Find("icon").GetComponent<Graphic>();
-                        Debug.Log($"----\n\n\n\n\n{showHideButtonObj.transform.Find("icon").GetComponent<Graphic>() != null}");
                     }
                     showHideButtonObj.GetComponent<Button>().onClick.RemoveAllListeners();
                     showHideButtonObj.GetComponent<Button>().onClick.AddListener(() => { ShowHideWarpFieldCircle(); });
