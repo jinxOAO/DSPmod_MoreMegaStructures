@@ -659,14 +659,25 @@ namespace MoreMegaStructure
                     PlanetFactory factory = planet.factory;
                     if (factory != null)
                     {
-                        if (GameMain.statistics.production.factoryStatPool.Length > factory.index 
-                            && GameMain.data.factories.Length + GameMain.galaxy.starCount - starIndex - 1 < GameMain.statistics.production.factoryStatPool.Length)
+                        if (UIStatisticsPatcher.enabled)
                         {
-                            //FactoryProductionStat factoryProductionStat = GameMain.statistics.production.factoryStatPool[factory.index];
-                            FactoryProductionStat factoryProductionStat = GameMain.statistics.production.factoryStatPool[GameMain.data.factories.Length + GameMain.galaxy.starCount - starIndex - 1];
+                            if (GameMain.statistics.production.factoryStatPool.Length > factory.index
+                                && GameMain.data.factories.Length + GameMain.galaxy.starCount - starIndex - 1 < GameMain.statistics.production.factoryStatPool.Length)
+                            {
+                                //FactoryProductionStat factoryProductionStat = GameMain.statistics.production.factoryStatPool[factory.index];
+                                FactoryProductionStat factoryProductionStat = GameMain.statistics.production.factoryStatPool[GameMain.data.factories.Length + GameMain.galaxy.starCount - starIndex - 1];
+                                productRegister = factoryProductionStat.productRegister;
+                                consumeRegister = factoryProductionStat.consumeRegister;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            FactoryProductionStat factoryProductionStat = GameMain.statistics.production.factoryStatPool[factory.index];
                             productRegister = factoryProductionStat.productRegister;
                             consumeRegister = factoryProductionStat.consumeRegister;
-                            break;
+                            if (productRegister != null && consumeRegister != null)
+                                break;
                         }
                     }
                 }

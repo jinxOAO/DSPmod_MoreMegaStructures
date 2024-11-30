@@ -10,7 +10,7 @@ namespace MoreMegaStructure
 {
     public class UIStatisticsPatcher
     {
-        public static bool enabled = true;
+        public static bool enabled = false;
         public static long time0 = 0;
         public static long time1 = 0;
         public static long time2 = 0;
