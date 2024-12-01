@@ -24,7 +24,7 @@ namespace MoreMegaStructure
     [BepInDependency(CommonAPIPlugin.GUID)]
     [BepInDependency(DSPModSavePlugin.MODGUID)]
     [CommonAPISubmoduleDependency(nameof(ProtoRegistry), nameof(TabSystem), nameof(LocalizationModule))]
-    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.7.2")]
+    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.7.3")]
     public class MoreMegaStructure : BaseUnityPlugin, IModCanSave
     {
         /// <summary>
@@ -209,6 +209,8 @@ namespace MoreMegaStructure
         // 测试用
         public static bool KeyNPressTime = false;
         public static int testHitIndex = 0;
+
+
 
         public void Awake()
         {
@@ -2190,6 +2192,19 @@ namespace MoreMegaStructure
             return (ratio * 0.05).ToString("G3") + " ";
         }
     }
+
+
+    public enum EMegaType
+    {
+        DysonSphere = 0,
+        MatterDecompressor = 1,
+        ScienceNexus = 2,
+        WarpArray = 3,
+        InterstellarAssembly = 4,
+        CrystalReconstructor = 5,
+        StarCannon = 6
+    }
+
 
     /// 以下为创世之书特别适配用
     [BepInDependency("org.LoShin.GenesisBook")]

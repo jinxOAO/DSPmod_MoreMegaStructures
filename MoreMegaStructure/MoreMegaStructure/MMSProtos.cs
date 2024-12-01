@@ -14,6 +14,7 @@ namespace MoreMegaStructure
     internal static class MMSProtos
     {
         public static int StarCannonTechId = 1918;
+        public static int componentId = 9500;
 
         internal static void RefreshInitAll()
         {
@@ -928,6 +929,7 @@ namespace MoreMegaStructure
             }
 
             //下面是接收器 以及 新的物流塔
+            // 不要删除铁金属重构装置！！！！！！因为这个物体被用作星际组装厂的生产机器图标
             var oriRecipe3 = LDB.recipes.Select(41);
             var oriItem3 = LDB.items.Select(2208);
             var oriLogisticStation = LDB.items.Select(2104);
@@ -935,10 +937,10 @@ namespace MoreMegaStructure
             var ReceiverIronRecipe = oriRecipe3.Copy();
             var ReceiverIron = oriItem3.Copy();
             ReceiverIronRecipe.ID = recipeIdBias + 543;
-            ReceiverIronRecipe.Name = "铁金属重构装置";
-            ReceiverIronRecipe.name = "铁金属重构装置".Translate();
-            ReceiverIronRecipe.Description = "接收重构装置描述";
-            ReceiverIronRecipe.description = "接收重构装置描述".Translate();
+            ReceiverIronRecipe.Name = "星际组装厂生产机器图标专用"; // 原铁金属重构装置
+            ReceiverIronRecipe.name = "星际组装厂生产机器图标专用".Translate();
+            ReceiverIronRecipe.Description = "";
+            ReceiverIronRecipe.description = "";
             ReceiverIronRecipe.Items = new int[] { 1103, 1404, 1303, 9481 };
             ReceiverIronRecipe.ItemCounts = new int[] { 20, 10, 5, 2 };
             if (MoreMegaStructure.GenesisCompatibility)
@@ -952,13 +954,13 @@ namespace MoreMegaStructure
             ReceiverIronRecipe.GridIndex = 9901 + pagePlus;
             ReceiverIronRecipe.TimeSpend = 480;
             Traverse.Create(ReceiverIronRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverIron);
-            ReceiverIronRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技
+            ReceiverIronRecipe.preTech = null; //射线接收站科技
             if (MoreMegaStructure.isBattleActive) ReceiverIronRecipe.preTech = LDB.techs.Select(1920);
             ReceiverIron.ID = 9493;
-            ReceiverIron.Name = "铁金属重构装置";
-            ReceiverIron.name = "铁金属重构装置".Translate();
-            ReceiverIron.Description = "接收重构装置描述";
-            ReceiverIron.description = "接收重构装置描述".Translate();
+            ReceiverIron.Name = "星际组装厂生产机器图标专用";
+            ReceiverIron.name = "星际组装厂生产机器图标专用".Translate();
+            ReceiverIron.Description = "";
+            ReceiverIron.description = "".Translate();
             ReceiverIron.GridIndex = 9901 + pagePlus;
             ReceiverIron.HeatValue = 0L;
             ReceiverIron.prefabDesc = oriItem3.prefabDesc.Copy();
@@ -971,7 +973,10 @@ namespace MoreMegaStructure
             ReceiverIron.Grade = 2;
             ReceiverIron.Upgrades = new int[] { 2208, 9493, 9494, 9495, 9496, 9497, 9501, 9498, 9502 };
             //ReceiverIron.makes = new List<RecipeProto> { ReceiverIronRecipe };
-            Traverse.Create(ReceiverIron).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverIron);
+            // Traverse.Create(ReceiverIron).Field("_iconSprite").SetValue(Resources.Load<Sprite>("ui/textures/sprites/icons/dyson-sphere-96")); // 太不清楚
+            // ReceiverIron._iconSprite = Resources.Load<Sprite>("ui/textures/sprites/icons/dsp-icon"); // 是DSP标志
+            // ReceiverIron._iconSprite = Resources.Load<Sprite>("ui/textures/sprites/icons/component-icon"); // 两个齿轮ui/textures/sprites/starmap/planets-icon
+            ReceiverIron._iconSprite = Resources.Load<Sprite>("ui/textures/sprites/starmap/planets-icon"); // 巨构样子的图标
             //Copper
             var ReceiverCopperRecipe = oriRecipe3.Copy();
             var ReceiverCopper = oriItem3.Copy();
@@ -993,7 +998,7 @@ namespace MoreMegaStructure
             ReceiverCopperRecipe.GridIndex = 9902 + pagePlus;
             ReceiverCopperRecipe.TimeSpend = 480;
             Traverse.Create(ReceiverCopperRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverCopper);
-            ReceiverCopperRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技
+            ReceiverCopperRecipe.preTech = null; //射线接收站科技
             if (MoreMegaStructure.isBattleActive) ReceiverCopperRecipe.preTech = LDB.techs.Select(1920);
             ReceiverCopper.ID = 9494;
             ReceiverCopper.Name = "铜金属重构装置";
@@ -1034,7 +1039,7 @@ namespace MoreMegaStructure
             ReceiverSiliconRecipe.GridIndex = 9903 + pagePlus;
             ReceiverSiliconRecipe.TimeSpend = 480;
             Traverse.Create(ReceiverSiliconRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverSilicon);
-            ReceiverSiliconRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技
+            ReceiverSiliconRecipe.preTech = null;
             if (MoreMegaStructure.isBattleActive) ReceiverSiliconRecipe.preTech = LDB.techs.Select(1920);
             ReceiverSilicon.ID = 9495;
             ReceiverSilicon.Name = "高纯硅重构装置";
@@ -1075,7 +1080,7 @@ namespace MoreMegaStructure
             ReceiverTitaniumRecipe.GridIndex = 9904 + pagePlus;
             ReceiverTitaniumRecipe.TimeSpend = 480;
             Traverse.Create(ReceiverTitaniumRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverTitanium);
-            ReceiverTitaniumRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技 
+            ReceiverTitaniumRecipe.preTech = null;
             if (MoreMegaStructure.isBattleActive) ReceiverTitaniumRecipe.preTech = LDB.techs.Select(1920);
             ReceiverTitanium.ID = 9496;
             ReceiverTitanium.Name = "钛金属重构装置";
@@ -1116,7 +1121,7 @@ namespace MoreMegaStructure
             ReceiverMagoreRecipe.GridIndex = 9905 + pagePlus;
             ReceiverMagoreRecipe.TimeSpend = 480;
             Traverse.Create(ReceiverMagoreRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverMagore);
-            ReceiverMagoreRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技
+            ReceiverMagoreRecipe.preTech = null;
             if (MoreMegaStructure.isBattleActive) ReceiverMagoreRecipe.preTech = LDB.techs.Select(1920);
             ReceiverMagore.ID = 9497;
             ReceiverMagore.Name = "单极磁石重构装置";
@@ -1157,7 +1162,7 @@ namespace MoreMegaStructure
             ReceiverCoalRecipe.GridIndex = 9906 + pagePlus;
             ReceiverCoalRecipe.TimeSpend = 480;
             Traverse.Create(ReceiverCoalRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverCoal);
-            ReceiverCoalRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技 
+            ReceiverCoalRecipe.preTech = null;
             if (MoreMegaStructure.isBattleActive) ReceiverCoalRecipe.preTech = LDB.techs.Select(1920);
             ReceiverCoal.ID = 9501;
             ReceiverCoal.Name = "石墨提炼装置";
@@ -1198,7 +1203,7 @@ namespace MoreMegaStructure
             ReceiverCasimirRecipe.GridIndex = 9907 + pagePlus;
             ReceiverCasimirRecipe.TimeSpend = 480;
             Traverse.Create(ReceiverCasimirRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverCasimir);
-            ReceiverCasimirRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技 
+            ReceiverCasimirRecipe.preTech = null;
             if (MoreMegaStructure.isBattleActive) ReceiverCasimirRecipe.preTech = LDB.techs.Select(1923);
             ReceiverCasimir.ID = 9498;
             ReceiverCasimir.Name = "晶体接收器";
@@ -1239,7 +1244,7 @@ namespace MoreMegaStructure
             ReceiverGratingRecipe.GridIndex = 9908 + pagePlus;
             ReceiverGratingRecipe.TimeSpend = 480;
             Traverse.Create(ReceiverGratingRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverGrating);
-            ReceiverGratingRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技 
+            ReceiverGratingRecipe.preTech = null;
             if (MoreMegaStructure.isBattleActive) ReceiverGratingRecipe.preTech = LDB.techs.Select(1923);
             ReceiverGrating.ID = 9502;
             ReceiverGrating.Name = "光栅晶体接收器";
@@ -1280,7 +1285,7 @@ namespace MoreMegaStructure
             ReceiverICRecipe.GridIndex = 9902 + pagePlus;
             ReceiverICRecipe.TimeSpend = 480;
             Traverse.Create(ReceiverICRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconReceiverIC);
-            ReceiverICRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技 
+            ReceiverICRecipe.preTech = null;
             if (MoreMegaStructure.isBattleActive) ReceiverICRecipe.preTech = LDB.techs.Select(1922);
             if (MoreMegaStructure.GenesisCompatibility) ReceiverICRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技 
             ReceiverIC.ID = 9499;

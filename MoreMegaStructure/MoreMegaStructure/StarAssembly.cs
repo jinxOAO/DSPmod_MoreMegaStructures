@@ -1320,7 +1320,7 @@ namespace MoreMegaStructure
         }
 
         // 返回特化和增产剂联合作用下的增产系数
-        public static double GetFullIncMilli(int starIndex, int slotNum, int incLevel)
+        public static float GetFullIncMilli(int starIndex, int slotNum, int incLevel)
         {
             incLevel = incLevel >= 10 ? 10 : incLevel;
             incLevel = incLevel < 0 ? 0 : incLevel;
@@ -1345,7 +1345,7 @@ namespace MoreMegaStructure
                     incBySpecialization = 0.25 * specBuffLevel[starIndex][slotNum];
                 }
             }
-            return incByProliferator + incBySpecialization;
+            return (float)(incByProliferator + incBySpecialization);
         }
 
         /// <summary>
