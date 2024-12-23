@@ -39,6 +39,7 @@
     <Reference Include="Assembly-CSharp-nstrip, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\dependencies\Assembly-CSharp-nstrip.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Bottleneck-nstrip">
       <HintPath>..\dependencies\Bottleneck-nstrip.dll</HintPath>
@@ -86,6 +87,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BottleneckCompat.cs" />
+    <Compile Include="LogisticShipBugCompat.cs" />
     <Compile Include="EffectRenderer.cs" />
     <Compile Include="MegaButtonGroupBehaviour.cs" />
     <Compile Include="MMSProtos.cs" />
@@ -95,6 +97,7 @@
     <Compile Include="ReceiverPatchers.cs" />
     <Compile Include="RendererSphere.cs" />
     <Compile Include="StarAssembly.cs" />
+    <Compile Include="StarAssemblyBlueprintData.cs" />
     <Compile Include="StarCannon.cs" />
     <Compile Include="UIDialogPatch.cs" />
     <Compile Include="UIMechaWindowPatcher.cs" />

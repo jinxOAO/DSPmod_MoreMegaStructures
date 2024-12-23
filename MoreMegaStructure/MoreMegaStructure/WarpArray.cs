@@ -28,6 +28,7 @@ namespace MoreMegaStructure
         public static long tripCostEnergyDivisor = 2000000000;
         public const float warpSpeedInWarpField = 250 * 60 * 40000;
         public const float sailSpeedInWarpField = 400 * 500;
+        public const float fixedSailSpeedInOtherMods = 400 * 100;
 
         // 运行时更新系数 无需存档
         public static List<WarpArrayData> arrays;
@@ -169,6 +170,10 @@ namespace MoreMegaStructure
         {
             //------------------------------------------------------------------------------
             float oriShipWarpSpeed = shipWarpSpeed;
+            if(CustomCreateBirthStarCompat.enabled || GalacticScaleCompat.enabled)
+            {
+                shipSailSpeed = fixedSailSpeedInOtherMods > shipSailSpeed ? fixedSailSpeedInOtherMods : shipSailSpeed;
+            }
             if (factory.planet.star.index < tripEnergyCostRatioByStarIndex.Length && tripEnergyCostRatioByStarIndex[factory.planet.star.index] < 1) // 代表它处在折跃场中
                 shipSailSpeed = sailSpeedInWarpField > shipSailSpeed ? sailSpeedInWarpField : shipSailSpeed;
             // 注意这里不能像曲速速度修改一样在后面的每个船处修改，因为在那里修改之前会根据shipSailSpeed计算很多的中间变量，这影响启用曲速的时机。

@@ -36,6 +36,7 @@ namespace MoreMegaStructure
         public static int blueBuffByTCFV = 0;
         public static int r002ByTCFV = 0;
         public static int r106ByTCFV = 0;
+        public static int r208ByTCFV = 0; // 狄拉克只产出反物质
 
         //public static int currentStarIndex = 0; // 弃用，使用MoreMegaStructure.curStar.index
         public static int currentRecipeSlot = 0; // 选择recipe时暂存所选定的是第几个recipe栏位
@@ -144,7 +145,7 @@ namespace MoreMegaStructure
                 DoubleAllSpeedButton.onClick.RemoveAllListeners();
                 DoubleAllSpeedButton.onClick.AddListener(() => { DoubleAllSpeedRequest(); });
 
-                // 加倍全部速度预期 按钮
+                // 减半全部速度预期 按钮
                 GameObject HalveAllSpeedButtonObj = GameObject.Instantiate(addNewLayerButton, GigaFactoryUIObj.transform);
                 HalveAllSpeedButtonObj.SetActive(true);
                 HalveAllSpeedButtonObj.name = "halve-all"; //名字
@@ -568,6 +569,7 @@ namespace MoreMegaStructure
             blueBuffByTCFV = 0;
             r002ByTCFV = 0;
             r106ByTCFV = 0;
+            r208ByTCFV = 0;
         }
 
         public static void ForceResetIncDataCache()
@@ -704,23 +706,31 @@ namespace MoreMegaStructure
                             flag = true;
                             break;
                         }
-                        else if (productStorage[starIndex][productId] < 10000)
+                        else if (productStorage[starIndex][productId] < 10000 && productCounts[starIndex][i][pd] > 0) // 如果是写在产物里，但是实际产出是0的，则其没有满也不能作为可生产的依据（为了防止狄拉克元驱动）
                         {
                             flag = true;
                             break;
                         }
                     }
-                    if (flag && timeSpend[starIndex][i] > 0)
+                    if (timeSpend[starIndex][i] > 0)
                     {
-                        double redundantEnergy;
-                        double prog = GetConsumeProduceSpeedRatio(starIndex, i, out redundantEnergy);
-                        totalRedundantEnergy += redundantEnergy;
-                        progress[starIndex][i] += prog;
+                        if (flag)
+                        {
+                            double redundantEnergy;
+                            double prog = GetConsumeProduceSpeedRatio(starIndex, i, out redundantEnergy);
+                            totalRedundantEnergy += redundantEnergy;
+                            progress[starIndex][i] += prog;
+                        }
+                        else
+                        {
+                            double redundantEnergy;
+                            double prog = GetConsumeProduceSpeedRatio(starIndex, i, out redundantEnergy);
+                            totalRedundantEnergy += redundantEnergy;
+                            // totalRedundantEnergy += (tickEnergy) * weights[starIndex][i]; // 如果有这项，会导致：产物堵住时，能量会转移到生产组件上
+                        }
                     }
-                    else
-                    {
-                        // totalRedundantEnergy += (tickEnergy) * weights[starIndex][i]; // 如果有这项，会导致：产物堵住时，能量会转移到生产组件上
-                    }
+
+                    
                 }
             }
             //Utils.Log("compo progress " +  progress[starIndex][0].ToString() + " + " + (energy * weights[starIndex][0] / MoreMegaStructure.multifunctionComponentHeat * (MoreMegaStructure.isRemoteReceiveingGear ? 0.1 : 1.0)).ToString());
@@ -739,6 +749,7 @@ namespace MoreMegaStructure
                 {
                     if (recipeIds[starIndex][i] > 0)
                     {
+                        int recipeId = recipeIds[starIndex][i];
                         int minSatisfied = (int)progress[starIndex][i]; // 用于指示获取到的原材料是否满足，如果不满足总是取最低的作为最终产出的参照
                         int minInc = 10; // 指示获取的增产等级，总是以最低的为准
 
@@ -798,7 +809,16 @@ namespace MoreMegaStructure
                         {
                             for (int j = 0; j < products[starIndex][i].Count; j++)
                             {
-                                productStorage[starIndex][products[starIndex][i][j]] += minSatisfied * productCounts[starIndex][i][j];
+                                float productFactor = minSatisfied;
+                                //深空狄拉克分解出反物质的buff
+                                if (r208ByTCFV > 0 && recipeId == 74)
+                                {
+                                    if (products[starIndex][i][j] == 1120)
+                                        productFactor = 0;
+                                    else if (products[starIndex][i][j] == 1122)
+                                        productFactor = 1.5f * minSatisfied;
+                                }
+                                productStorage[starIndex][products[starIndex][i][j]] += (int)(productFactor * productCounts[starIndex][i][j]);
                                 if (productStorage[starIndex][products[starIndex][i][j]] > 99999) productStorage[starIndex][products[starIndex][i][j]] = 99999;
                                 // 恒星反应釜产物的增产点数储存 以及深空来敌女神泪效果
                                 if (curSpecType[starIndex] == 2 && specBuffLevel[starIndex][i] > 0 || r002ByTCFV > 0)
@@ -806,9 +826,9 @@ namespace MoreMegaStructure
                                     if (!productStorageInc.ContainsKey(starIndex))
                                         productStorageInc.Add(starIndex, new Dictionary<int, int>());
                                     if (!productStorageInc[starIndex].ContainsKey(products[starIndex][i][j]))
-                                        productStorageInc[starIndex].Add(products[starIndex][i][j], minSatisfied * productCounts[starIndex][i][j] * 4);
+                                        productStorageInc[starIndex].Add(products[starIndex][i][j], (int)(productFactor * productCounts[starIndex][i][j]) * 4);
                                     else
-                                        productStorageInc[starIndex][products[starIndex][i][j]] += minSatisfied * productCounts[starIndex][i][j] * 4;
+                                        productStorageInc[starIndex][products[starIndex][i][j]] += (int)(productFactor * productCounts[starIndex][i][j]) * 4;
                                     if (productStorageInc[starIndex][products[starIndex][i][j]] > 4 * productStorage[starIndex][products[starIndex][i][j]])
                                         productStorageInc[starIndex][products[starIndex][i][j]] = 4 * productStorage[starIndex][products[starIndex][i][j]];
                                 }
@@ -817,7 +837,7 @@ namespace MoreMegaStructure
                                     int[] obj = productRegister;
                                     lock (obj)
                                     {
-                                        productRegister[products[starIndex][i][j]] += minSatisfied * productCounts[starIndex][i][j];
+                                        productRegister[products[starIndex][i][j]] += (int)(productFactor * productCounts[starIndex][i][j]);
                                     }
                                 }
                             }
@@ -841,16 +861,24 @@ namespace MoreMegaStructure
                                     int bonusProduct = (int)incProgress[starIndex][i];
                                     for (int j = 0; j < products[starIndex][i].Count; j++)
                                     {
-                                        productStorage[starIndex][products[starIndex][i][j]] += bonusProduct * productCounts[starIndex][i][j];
+                                        float productFactor = bonusProduct;
+                                        if (r208ByTCFV > 0 && recipeId == 74)
+                                        {
+                                            if (products[starIndex][i][j] == 1120)
+                                                productFactor = 0;
+                                            else if (products[starIndex][i][j] == 1122)
+                                                productFactor = 1.5f * bonusProduct;
+                                        }
+                                        productStorage[starIndex][products[starIndex][i][j]] += (int)(productFactor * productCounts[starIndex][i][j]);
                                         if (productStorage[starIndex][products[starIndex][i][j]] > 99999) productStorage[starIndex][products[starIndex][i][j]] = 99999;
                                         if (curSpecType[starIndex] == 2 && specBuffLevel[starIndex][i] > 0 || r002ByTCFV > 0)
                                         {
                                             if (!productStorageInc.ContainsKey(starIndex))
                                                 productStorageInc.Add(starIndex, new Dictionary<int, int>());
                                             if (!productStorageInc[starIndex].ContainsKey(products[starIndex][i][j]))
-                                                productStorageInc[starIndex].Add(products[starIndex][i][j], bonusProduct * productCounts[starIndex][i][j] * 4);
+                                                productStorageInc[starIndex].Add(products[starIndex][i][j], (int)(productFactor * productCounts[starIndex][i][j]) * 4);
                                             else
-                                                productStorageInc[starIndex][products[starIndex][i][j]] += bonusProduct * productCounts[starIndex][i][j] * 4;
+                                                productStorageInc[starIndex][products[starIndex][i][j]] += (int)(productFactor * productCounts[starIndex][i][j]) * 4;
                                             if (productStorageInc[starIndex][products[starIndex][i][j]] > 4 * productStorage[starIndex][products[starIndex][i][j]])
                                                 productStorageInc[starIndex][products[starIndex][i][j]] = 4 * productStorage[starIndex][products[starIndex][i][j]];
                                         }
@@ -872,7 +900,7 @@ namespace MoreMegaStructure
                             }
 
                             // 深空来敌蓝buff效果
-                            if (blueBuffByTCFV > 0 && itemCounts[starIndex][i].Count > 1 && products[starIndex][i][0] != 1803)
+                            if (blueBuffByTCFV > 0 && itemCounts[starIndex][i].Count > 1 && products[starIndex][i][0] != 1803 && products[starIndex][i][0] != 6006)
                             {
                                 int returnCount = actualProduct * productCounts[starIndex][i][0];
                                 int realConsume = minSatisfied * itemCounts[starIndex][i][0];

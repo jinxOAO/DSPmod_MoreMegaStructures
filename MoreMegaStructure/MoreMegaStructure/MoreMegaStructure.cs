@@ -24,7 +24,7 @@ namespace MoreMegaStructure
     [BepInDependency(CommonAPIPlugin.GUID)]
     [BepInDependency(DSPModSavePlugin.MODGUID)]
     [CommonAPISubmoduleDependency(nameof(ProtoRegistry), nameof(TabSystem), nameof(LocalizationModule))]
-    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.7.3")]
+    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.7.6")]
     public class MoreMegaStructure : BaseUnityPlugin, IModCanSave
     {
         /// <summary>
@@ -1407,7 +1407,7 @@ namespace MoreMegaStructure
         {
             MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
             MMSCPU.BeginSample(ECpuWorkEntryExtended.Patch);
-            if (!GenesisCompatibility) return; // 目前只对创世之书生效
+            // if (!GenesisCompatibility) return; // 目前只对创世之书生效
             int planetId = __instance.planetId;
             int starIndex = planetId / 100 - 1;
             PlanetFactory factory = GameMain.galaxy.stars[starIndex].planets[planetId % 100 - 1].factory;
@@ -1769,6 +1769,12 @@ namespace MoreMegaStructure
                     return;
                 }
 
+                if(type == 2 && !GameMain.history.TechUnlocked(1508) && !GameMain.history.ItemUnlocked(9489))
+                {
+                    UIRealtimeTip.Popup("警告巨构科技未解锁".Translate());
+                    return;
+                }
+
                 //if (type == 3 && WarpBuiltStarIndex >= 0)
                 //{
                 //    string systemName = GameMain.galaxy.stars[WarpBuiltStarIndex].displayName;
@@ -1821,7 +1827,7 @@ namespace MoreMegaStructure
                     RefreshUILabels(curStar);
                 }
 
-                if (type == 2 && GenesisCompatibility) // 改成科学枢纽后删除所有太阳帆，目前只对创世之书生效
+                if (type == 2) // 改成科学枢纽后删除所有太阳帆
                     curDysonSphere.swarm.RemoveSailsByOrbit(-1);
 
             }
