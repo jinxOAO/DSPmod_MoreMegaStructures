@@ -17,6 +17,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using xiaoye97;
 using static UnityEngine.EventSystems.EventTrigger;
+using static UnityEngine.UI.GridLayoutGroup;
 
 namespace MoreMegaStructure
 {
@@ -24,7 +25,7 @@ namespace MoreMegaStructure
     [BepInDependency(CommonAPIPlugin.GUID)]
     [BepInDependency(DSPModSavePlugin.MODGUID)]
     [CommonAPISubmoduleDependency(nameof(ProtoRegistry), nameof(TabSystem), nameof(LocalizationModule))]
-    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.7.6")]
+    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.8.2")]
     public class MoreMegaStructure : BaseUnityPlugin, IModCanSave
     {
         /// <summary>
@@ -77,6 +78,8 @@ namespace MoreMegaStructure
         public static ConfigEntry<bool> NoWasteResources;
         public static ConfigEntry<bool> ReverseStarCannonShellAlignDirection;
         public static ConfigEntry<bool> ShowIAUIWhenOpenDE;
+        public static ConfigEntry<bool> IAStatisticPanelEnabled;
+        public static ConfigEntry<bool> StarCannonOnly;
         // public static ConfigEntry<bool> HideWarpFieldUI;
         public static bool resolutionLower1080 = false;
 
@@ -249,6 +252,9 @@ namespace MoreMegaStructure
                                                  "Turn this to false might slightly increase the game speed. But this will cause: if one of the various materials required by a recipe in Interstellar Assembly is insufficient, (its supply cannot meet the speed of full-speed production). Although the actual output will slow down, other sufficient materials may still be consumed at full speed, which means that they may be wasted.  将此项设置为false可能会轻微提升游戏速度，但这会导致：当星际组装厂中的部分原材料不支持满速消耗时，虽然产出速度按照最低供应原材料的速度为准，但其他充足供应的原材料仍被满速消耗而产生浪费。");
             ReverseStarCannonShellAlignDirection = Config.Bind("config", "ReverseStarCannonShellAlignDirection", false, "Turn this to true will reverse the align direction of all the shell of star cannon when firing, which means the south pole (of the shells) will point to the target star rather than the north pole.  将此项设置为true会反转恒星炮开火时壳层的对齐方向，这意味着所有壳层的南极将指向目标恒星开火（而非默认的北极）。如果你的炮口造反了，可以尝试更改此项设置。");
             ShowIAUIWhenOpenDE = Config.Bind("config", "AutoShowDEUI", true, "Set this to true will force to show the Interstellar Assembly's UI when opening/switching its Megastructure Editor Panel. Set to false will maintain the IA UI's last state. 将此项设置为true将在每次打开星际组装厂的巨构编辑器面板时，强制显示UI。设置为false则会维持上次的状态。");
+            IAStatisticPanelEnabled = Config.Bind("config", "InterstellarAssemblyStatisticPanelEnabled", true, "If the Interstellar Assembly's production statistics have a excluive page. 星际组装厂的生产数据是否会拥有一个独立的面板页。");
+            StarCannonOnly = Config.Bind("config", "StarCannonOnly", false, "Set this to true will disable all mega structures except DysonSphere and StarCannon. 将此项设置为true将禁用除了戴森球和恒星炮以外的任何巨构。");
+            UIStatisticsPatcher.enabled = IAStatisticPanelEnabled.Value;
 
             // HideWarpFieldUI = Config.Bind("config", "HideWarpFieldUI", false, "Hide the warp field area in starmap UI. 是否隐藏星图界面的折跃场范围显示。");
 
@@ -685,7 +691,7 @@ namespace MoreMegaStructure
                 set2MatDecomButtonObj.GetComponent<UIButton>().tips.tipText = "物质解压器功能文本".Translate();
                 set2MatDecomButtonObj.GetComponent<UIButton>().tips.delay = 0.3f;
                 set2MatDecomButtonObj.GetComponent<UIButton>().tips.width = 280;
-                set2MatDecomButtonObj.GetComponent<UIButton>().tips.offset = new Vector2(140, 50);
+                set2MatDecomButtonObj.GetComponent<UIButton>().tips.corner = 9;
 
                 set2SciNexusButtonObj = Instantiate(addNewLayerButton);
                 set2SciNexusButtonObj.SetActive(true);
@@ -700,7 +706,7 @@ namespace MoreMegaStructure
                 set2SciNexusButtonObj.GetComponent<UIButton>().tips.tipText = "科学枢纽功能文本".Translate();
                 set2SciNexusButtonObj.GetComponent<UIButton>().tips.delay = 0.3f;
                 set2SciNexusButtonObj.GetComponent<UIButton>().tips.width = 260;
-                set2SciNexusButtonObj.GetComponent<UIButton>().tips.offset = new Vector2(130, 50);
+                set2SciNexusButtonObj.GetComponent<UIButton>().tips.corner = 9;
 
                 set2WarpFieldGenButtonObj = Instantiate(addNewLayerButton);
                 set2WarpFieldGenButtonObj.SetActive(true);
@@ -715,7 +721,7 @@ namespace MoreMegaStructure
                 set2WarpFieldGenButtonObj.GetComponent<UIButton>().tips.tipText = "折跃场广播阵列功能文本".Translate();
                 set2WarpFieldGenButtonObj.GetComponent<UIButton>().tips.delay = 0.3f;
                 set2WarpFieldGenButtonObj.GetComponent<UIButton>().tips.width = 260;
-                set2WarpFieldGenButtonObj.GetComponent<UIButton>().tips.offset = new Vector2(130, 50);
+                set2WarpFieldGenButtonObj.GetComponent<UIButton>().tips.corner = 9;
 
                 set2MegaAssemButtonObj = Instantiate(addNewLayerButton);
                 set2MegaAssemButtonObj.SetActive(true);
@@ -730,7 +736,7 @@ namespace MoreMegaStructure
                 set2MegaAssemButtonObj.GetComponent<UIButton>().tips.tipText = "星际组装厂功能文本".Translate();
                 set2MegaAssemButtonObj.GetComponent<UIButton>().tips.delay = 0.3f;
                 set2MegaAssemButtonObj.GetComponent<UIButton>().tips.width = 260;
-                set2MegaAssemButtonObj.GetComponent<UIButton>().tips.offset = new Vector2(130, 50);
+                set2MegaAssemButtonObj.GetComponent<UIButton>().tips.corner = 9;
 
                 set2CrystalMinerButtonObj = Instantiate(addNewLayerButton);
                 set2CrystalMinerButtonObj.SetActive(true);
@@ -745,7 +751,7 @@ namespace MoreMegaStructure
                 set2CrystalMinerButtonObj.GetComponent<UIButton>().tips.tipText = "晶体重构器功能文本".Translate();
                 set2CrystalMinerButtonObj.GetComponent<UIButton>().tips.delay = 0.3f;
                 set2CrystalMinerButtonObj.GetComponent<UIButton>().tips.width = 260;
-                set2CrystalMinerButtonObj.GetComponent<UIButton>().tips.offset = new Vector2(130, 50);
+                set2CrystalMinerButtonObj.GetComponent<UIButton>().tips.corner = 9;
 
                 set2StarCannonButtonObj = Instantiate(addNewLayerButton);
                 set2StarCannonButtonObj.SetActive(true);
@@ -760,7 +766,7 @@ namespace MoreMegaStructure
                 set2StarCannonButtonObj.GetComponent<UIButton>().tips.tipText = "恒星炮设计说明文本".Translate();
                 set2StarCannonButtonObj.GetComponent<UIButton>().tips.delay = 0.3f;
                 set2StarCannonButtonObj.GetComponent<UIButton>().tips.width = 520;
-                set2StarCannonButtonObj.GetComponent<UIButton>().tips.offset = new Vector2(260, 100);
+                set2StarCannonButtonObj.GetComponent<UIButton>().tips.corner = 9;
 
                 set2DysonButton.onClick.RemoveAllListeners();
                 set2DysonButton.onClick.AddListener(() => { SetMegaStructure(0); }); //按下按钮，设置巨构类型
@@ -1743,6 +1749,12 @@ namespace MoreMegaStructure
                 //没改变类型，无效操作
                 if (type == StarMegaStructureType[idx])
                 {
+                    return;
+                }
+
+                if (MoreMegaStructure.StarCannonOnly.Value && (type >= 1 && type <= 5))
+                {
+                    UIRealtimeTip.Popup("玩家自行禁用了巨构警告".Translate());
                     return;
                 }
 

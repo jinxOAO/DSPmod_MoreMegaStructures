@@ -6,6 +6,8 @@ using UnityEngine;
 using Steamworks;
 using System.Reflection;
 using static UIReferenceSpeedTip;
+using UnityEngine.Playables;
+using System.Linq;
 
 namespace MoreMegaStructure
 {
@@ -32,17 +34,19 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(UIStatisticsWindow), "RefreshAstroBox")]
         public static bool RefreshAstroBoxPostPatch(ref UIStatisticsWindow __instance)
         {
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.Statistics);
             if (__instance == null)
             {
                 return true;
             }
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.Statistics);
             var _this = __instance;
 
             // 原方法逻辑：看但凡有在GameData.factories这个列表里的工厂，但是又没在 this.astroBox.Items;和this.astroBox.ItemsData;里面的，将其planetId插入到正确位置（如果是整个星系的第一个插入的工厂，则额外先pushback一个（注意星系在这个ItemsData列表里是不按id排序的，而是按加入顺序排序的，所以说pushback，不是插入）该星系的总统计(starId*100)，然后再add该行星工厂的planetId）。
             // 为了增加巨构独有的production统计，用每个星系第planetCount+1号不存在planet的id存储巨构的统计，这也是astroFilter的值
-            if (_this.isStatisticsTab)
+            // 其他情况下，AstroFilter / 100 为StarId。
+            // 组装厂的factoryIndex为GameMain.data.factories.Length + GameMain.galaxy.starCount - starId
+            if (_this.isProductionTab) // 只有productionTab才能生成组装厂的astroBox，防止“非生产统计面板中能选到星际组装厂页面”这种情况发生，因为某些面板会在选到组装厂页面报错，并且还能加入仪表盘（也会报错）
             {
                 List<string> items = _this.astroBox.Items;
                 List<int> itemsData = _this.astroBox.ItemsData;
@@ -151,10 +155,13 @@ namespace MoreMegaStructure
 
                 // 这一行使原本的
                 _this.ValueToAstroBox();
+                MMSCPU.EndSample(ECpuWorkEntryExtended.Statistics);
+                MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
+                return false;
             }
             MMSCPU.EndSample(ECpuWorkEntryExtended.Statistics);
             MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
-            return false;
+            return true;
         }
 
         /// <summary>
@@ -198,7 +205,7 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(TrafficStatistics), "Init")]
         public static void TrafficStatisticsInitPostPatch(ref TrafficStatistics __instance)
         {
-            __instance.factoryTrafficPool = new AstroTrafficStat[__instance.gameData.factories.Length + +GameMain.galaxy.starCount];
+            __instance.factoryTrafficPool = new AstroTrafficStat[__instance.gameData.factories.Length + GameMain.galaxy.starCount];
         }
 
 
@@ -398,7 +405,8 @@ namespace MoreMegaStructure
                 {
                     if (__instance.isPowerTab)
                     {
-                        __instance.ComputePowerTab(powerPool, uistatGroup.energyConsumption, (long)uistatGroup.factoryIndex);
+                        if(uistatGroup.factoryIndex < GameMain.data.factories.Length)
+                            __instance.ComputePowerTab(powerPool, uistatGroup.energyConsumption, (long)uistatGroup.factoryIndex);
                     }
                     else if (__instance.isResearchTab)
                     {
@@ -1428,47 +1436,47 @@ namespace MoreMegaStructure
                 if (GameMain.galaxy.StarById(starId) != null)
                 {
                     string displayName = "星际组装厂".Translate() + " " + GameMain.galaxy.StarById(starId).displayName;
-                    UITools.Utils.UITextTruncateShow(__instance.planetNameText, ref displayName, __instance.planetNameTextWidthLimit, ref __instance.planetNameTextSettings);
+                    UITools.Utils.UITextTruncateShow(__instance.planetNameText, ref displayName, __instance.planetNameTextWidthLimit);
                 }
             }
         }
 
 
         /// <summary>
-        /// 下面这个防止选中巨构时点击能量面板报错（factoryIndex越界或者是找回的）
+        /// 下面这个防止选中巨构时点击能量面板报错（factoryIndex越界或者是找回的），可能不再需要了
         /// </summary>
         /// <param name="__instance"></param>
         /// <param name="powerPool"></param>
         /// <param name="energyConsumption"></param>
         /// <param name="factoryIndex"></param>
         /// <returns></returns>
-        [HarmonyPrefix]
-        [HarmonyPatch(typeof(UIStatisticsWindow), "ComputePowerTab")]
-        public static bool ComputePowerTabPrePatch(
-            ref UIStatisticsWindow __instance,
-            PowerStat[] powerPool,
-            long energyConsumption,
-            long factoryIndex)
-        {
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.Statistics);
-            if (factoryIndex >= GameMain.data.factories.Length)
-            {
-                long num = __instance.ComputePower(powerPool[0]);
-                __instance.productEntryList.Add(1, num, 0L, energyConsumption);
-                num = __instance.ComputePower(powerPool[1]);
-                __instance.productEntryList.Add(1, 0L, num);
-                num = __instance.ComputePower(powerPool[3]);
-                long num2 = 0L;
-                __instance.productEntryList.Add(2, num, 0L, num2);
-                num = __instance.ComputePower(powerPool[2]);
-                __instance.productEntryList.Add(2, 0L, num);
-                return false;
-            }
-            MMSCPU.EndSample(ECpuWorkEntryExtended.Statistics);
-            MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
-            return true;
-        }
+        //[HarmonyPrefix]
+        //[HarmonyPatch(typeof(UIStatisticsWindow), "ComputePowerTab")]
+        //public static bool ComputePowerTabPrePatch(
+        //    ref UIStatisticsWindow __instance,
+        //    PowerStat[] powerPool,
+        //    long energyConsumption,
+        //    long factoryIndex)
+        //{
+        //    MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
+        //    MMSCPU.BeginSample(ECpuWorkEntryExtended.Statistics);
+        //    if (factoryIndex >= GameMain.data.factories.Length)
+        //    {
+        //        long num = __instance.ComputePower(powerPool[0]);
+        //        __instance.productEntryList.Add(1, num, 0L, energyConsumption);
+        //        num = __instance.ComputePower(powerPool[1]);
+        //        __instance.productEntryList.Add(1, 0L, num);
+        //        num = __instance.ComputePower(powerPool[3]);
+        //        long num2 = 0L;
+        //        __instance.productEntryList.Add(2, num, 0L, num2);
+        //        num = __instance.ComputePower(powerPool[2]);
+        //        __instance.productEntryList.Add(2, 0L, num);
+        //        return false;
+        //    }
+        //    MMSCPU.EndSample(ECpuWorkEntryExtended.Statistics);
+        //    MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
+        //    return true;
+        //}
 
 
 
@@ -1502,10 +1510,407 @@ namespace MoreMegaStructure
         }
 
 
+        // 以下为20250123晚更新后0.10.32.25496版本后的适配
+        // 工具，判断是不是指向组装厂的astroFilter并且返回factoryIndex
+        public static bool TryGetIAFactoryIndex(int astroFilter, out int factoryIndex)
+        {
+            if (astroFilter % 100 != 0)
+            {
+                int starId = astroFilter / 100;
+                if (GameMain.galaxy.StarById(starId) != null)
+                {
+                    int planetOrder = astroFilter % 100;
+                    if (planetOrder == GameMain.galaxy.StarById(starId).planetCount + 1) // 代表是星际组装厂的统计 
+                    {
+                        factoryIndex = GameMain.data.factories.Length + GameMain.galaxy.starCount - starId;
+                        return true;
+                    }
+                }
+            }
+            factoryIndex = -1;
+            return false;
+        }
+
+        // 以下的多个patch，其中一部分涉及巨构有关的统计数据的，会同时有prefix和postfix为一组，prefix用于防止planet为null报错，并加入组装厂数据。postfix用于统计整个星系或者全星区的时候，将组装厂数据加入
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(AstroItemProductionStatPlan), "CalculateFactoryStatGroup")]
+        public static bool CalculateFactoryStatGroupPrefix(ref AstroItemProductionStatPlan __instance)
+        {
+            int factoryIndex;
+            if (TryGetIAFactoryIndex(__instance.astroFilter, out factoryIndex))
+            {
+                Array.Clear(__instance.statFactoryIndices, 0, __instance.statFactoriesCursor);
+                __instance.statFactoriesCursor = 0;
+                __instance.AddFactoryStatGroup(factoryIndex);
+                return false;
+            }
+            return true;
+        }
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(AstroItemProductionStatPlan), "CalculateFactoryStatGroup")]
+        public static void CalculateFactoryStatGroupPostfix(ref AstroItemProductionStatPlan __instance)
+        {
+            if(__instance.astroFilter == 0)
+            {
+                if(__instance.gameData.localPlanet == null && __instance.gameData.localStar != null)
+                {
+                    int starIndex = __instance.gameData.localStar.index;
+                    __instance.AddFactoryStatGroup(StarIndex2FactoryIndex(starIndex));
+                }
+                return;
+            }
+            else if (__instance.astroFilter % 100 == 0) // 星系统计（而非全星区）则加入组装厂数据
+            {
+                int starIndex = __instance.astroFilter / 100 - 1;                
+                if (starIndex >= 0)
+                {
+                    __instance.AddFactoryStatGroup(StarIndex2FactoryIndex(starIndex));
+                }
+                return;
+            }
+
+            if (__instance.astroFilter == -1 || __instance.astroFilter == 0 && __instance.gameData.localStar == null && __instance.gameData.localPlanet == null) // 全星区统计加入所有星际组装厂
+            {
+                for (int starIndex = 0; starIndex < GameMain.galaxy.starCount && starIndex < MoreMegaStructure.StarMegaStructureType.Length; starIndex++)
+                {
+                    if (MoreMegaStructure.StarMegaStructureType[starIndex] == 4)
+                        __instance.AddFactoryStatGroup(StarIndex2FactoryIndex(starIndex));
+                }
+            }
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(AstroItemProductionStatPlan), "CalculateExtraInfo")]
+        public static bool CalculateExtraInfoPrefix(ref AstroItemProductionStatPlan __instance)
+        {
+            int factoryIndex;
+            if (TryGetIAFactoryIndex(__instance.astroFilter, out factoryIndex))
+            {
+                __instance.gameData.statistics.production.extraInfoCalculator.AddFactory(factoryIndex);
+                return false;
+            }
+            return true;
+        }
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(AstroItemProductionStatPlan), "CalculateExtraInfo")]
+        public static void CalculateExtraInfoPostfix(ref AstroItemProductionStatPlan __instance)
+        {
+            if (__instance.astroFilter == 0)
+            {
+                if (__instance.gameData.localPlanet == null && __instance.gameData.localStar != null)
+                {
+                    int starIndex = __instance.gameData.localStar.index;
+                    __instance.gameData.statistics.production.extraInfoCalculator.AddFactory(StarIndex2FactoryIndex(starIndex));
+                }
+                return;
+            }
+            else if (__instance.astroFilter % 100 == 0) // 星系统计（而非全星区）则加入组装厂数据
+            {
+                int starIndex = __instance.astroFilter / 100 - 1;
+                if (starIndex >= 0)
+                {
+                    __instance.gameData.statistics.production.extraInfoCalculator.AddFactory(StarIndex2FactoryIndex(starIndex));
+                }
+                return;
+            }
+
+            if (__instance.astroFilter == -1 || __instance.astroFilter == 0 && __instance.gameData.localStar == null && __instance.gameData.localPlanet == null) // 全星区统计加入所有星际组装厂
+            {
+                for (int starIndex = 0; starIndex < GameMain.galaxy.starCount && starIndex < MoreMegaStructure.StarMegaStructureType.Length; starIndex++)
+                {
+                    if (MoreMegaStructure.StarMegaStructureType[starIndex] == 4)
+                        __instance.gameData.statistics.production.extraInfoCalculator.AddFactory(StarIndex2FactoryIndex(starIndex));
+                }
+            }
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(AstroItemProductionStatPlan), "CalculateImportAndExport")]
+        public static bool CalculateImportAndExportPrefix(ref AstroItemProductionStatPlan __instance, out long import, out long export)
+        {
+            import = 0;
+            export = 0;
+            int factoryIndex;
+            if (TryGetIAFactoryIndex(__instance.astroFilter, out factoryIndex))
+            {
+                return false;
+            }
+            return true;
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(AstroItemProductionStatPlan), "CalculateTrafficDetail")]
+        public static bool CalculateTrafficDetailPrefix(ref AstroItemProductionStatPlan __instance)
+        {
+            int factoryIndex;
+            if (TryGetIAFactoryIndex(__instance.astroFilter, out factoryIndex))
+            {
+                Array.Clear(__instance.trafficDetail, 0, __instance.trafficDetail.Length);
+                return false;
+            }
+            return true;
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(AstroItemProductionStatPlan), "GetGalacticTransportStorageCount")]
+        public static bool GetGalacticTransportStorageCountPrefix(ref AstroItemProductionStatPlan __instance, out long importStorageCount, out long exportStorageCount)
+        {
+            importStorageCount = 0L;
+            exportStorageCount = 0L;
+            int factoryIndex;
+            if (TryGetIAFactoryIndex(__instance.astroFilter, out factoryIndex))
+            {
+                FactoryProductionStat[] factoryStatPool = __instance.gameData.statistics.production.factoryStatPool;
+                int num5 = factoryStatPool[factoryIndex].productIndices[__instance.itemId];
+                if (num5 > 0)
+                {
+                    importStorageCount += factoryStatPool[factoryIndex].productPool[num5].importStorageCount;
+                    exportStorageCount += factoryStatPool[factoryIndex].productPool[num5].exportStorageCount;
+                }
+                return false;
+            }
+            return true;
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(AstroItemProductionStatPlan), "GetItemsCyclicRefSpeed")]
+        public static bool GetItemsCyclicRefSpeedPrefix(ref AstroItemProductionStatPlan __instance, out float productRefSpeed, out float consumeRefSpeed)
+        {
+            productRefSpeed = 0f;
+            consumeRefSpeed = 0f;
+            int factoryIndex;
+            if (TryGetIAFactoryIndex(__instance.astroFilter, out factoryIndex))
+            {
+                FactoryProductionStat[] factoryStatPool = __instance.gameData.statistics.production.factoryStatPool;
+                int num5 = factoryStatPool[factoryIndex].productIndices[__instance.itemId];
+                if (num5 > 0)
+                {
+                    productRefSpeed += factoryStatPool[factoryIndex].productPool[num5].refProductSpeed;
+                    consumeRefSpeed += factoryStatPool[factoryIndex].productPool[num5].refConsumeSpeed;
+                }
+                return false;
+            }
+            return true;
+        }
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(AstroItemProductionStatPlan), "GetItemsCyclicRefSpeed")]
+        public static void GetItemsCyclicRefSpeedPostfix(ref AstroItemProductionStatPlan __instance, ref float productRefSpeed, ref float consumeRefSpeed)
+        {
+            FactoryProductionStat[] factoryStatPool = __instance.gameData.statistics.production.factoryStatPool;
+            if (__instance.astroFilter == 0)
+            {
+                if (__instance.gameData.localPlanet == null && __instance.gameData.localStar != null)
+                {
+                    int starIndex = __instance.gameData.localStar.index; 
+                    int factoryIndex = StarIndex2FactoryIndex(starIndex);
+                    int num5 = factoryStatPool[factoryIndex].productIndices[__instance.itemId];
+                    if (num5 > 0)
+                    {
+                        productRefSpeed += factoryStatPool[factoryIndex].productPool[num5].refProductSpeed;
+                        consumeRefSpeed += factoryStatPool[factoryIndex].productPool[num5].refConsumeSpeed;
+                    }
+                }
+                return;
+            }
+            else if (__instance.astroFilter % 100 == 0) // 星系统计（而非全星区）则加入组装厂数据
+            {
+                int starIndex = __instance.astroFilter / 100 - 1;
+                if (starIndex >= 0)
+                {
+                    int factoryIndex = StarIndex2FactoryIndex(starIndex);
+                    int num5 = factoryStatPool[factoryIndex].productIndices[__instance.itemId];
+                    if (num5 > 0)
+                    {
+                        productRefSpeed += factoryStatPool[factoryIndex].productPool[num5].refProductSpeed;
+                        consumeRefSpeed += factoryStatPool[factoryIndex].productPool[num5].refConsumeSpeed;
+                    }
+                }
+                return;
+            }
+
+            if (__instance.astroFilter == -1 || __instance.astroFilter == 0 && __instance.gameData.localStar == null && __instance.gameData.localPlanet == null) // 全星区统计加入所有星际组装厂
+            {
+                for (int starIndex = 0; starIndex < GameMain.galaxy.starCount && starIndex < MoreMegaStructure.StarMegaStructureType.Length; starIndex++)
+                {
+                    if (MoreMegaStructure.StarMegaStructureType[starIndex] == 4)
+                    {
+                        int factoryIndex = StarIndex2FactoryIndex(starIndex);
+                        int num5 = factoryStatPool[factoryIndex].productIndices[__instance.itemId];
+                        if (num5 > 0)
+                        {
+                            productRefSpeed += factoryStatPool[factoryIndex].productPool[num5].refProductSpeed;
+                            consumeRefSpeed += factoryStatPool[factoryIndex].productPool[num5].refConsumeSpeed;
+                        }
+                    }
+                }
+            }
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(AstroItemProductionStatPlan), "GetItemsStorageGroupCount")]
+        public static bool GetItemsStorageGroupCountPrefix(ref AstroItemProductionStatPlan __instance, out long storageCount, out long trashCount)
+        {
+            storageCount = 0L;
+            trashCount = 0L;
+            int factoryIndex;
+            if (TryGetIAFactoryIndex(__instance.astroFilter, out factoryIndex))
+            {
+                FactoryProductionStat[] factoryStatPool = __instance.gameData.statistics.production.factoryStatPool;
+                int num5 = factoryStatPool[factoryIndex].productIndices[__instance.itemId];
+                if (num5 > 0)
+                {
+                    storageCount += factoryStatPool[factoryIndex].productPool[num5].storageCount;
+                    trashCount += factoryStatPool[factoryIndex].productPool[num5].trashCount;
+                }
+                bool flag = (__instance.gameData.localPlanet != null && !__instance.gameData.mainPlayer.sailing);
+                if (flag)
+                {
+                    storageCount += __instance.gameData.statistics.production.playerStorageCounts[__instance.itemId];
+                }
+                return false;
+            }
+            return true;
+        }
+
+        
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(UIChartAstroItemProduction), "SetTipFormatString")]
+        public static bool SetTipFormatStringPrefix(ref UIChartAstroItemProduction __instance)
+        {
+            int factoryIndex;
+            if (TryGetIAFactoryIndex(__instance.statPlan.astroFilter, out factoryIndex))
+            {
+                if(__instance.titleTip != null && __instance.statPlan != null)
+                {
+                    string text = "";
+
+                    text = text + string.Format("#{0} ", __instance.statPlan.id) + __instance.statPlan.displayName + ";";
+                    GameData gameData = __instance.statPlan.gameData;
+                    int astroFilter = __instance.statPlan.astroFilter;
+                    StarData starData = gameData.galaxy.StarById(astroFilter / 100);
+                    text = text +  "星际组装厂".Translate() + starData.displayName + ";";
+                    switch (__instance.statPlan.timeLevel)
+                    {
+                        case 0:
+                            text += "统计1分钟".Translate();
+                            break;
+                        case 1:
+                            text += "统计10分钟".Translate();
+                            break;
+                        case 2:
+                            text += "统计1小时".Translate();
+                            break;
+                        case 3:
+                            text += "统计10小时".Translate();
+                            break;
+                        case 4:
+                            text += "统计100小时".Translate();
+                            break;
+                        case 5:
+                            text += "统计总计".Translate();
+                            break;
+                    }
+                    __instance.titleTip.tipTextFormatString = text;
+                }
+
+                return false;
+            }
+            return true;
+        }
 
 
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(ProductionExtraInfoCalculator), "GameTick")]
+        public static bool ProductionExtraInfoCalculator_GameTick_Prefix(ref ProductionExtraInfoCalculator __instance)
+        {
+            if (__instance.prepareCalcFactoryIndices.Count > 0 && __instance.prepareCalcFactoryIndices.ElementAt(0) >= __instance.productionStatistics.gameData.factories.Length) // 说明是星际组装厂
+            {
+                int factoryIndex = __instance.prepareCalcFactoryIndices.ElementAt(0);
+
+                CalculateFactory_IA(ref __instance, __instance.productionStatistics.gameData, factoryIndex);
+
+                __instance.prepareCalcFactoryIndices.Remove(factoryIndex);
+                return false;
+            }
+            return true;
+        }
+
+        public static void CalculateFactory_IA(ref ProductionExtraInfoCalculator __instance, GameData gameData, int factoryIndex)
+        {
+            FactoryProductionStat factoryProductionStat = __instance.productionStatistics.factoryStatPool[factoryIndex];
+            factoryProductionStat.ResetRefSpeed();
+            factoryProductionStat.ResetStorageCount();
+            factoryProductionStat.ResetDetailedStorageCount();
+            factoryProductionStat.ResetTransportStorageCount();
+            GameHistoryData history = gameData.history;
+            ItemProto itemProto = LDB.items.Select(2313);
+            int[] array = (itemProto != null) ? itemProto.prefabDesc.incItemId : null;
+            int num = 0;
+            if (array != null)
+            {
+                for (int i = 0; i < array.Length; i++)
+                {
+                    if (history.ItemUnlocked(array[i]))
+                    {
+                        ItemProto itemProto2 = LDB.items.Select(array[i]);
+                        if (itemProto2 != null && itemProto2.Ability > num)
+                        {
+                            num = itemProto2.Ability;
+                        }
+                    }
+                }
+            }
+            
+            MMSRefreshItemsCyclicRefSpeedWithFactory(FactoryIndex2StarIndex(factoryIndex), num);
+        }
 
 
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(AstroItemProductionStatPlan), "CalculateTrafficDetail")]
+        public static void CalculateTrafficDetailPostfix(ref AstroItemProductionStatPlan __instance, ref long[] __result)
+        {
+            if(__result == null)
+            {
+                __result = new long[120];
+            }
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(AstroStorageStatPlan), "CalculateExtraInfo")]
+        public static bool CalculateExtraInfoPrefix(ref AstroStorageStatPlan __instance)
+        {
+            int factoryIndex;
+            if (TryGetIAFactoryIndex(__instance.astroFilter, out factoryIndex))
+            {
+                int starIndex = __instance.astroFilter / 100 - 1;
+                __instance.gameData.statistics.production.extraInfoCalculator.AddFactory(StarIndex2FactoryIndex(starIndex));
+                return false;
+            }
+            return true;
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(UIChartAstroStorage), "SetTipFormatString")]
+        public static bool SetTipFormatString_Storage_Prefix(ref UIChartAstroStorage __instance)
+        {
+            int factoryIndex;
+            if (TryGetIAFactoryIndex(__instance.statPlan.astroFilter, out factoryIndex))
+            {
+                if (__instance.titleTip != null && __instance.statPlan != null)
+                {
+                    string text = "";
+
+                    text = text + string.Format("#{0} ", __instance.statPlan.id) + __instance.statPlan.displayName + ";";
+                    GameData gameData = __instance.statPlan.gameData;
+                    int astroFilter = __instance.statPlan.astroFilter;
+                    StarData starData = gameData.galaxy.StarById(astroFilter / 100);
+                    text = text + "星际组装厂".Translate() + starData.displayName + ";";
+                    __instance.titleTip.tipTextFormatString = text;
+                }
+
+                return false;
+            }
+            return true;
+        }
 
 
         public static void Export(BinaryWriter w)
@@ -1538,6 +1943,15 @@ namespace MoreMegaStructure
             RearrangeStatisticLists();
         }
 
+        public static int FactoryIndex2StarIndex(int factoryIndex)
+        {
+            return GameMain.data.factories.Length + GameMain.galaxy.starCount - factoryIndex - 1;
+        }
+
+        public static int StarIndex2FactoryIndex(int starIndex)
+        {
+            return GameMain.data.factories.Length + GameMain.galaxy.starCount - starIndex - 1;
+        }
 
         // 以下为测试用
         /*

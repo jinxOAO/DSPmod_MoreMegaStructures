@@ -3,9 +3,12 @@ using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
+using xiaoye97;
+using static UnityEngine.EventSystems.EventTrigger;
 
 namespace MoreMegaStructure
 {
@@ -292,7 +295,7 @@ namespace MoreMegaStructure
                     spdLimitInputObj.GetComponent<UIButton>().tips.tipText = "最大生产速度限制描述".Translate();
                     spdLimitInputObj.GetComponent<UIButton>().tips.width = 300;
                     spdLimitInputObj.GetComponent<UIButton>().tips.offset = new Vector2(450, 130);
-                    spdLimitInputObj.GetComponent<RectTransform>().sizeDelta = new Vector2(100, 20);
+                    spdLimitInputObj.GetComponent<RectTransform>().sizeDelta = new Vector2(70, 20);
                     spdLimitInputObj.GetComponent<InputField>().contentType = InputField.ContentType.IntegerNumber;
                     spdLimitInputObj.GetComponent<InputField>().textComponent.fontSize = 12;
                     spdLimitInputObj.GetComponent<InputField>().characterLimit = 9;
@@ -302,7 +305,44 @@ namespace MoreMegaStructure
                     limitInputs.Add(spdLimitInputObj.GetComponent<InputField>());
                     spdLimitInputObj.transform.Find("value-text").GetComponent<Text>().color = Color.white;
                     spdLimitObj.SetActive(false);
-                    
+
+                    // 规范化速度设置按钮 
+
+                    GameObject normalizeBtnObj1 = GameObject.Instantiate(circleButtonObj, spdLimitObj.transform);
+                    normalizeBtnObj1.name = "normalizeSpeed1";
+                    normalizeBtnObj1.transform.localPosition = new Vector3(119, -10, 0);
+                    normalizeBtnObj1.GetComponent<RectTransform>().sizeDelta = new Vector2(20, 20);
+                    normalizeBtnObj1.GetComponent<Image>().sprite = Resources.Load<Sprite>("ui/textures/sprites/icons/speed-icon");
+                    normalizeBtnObj1.GetComponent<Button>().onClick.RemoveAllListeners();
+                    int slotNum = i;
+                    normalizeBtnObj1.GetComponent<Button>().onClick.AddListener(() => { NormalizeSetValue(slotNum, false); });
+                    normalizeBtnObj1.GetComponent<UIButton>().transitions[0].mouseoverSize = 1;
+                    normalizeBtnObj1.GetComponent<UIButton>().tips.tipTitle = "组装厂速度规范化1标题".Translate();
+                    normalizeBtnObj1.GetComponent<UIButton>().tips.tipText = "组装厂速度规范化1描述".Translate();
+                    normalizeBtnObj1.GetComponent<UIButton>().tips.corner = 9;
+                    normalizeBtnObj1.GetComponent<UIButton>().tips.width = 355;
+
+                    GameObject normalizeBtnObj2 = GameObject.Instantiate(circleButtonObj, spdLimitObj.transform);
+                    normalizeBtnObj2.name = "normalizeSpeed2";
+                    normalizeBtnObj2.transform.localPosition = new Vector3(145, -10, 0);
+                    normalizeBtnObj2.GetComponent<RectTransform>().sizeDelta = new Vector2(20, 20);
+                    normalizeBtnObj2.GetComponent<Image>().sprite = Resources.Load<Sprite>("ui/textures/sprites/icons/speed-icon");
+                    normalizeBtnObj2.GetComponent<Button>().onClick.RemoveAllListeners();
+                    normalizeBtnObj2.GetComponent<Button>().onClick.AddListener(() => { NormalizeSetValue(slotNum, true); });
+                    normalizeBtnObj2.GetComponent<UIButton>().transitions[0].mouseoverSize = 1;
+                    normalizeBtnObj2.GetComponent<UIButton>().tips.tipTitle = "组装厂速度规范化2标题".Translate();
+                    normalizeBtnObj2.GetComponent<UIButton>().tips.tipText = "组装厂速度规范化2描述".Translate();
+                    normalizeBtnObj2.GetComponent<UIButton>().tips.corner = 9;
+                    normalizeBtnObj2.GetComponent<UIButton>().tips.width = 355;
+                    GameObject normalizeBtn2IncObj = new GameObject("inc-icon");
+                    normalizeBtn2IncObj.transform.SetParent(normalizeBtnObj2.transform, false);
+                    normalizeBtn2IncObj.transform.localPosition = new Vector3(0, -9, 0);
+                    normalizeBtn2IncObj.transform.localScale = Vector3.one;
+                    Image normalizeBtn2IncImg = normalizeBtn2IncObj.AddComponent<Image>();
+                    normalizeBtn2IncImg.sprite = Resources.Load<Sprite>("entities/models/cargo/inc-4");
+                    normalizeBtn2IncObj.GetComponent<RectTransform>().sizeDelta = new Vector2(12, 12);
+                    normalizeBtnObj2.GetComponent<UIButton>().transitions = normalizeBtnObj2.GetComponent<UIButton>().transitions.AddItem(normalizeBtnObj2.GetComponent<UIButton>().transitions[0].Copy()).ToArray();
+                    normalizeBtnObj2.GetComponent<UIButton>().transitions[1].target = normalizeBtn2IncImg;
 
                     if (i == 0)
                     {
@@ -465,10 +505,11 @@ namespace MoreMegaStructure
                     tipButtonObj.GetComponent<UIButton>().tips.tipTitle = $"特化{i}介绍标题".Translate();
                     tipButtonObj.GetComponent<UIButton>().tips.tipText = $"特化{i}介绍内容".Translate();
                     tipButtonObj.GetComponent<UIButton>().tips.delay = 0.1f;
-                    tipButtonObj.GetComponent<UIButton>().tips.width = i == 0 ? 300 : 280;
-                    tipButtonObj.GetComponent<UIButton>().tips.offset = new Vector2(-180, 90);
-                    if(lowUIResolution)
-                        tipButtonObj.GetComponent<UIButton>().tips.offset = new Vector2(150, 90);
+                    tipButtonObj.GetComponent<UIButton>().tips.width = i == 0 ? 300 : 280; 
+                    tipButtonObj.GetComponent<UIButton>().tips.corner = 7;
+                    //tipButtonObj.GetComponent<UIButton>().tips.offset = new Vector2(-180, 90);
+                    //if(lowUIResolution)
+                    //    tipButtonObj.GetComponent<UIButton>().tips.offset = new Vector2(150, 90);
                 }
 
             }
@@ -1043,7 +1084,7 @@ namespace MoreMegaStructure
                     int ICCount = productStorage[starIndex][9500];
                     productStorage[starIndex][9500] = 0;
                     GameMain.mainPlayer.TryAddItemToPackage(9500, ICCount, 0, true);
-                    if (!VFInput.inFullscreenGUI)
+                    if (!VFInput.inFullscreenGUI && MoreMegaStructure.maxAutoReceiveGear < 3000)
                         Utils.UIItemUp(9500, ICCount, 240);
                 }
                 catch (Exception)
@@ -1341,6 +1382,41 @@ namespace MoreMegaStructure
             return prog;
         }
 
+        /// <summary>
+        /// 返回能量和原材料足够时，首要产物的产出速度
+        /// </summary>
+        /// <param name="starIndex"></param>
+        /// <param name="slotNum"></param>
+        /// <param name="forceIncLevel">如果为负则使用当前值</param>
+        /// <returns></returns>
+        public static double GetFirstProductFullySpeed(int starIndex, int slotNum, int forceIncLevel = -1)
+        {
+            if (slotNum <= 0)
+                return 0;
+            
+            int mainProductCount = productCounts[starIndex][slotNum][0];
+            if (mainProductCount == 0)
+                mainProductCount = 1;
+            double finalSpeed = 1.0 * productSpeedRequest[starIndex][slotNum];
+            if (specBuffLevel[starIndex][slotNum] > 0)
+            {
+                if (curSpecType[starIndex] == 1)
+                {
+                    finalSpeed *= 3;
+                }
+                else if (curSpecType[starIndex] == 2)
+                {
+                    finalSpeed *= 2;
+                }
+
+            }
+            if (forceIncLevel < 0)
+                forceIncLevel = currentStarIncs[slotNum];
+            float incFactor = GetFullIncMilli(starIndex, slotNum, forceIncLevel);
+            return finalSpeed * (1 + incFactor);
+
+        }
+
         // 返回被特化和增产剂增产效果加成后的每帧产出倍率
         public static double GetIncProduceSpeedRatio(double satisfiedRatio, int starIndex, int slotNum, int incLevel)
         {
@@ -1372,6 +1448,10 @@ namespace MoreMegaStructure
                 {
                     incBySpecialization = 0.25 * specBuffLevel[starIndex][slotNum];
                 }
+            }
+            else if (incProgress[starIndex][slotNum] < 0) // 说明是常规条件下无法增产的配方，且没吃到特化加成，这种情况下不允许增产
+            {
+                incByProliferator = 0;
             }
             return (float)(incByProliferator + incBySpecialization);
         }
@@ -1535,6 +1615,9 @@ namespace MoreMegaStructure
         {
             int starIndex = sphere.starData.index;
             if (starIndex >= 1000) return;
+            bool sandBoxMode = GameMain.data.gameDesc.isSandboxMode;
+            if (sandBoxMode)
+                div = 1;
             if (GameMain.instance.timei % div == 0) // 受div影响，决定特化速度
             {
                 if (specProgress[starIndex] <= 0)
@@ -1543,14 +1626,24 @@ namespace MoreMegaStructure
                     {
                         inProgressSpecType[starIndex] = satisfiedSpecType[starIndex];
                         specProgress[starIndex]++;
+                        if(sandBoxMode)
+                            specProgress[starIndex]+= 300;
                     }
                 }
                 else
                 {
                     if (satisfiedSpecType[starIndex] == inProgressSpecType[starIndex])
+                    {
                         specProgress[starIndex]++;
+                        if (sandBoxMode)
+                            specProgress[starIndex] += 300;
+                    }
                     else
+                    {
                         specProgress[starIndex]--;
+                        if (sandBoxMode)
+                            specProgress[starIndex] -= 300;
+                    }
                 }
 
                 if (specProgress[starIndex] >= specializeTimeNeed)
@@ -1675,10 +1768,18 @@ namespace MoreMegaStructure
                     }
                     PPM = PPM * (1 + extraProductRatio);
                     string value = PPM > 10 ? PPM.ToString("N0") : (PPM > 1 ? PPM.ToString("N1") : (PPM > 0 ? PPM.ToString("N2") : "0.00"));
-                    //if (productSpeedRequest[starIndex][i] > 0)
-                    //    produceSpeedTxts[i].text = "理论最大速度".Translate() + " " +  value + "/min" + incStr; // produceSpeedTxts[i].text = "受限理论最大速度".Translate() + " " +  value + "/min" + incStr;
-                    //else
-                    produceSpeedTxts[i].text = incStr + "理论最大速度".Translate() + " " + value + "/min" ;
+                    double idealPM = GetFirstProductFullySpeed(starIndex, i);
+                    //string idealValue = idealPM > 10 ? idealPM.ToString("N0") : (idealPM > 1 ? idealPM.ToString("N1") : (idealPM > 0 ? idealPM.ToString("N2") : "0.00"));
+                    
+                    if(idealPM > PPM + 0.001f)
+                    {
+                        produceSpeedTxts[i].text = incStr + "可承载速度".Translate() + " " + value + "/min";
+                    }
+                    else
+                    {
+                        produceSpeedTxts[i].text = incStr + "理论最大速度".Translate() + " " + value + "/min";
+                    }
+
                     weightTxts[i].text = "能量分配".Translate() + " " + ((weights[starIndex][i] * 100)).ToString() + "%";
                 }
                 else
@@ -1979,6 +2080,15 @@ namespace MoreMegaStructure
 
             RefreshProduceSpeedContent();
             lockSliderListener = false;
+        }
+
+        public static void NormalizeSetValue(int index, bool forceFullInc)
+        {
+            int starIndex = MoreMegaStructure.curStar.index;
+            int targetSpeed = productSpeedRequest[starIndex][index];
+            double realSpeed = GetFirstProductFullySpeed(starIndex, index, forceFullInc ? 4 : -1);
+            int needInput = (int)Math.Ceiling(targetSpeed * 1.0 / realSpeed * targetSpeed);
+            SetProductSpeedRequest(index, needInput.ToString());
         }
 
 

@@ -679,6 +679,15 @@ namespace MoreMegaStructure
                 quickColliderRecipe.GridIndex = 9999;
             }
 
+            if(MoreMegaStructure.StarCannonOnly.Value) // 禁用除了恒星炮之外的所有巨构，将火箭配方隐藏
+            {
+                rocketMDRecipe.GridIndex = 9999;
+                rocketSNRecipe.GridIndex = 9999;
+                rocketWBARecipe.GridIndex = 9999;
+                rocketIARecipe.GridIndex = 9999;
+                rocketCRRecipe.GridIndex = 9999;
+            }
+
             //itemGravityGen.makes = new List<RecipeProto> { itemGravityDrillRecipe, rocketWBARecipe };
             //itemConstrainRing.makes = new List<RecipeProto> { itemGravityDrillRecipe, rocketSNRecipe};
             //itemGravityDrill.makes = new List<RecipeProto> {rocketMDRecipe };
@@ -1687,7 +1696,7 @@ namespace MoreMegaStructure
             LocalizationModule.RegisterTranslation("请求功率gm", "Requested power", "请求功率", "");
             LocalizationModule.RegisterTranslation("无限制gm", "Infinite", "无限制", "");
 
-            LocalizationModule.RegisterTranslation("警告巨构科技未解锁", "You must unlock the corresponding technology first", "你必须先解锁对应巨构的科技", "");
+            LocalizationModule.RegisterTranslation("警告巨构科技未解锁", "You must unlock the Mission complete technology to unlock the science nexus", "你必须先解锁通关游戏才能解锁科学枢纽", "");
             LocalizationModule.RegisterTranslation("游戏提示mms", "Message", "游戏提示", "");
 
             LocalizationModule.RegisterTranslation("力场发生器", "Force field generator", "力场发生器", "");
@@ -1801,9 +1810,11 @@ namespace MoreMegaStructure
             LocalizationModule.RegisterTranslation("物资交换器", "Exchange Logistic Station", "物资交换物流站", "");
             LocalizationModule.RegisterTranslation(
                 "物资交换器描述",
-                "Exchange Logistic Station can transport materials like Interstellar Logistics Station. In addition, the interstellar assembly also needs this building to obtain raw materials from the ground, or to transport the product to the ground.",
-                "物资交换物流站可以像星际物流站一样运输物资，除此之外，星际组装厂还需要此建筑来从地面获取原材料，或将产物输送至地表。", "");
+                "Exchange Logistic Station can transport materials like Interstellar Logistics Station. In addition, the interstellar assembly also needs this building to obtain raw materials from the ground, or to transport the product to the ground.<color=#FD965ECC> If the fifth slot is set to proliferator, it will be automatically used to spray the entire exchange station's items.</color> This function only works when its star system has an interstellar assembly.",
+                "物资交换物流站可以像星际物流站一样运输物资，除此之外，星际组装厂还需要此建筑来从地面获取原材料，或将产物输送至地表。<color=#FD965ECC>如果将第五个栏位设置成增产剂，它将自动被用于喷涂整个交换站的物资。</color>该效果只在该星系是星际组装厂时生效。", "");
             LocalizationModule.RegisterTranslation("理论最大速度", "max", "最大", "");
+            LocalizationModule.RegisterTranslation("可承载速度", "capable", "可承载", "");
+            LocalizationModule.RegisterTranslation("理想速度", "ideal", "理想速度", "");
             LocalizationModule.RegisterTranslation("受限理论最大速度", "<color=#ff1010c0>(limited)</color> max", "<color=#ff1010c0>(受限)</color>最大", "");
             LocalizationModule.RegisterTranslation("能量分配", "Energy Allocation", "能量分配", "");
             LocalizationModule.RegisterTranslation("剩余能量", "Residual Energy", "剩余能量", "");
@@ -1829,7 +1840,7 @@ namespace MoreMegaStructure
             LocalizationModule.RegisterTranslation("配置最大生产速度限制", "Configure production speed limit", "配置生产速度限制", "");
             LocalizationModule.RegisterTranslation("最大生产速度限制", "Expected Speed (/min)", "目标生产速度(/min)", "");
             LocalizationModule.RegisterTranslation("最大生产速度限制题目", "Expected Speed", "目标生产速度", "");
-            LocalizationModule.RegisterTranslation("最大生产速度限制描述", "When the energy of the interstellar assembly is sufficient to let all recipes' <color=#FD965ECC>basic production speed</color> achieve the expected speed, the excess energy will be used to make multifunctional integrated components. When the energy is insufficient, it will allocate energy according to the proportions of the requested speeds of each recipe, keeping their <color=#FD965ECC>basic production speeds' proportion</color> consistent with the expected speeds' proportion.\nNote that this setting only applies to the <color=#FD965ECC>basic production speed</color>, and <color=#FD965ECC>does not consider the effects of proliferator or specialization</color>. Therefore, the actual production speed may exceed the set value due to proliferator or specialization.", "当星际组装厂的能量足以使得所有配方的<color=#FD965ECC>基础生产速度</color>达到设定的目标生产速度需求时，多余的能量将被用于制造多功能集成组件。当星际组装厂能量不足时，将按照各配方的速度配比去分配能量，保持他们的基础速度比例与目标生产速度的比例一致。\n注意，此设置仅作用于<color=#FD965ECC>基础生产速度</color>，<color=#FD965ECC>不会考虑增产或特化的影响</color>，因此实际产量可能会由于增产或特化超出设定值。", "");
+            LocalizationModule.RegisterTranslation("最大生产速度限制描述", "When the energy of the interstellar assembly is sufficient to let all recipes' <color=#FD965ECC>basic production speed</color> achieve the expected speed, the excess energy will be used to make multifunctional integrated components. When the energy is insufficient, it will allocate energy according to the proportions of the requested speeds of each recipe, keeping their <color=#FD965ECC>basic production speeds' proportion</color> consistent with the expected speeds' proportion.\nNote that this setting only applies to the <color=#FD965ECC>basic production speed of the first product</color>, and <color=#FD965ECC>does not consider the effects of proliferator or specialization</color>. Therefore, the actual production speed may exceed the set value due to proliferator or specialization.", "当星际组装厂的能量足以使得所有配方的<color=#FD965ECC>基础生产速度</color>达到设定的目标生产速度需求时，多余的能量将被用于制造多功能集成组件。当星际组装厂能量不足时，将按照各配方的速度配比去分配能量，保持他们的基础速度比例与目标生产速度的比例一致。\n注意，此设置仅作用于<color=#FD965ECC>第一位置产物的基础生产速度</color>，<color=#FD965ECC>不会考虑增产或特化的影响</color>，因此实际产量可能会由于增产或特化超出设定值。", "");
             LocalizationModule.RegisterTranslation("星际组装厂逻辑更新警告", "Due to the updates to the More Megastructure, the energy allocation logic of the interstellar assembly has been changed. Please confirm the speed settings of each recipe in each interstellar assembly to prevent them from shutting down.", "由于更多巨构版本更新，星际组装厂的能量分配逻辑已重构，\n请确认每个星际组装厂的速度设置，以防星际组装厂停摆。", "");
 
             LocalizationModule.RegisterTranslation("加倍所有速度设置", "Double All Expected Spd.", "加倍所有速度设置", "");
@@ -1897,6 +1908,13 @@ namespace MoreMegaStructure
             LocalizationModule.RegisterTranslation("应用到全部", "Apply to the whole planet", "应用到整个行星", "");
             LocalizationModule.RegisterTranslation("成功应用数量提示", "Successfully applied to {0} buildings.", "成功应用到{0}个建筑。", "");
             LocalizationModule.RegisterTranslation("mms自动喷涂", "Auto Spray", "自动喷涂", "");
+
+            LocalizationModule.RegisterTranslation("玩家自行禁用了巨构警告", "Can't set megastructure type because you've disabled this megastructure type in config file.", "无法设置巨构类型，因为玩家在config文件中禁用了此巨构。", "");
+
+            LocalizationModule.RegisterTranslation("组装厂速度规范化1标题", "Normalize to final speed (based on current state)", "规范化为最终速度(按当前状态)", "");
+            LocalizationModule.RegisterTranslation("组装厂速度规范化1描述", "Calculate and modify the expected speed so that the final production speed, <color=#FD965ECC>considering the current specialization and proliferator effect</color>, is equal to the original input expected speed.\n<color=#FD965ECC>Note: This effect is only modified once when the button is clicked.</color> If there are changes in the specialization or proliferator effect later, it will not be recalculated and modified.", "计算并修改目标生产速度，使得考虑了<color=#FD965ECC>当前的特化和增产效果</color>后的生产速度等于原先输入的目标生产速度。\n<color=#FD965ECC>注意：此效果只在点击按钮时修改一次</color>，如果后续的特化或增产效果发生改变，不会自动重新计算并修改。", "");
+            LocalizationModule.RegisterTranslation("组装厂速度规范化2标题", "Normalize to final speed (based on fully proliferated state)", "规范化为最终速度(按满级喷涂计)", "");
+            LocalizationModule.RegisterTranslation("组装厂速度规范化2描述", "Calculate and modify the expected speed so that the final production speed, <color=#FD965ECC>considering the current specialization and full-level proliferator effect</color>, is equal to the original input expected speed.\n<color=#FD965ECC>Note: This effect is only modified once when the button is clicked.</color> If there are changes in the specialization or proliferator effect later, it will not be recalculated and modified.", "计算并修改目标生产速度，使得考虑了<color=#FD965ECC>当前的特化和满级增产效果</color>后的生产速度等于原先输入的目标生产速度。\n<color=#FD965ECC>注意：此效果只在点击按钮时修改一次</color>，如果后续的特化或增产效果发生改变，不会自动重新计算并修改。", "");
 
             LocalizationModule.RegisterTranslation("PF巨构", "MoreMegaStructure", "更多巨构", "");
             LocalizationModule.RegisterTranslation("PF巨构主要逻辑", "MainLogic (MMS)", "主要逻辑（巨构）", "");
