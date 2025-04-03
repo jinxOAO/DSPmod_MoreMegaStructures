@@ -16,6 +16,7 @@ namespace MoreMegaStructure
         public const int starAssemblyRepresentativeItemId = 9493; // 用这个itemId代表巨构组装厂的生产机器itemId
 
         public static bool enabled = true;
+        public static bool forceBanned = true;
         public static long time0 = 0;
         public static long time1 = 0;
         public static long time2 = 0;
@@ -844,7 +845,7 @@ namespace MoreMegaStructure
             StringBuilderUtility.WriteKMG(__instance.sb2, 8, (long)(num2 + 0.5f), true);
             __instance.productRefSpeedText.text = __instance.sb1.ToString();
             __instance.consumeRefSpeedText.text = __instance.sb2.ToString();
-            bool flag = __instance.storageCountTip.thisTipRef != null && !__instance.storageCountTip.thisTipRef.isThreadEnded;
+            bool flag = false;
             __instance.storageCountText.text = (flag ? "正在计算中".Translate() : num3.ToString("#,##0"));
             __instance.storageCountText.fontSize = (flag ? 12 : 18);
             __instance.storageCountText.resizeTextForBestFit = !flag;

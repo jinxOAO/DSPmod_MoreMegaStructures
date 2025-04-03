@@ -25,7 +25,7 @@ namespace MoreMegaStructure
     [BepInDependency(CommonAPIPlugin.GUID)]
     [BepInDependency(DSPModSavePlugin.MODGUID)]
     [CommonAPISubmoduleDependency(nameof(ProtoRegistry), nameof(TabSystem), nameof(LocalizationModule))]
-    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.8.2")]
+    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.8.4")]
     public class MoreMegaStructure : BaseUnityPlugin, IModCanSave
     {
         /// <summary>
@@ -255,6 +255,7 @@ namespace MoreMegaStructure
             IAStatisticPanelEnabled = Config.Bind("config", "InterstellarAssemblyStatisticPanelEnabled", true, "If the Interstellar Assembly's production statistics have a excluive page. 星际组装厂的生产数据是否会拥有一个独立的面板页。");
             StarCannonOnly = Config.Bind("config", "StarCannonOnly", false, "Set this to true will disable all mega structures except DysonSphere and StarCannon. 将此项设置为true将禁用除了戴森球和恒星炮以外的任何巨构。");
             UIStatisticsPatcher.enabled = IAStatisticPanelEnabled.Value;
+            if (UIStatisticsPatcher.forceBanned) UIStatisticsPatcher.enabled = false;
 
             // HideWarpFieldUI = Config.Bind("config", "HideWarpFieldUI", false, "Hide the warp field area in starmap UI. 是否隐藏星图界面的折跃场范围显示。");
 
@@ -1136,7 +1137,8 @@ namespace MoreMegaStructure
             {
                 hashGenByAllSN *= 60;
                 int propertyGen = (int)(Math.Pow(hashGenByAllSN, 0.65) + 0.001 * hashGenByAllSN * GameMain.data.gameDesc.propertyMultiplier);
-                
+                if (propertyGen < 0)
+                    propertyGen = (int)(int.MaxValue * 0.9f);
 
                 PropertyLogic p = GameMain.gameScenario?.propertyLogic;
                 if (p != null)

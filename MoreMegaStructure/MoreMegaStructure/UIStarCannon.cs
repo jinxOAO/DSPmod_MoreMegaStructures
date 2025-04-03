@@ -94,7 +94,7 @@ namespace MoreMegaStructure
             Transform parent3 = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Dyson Sphere Editor/screen").transform;
             StarCannonStateUIObj = GameObject.Instantiate(oriTitleObj, parent3);
             StarCannonStateUIObj.name = "star-cannon-state-text";
-            StarCannonStateUIObj.transform.localPosition = new Vector3(0, DSPGame.globalOption.uiLayoutHeight / 2 - 140, 0);
+            StarCannonStateUIObj.transform.localPosition = new Vector3(0, Utils.UIActualHeight / 2 - 140, 0);
 
             StarCannonStateText = StarCannonStateUIObj.GetComponent<Text>();
             StarCannonStateText.supportRichText = true;

@@ -106,7 +106,7 @@ namespace MoreMegaStructure
                 GigaFactoryUIObj = new GameObject("GigaFactory");
                 GigaFactoryUIObj.transform.SetParent(parentTrans);
                 GigaFactoryUIObj.transform.localScale = new Vector3(1, 1, 1);
-                GigaFactoryUIObj.transform.localPosition = new Vector3(300, -DSPGame.globalOption.uiLayoutHeight + 190, 0);
+                GigaFactoryUIObj.transform.localPosition = new Vector3(300, -Utils.UIActualHeight + 190, 0);
                 GigaFactoryUIObj.SetActive(false);
 
                 // 显示/隐藏按钮
@@ -114,7 +114,7 @@ namespace MoreMegaStructure
                 showHideButtonObj = GameObject.Instantiate(addNewLayerButton, parentTrans);
                 showHideButtonObj.SetActive(true);
                 showHideButtonObj.name = "show-hide"; //名字
-                showHideButtonObj.transform.localPosition = new Vector3(320, -DSPGame.globalOption.uiLayoutHeight + 40, 0); //位置
+                showHideButtonObj.transform.localPosition = new Vector3(320, -Utils.UIActualHeight + 40, 0); //位置
                 showHideButtonObj.GetComponent<RectTransform>().sizeDelta = new Vector2(200, 24); //按钮大小
                 showHideBtnText = showHideButtonObj.transform.Find("Text").gameObject.GetComponent<Text>();
                 showHideBtnText.text = "显示/隐藏星际组装厂配置".Translate();
@@ -447,11 +447,11 @@ namespace MoreMegaStructure
                 specializeObj = new GameObject("Specialize");
                 specializeObj.transform.SetParent(parentTrans);
                 specializeObj.transform.localScale = new Vector3(1, 1, 1);
-                specializeObj.transform.localPosition = new Vector3(1200, -DSPGame.globalOption.uiLayoutHeight + 190, 0);
-                if (DSPGame.globalOption.resolution.width * DSPGame.globalOption.uiLayoutHeight / DSPGame.globalOption.resolution.height < 1920)
+                specializeObj.transform.localPosition = new Vector3(1200, -Utils.UIActualHeight + 190, 0);
+                if (DSPGame.globalOption.resolution.width * Utils.UIActualHeight / DSPGame.globalOption.resolution.height < 1920)
                 {
                     lowUIResolution = true;
-                    specializeObj.transform.localPosition = new Vector3(400, -DSPGame.globalOption.uiLayoutHeight + 190, 0);
+                    specializeObj.transform.localPosition = new Vector3(400, -Utils.UIActualHeight + 190, 0);
                 }
 
                 specializeObj.SetActive(false);

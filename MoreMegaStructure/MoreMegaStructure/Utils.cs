@@ -198,6 +198,13 @@ namespace MoreMegaStructure
             else
                 return new Vector3(-ori.z / ori.x, 0, 1).normalized;
         }
+        public static int UIActualHeight
+        {
+            get
+            {
+                return DSPGame.globalOption.uiLayoutHeight > 0 ? DSPGame.globalOption.uiLayoutHeight : UICanvasScalerHandler.GetSuggestUILayoutHeight(DSPGame.globalOption.resolution.height);
+            }
+        }
     }
 
 }
