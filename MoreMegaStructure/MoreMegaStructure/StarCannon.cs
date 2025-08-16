@@ -482,6 +482,11 @@ namespace MoreMegaStructure
                 return skillTarget;
             skillTarget.type = ETargetType.Enemy;
             EnemyData[] enemyPool = spaceSector.enemyPool;
+            if(enemyPool == null) //////////////////////// 怎么回事，这里不判断null会在后面读取到Pool的时候报错
+            {
+                Console.WriteLine("null pool");
+                return skillTarget;
+            }
             int enemyCursor = spaceSector.enemyCursor;
             EnemyDFHiveSystem[] dfHivesByAstro = spaceSector.dfHivesByAstro;
             AstroData[] galaxyAstros = spaceSector.galaxyAstros;
@@ -1032,10 +1037,9 @@ namespace MoreMegaStructure
         /// 阻止子弹粒子的爆炸特效，提高帧率
         /// </summary>
         [HarmonyPostfix]
-        [HarmonyPatch(typeof(GameData), "GameTick")]
+        [HarmonyPatch(typeof(ThreadManager), "ProcessFrame")]
         public static void PreventBulletExplodeEffect()
         {
-            return;
             if ((int)state < 3 && (int)state > -2) return;
             DysonSwarm swarm = GameMain.data.dysonSpheres[starCannonStarIndex]?.swarm;
             if (swarm == null) return;

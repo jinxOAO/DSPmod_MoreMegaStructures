@@ -25,7 +25,8 @@ namespace MoreMegaStructure
     [BepInDependency(CommonAPIPlugin.GUID)]
     [BepInDependency(DSPModSavePlugin.MODGUID)]
     [CommonAPISubmoduleDependency(nameof(ProtoRegistry), nameof(TabSystem), nameof(LocalizationModule))]
-    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.8.4")]
+    [BepInDependency("starfi5h.plugin.ModFixerOne")]
+    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.8.5")]
     public class MoreMegaStructure : BaseUnityPlugin, IModCanSave
     {
         /// <summary>
@@ -312,7 +313,7 @@ namespace MoreMegaStructure
             if (UIBuildMenuPatcher.enabled) Harmony.CreateAndPatchAll(typeof(UIBuildMenuPatcher));
             Harmony.CreateAndPatchAll(typeof(UIStarCannon));
             Harmony.CreateAndPatchAll(typeof(UIMechaWindowPatcher));
-            Harmony.CreateAndPatchAll(typeof(PerformanceMonitorPatcher));
+            //Harmony.CreateAndPatchAll(typeof(PerformanceMonitorPatcher));
             Harmony.CreateAndPatchAll(typeof(UIPerformancePanelPatcher));
             Harmony.CreateAndPatchAll(typeof(UIDialogPatch));
             Harmony.CreateAndPatchAll(typeof(UIStationWindowPatcher));
@@ -1125,8 +1126,8 @@ namespace MoreMegaStructure
         /// 游戏每帧判断一下玩家背包里的多功能组件是否低于目标，如果低于则开启自动接收
         /// </summary>
         [HarmonyPostfix]
-        [HarmonyPatch(typeof(GameData), "GameTick")]
-        public static void GameTickPostPatch(long time)
+        [HarmonyPatch(typeof(ThreadManager), "ProcessFrame")]
+        public static void GameTickPostPatch(long frameCounter)
         {
             MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
             MMSCPU.BeginSample(ECpuWorkEntryExtended.MainLogic);
@@ -1165,7 +1166,7 @@ namespace MoreMegaStructure
             }
             hashGenByAllSN = 0;
             MMSCPU.BeginSample(ECpuWorkEntryExtended.StarAssembly);
-            StarAssembly.UIFrameUpdate(time);
+            StarAssembly.UIFrameUpdate(frameCounter);
             MMSCPU.EndSample(ECpuWorkEntryExtended.StarAssembly);
             MMSCPU.BeginSample(ECpuWorkEntryExtended.StarCannon);
             StarCannon.RefreshStarCannonProperties();

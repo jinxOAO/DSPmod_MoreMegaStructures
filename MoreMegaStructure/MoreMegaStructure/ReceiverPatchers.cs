@@ -72,22 +72,21 @@ namespace MoreMegaStructure
         public static bool RequestDysonSpherePowerPrePatch(ref PowerSystem __instance)
         {
             var _this = __instance;
-            PlanetFactory factory = _this.factory;
-            int starIndex = factory.planetId / 100 - 1;
+            int starIndex = _this.factory.planet.star.index;
+            if (starIndex >= MoreMegaStructure.StarMegaStructureType.Length)
+                return true;
+            DysonSphere dysonSphere = _this.factory.dysonSphere;
             int megaType = MoreMegaStructure.StarMegaStructureType[starIndex];
-
-            _this.dysonSphere = _this.factory.gameData.dysonSpheres[_this.planet.star.index];
             float eta = 1f - GameMain.history.solarEnergyLossRate;
-            float increase = (_this.dysonSphere != null) ? ((float)((double)_this.dysonSphere.grossRadius / ((double)_this.planet.sunDistance * 40000.0))) : 0f;
+            float increase = (dysonSphere != null) ? ((float)((double)dysonSphere.grossRadius / ((double)_this.planet.sunDistance * 40000.0))) : 0f;
             Vector3 normalized = _this.planet.runtimeLocalSunDirection.normalized;
             long num = 0L;
-            bool flag = false;
             for (int i = 1; i < _this.genCursor; i++)
             {
                 if (_this.genPool[i].gamma)
                 {
                     int productId = _this.genPool[i].productId;
-                    int protoId = factory.entityPool[_this.genPool[i].entityId].protoId;
+                    int protoId = _this.factory.entityPool[_this.genPool[i].entityId].protoId;
                     if (productId <= 0 && MoreMegaStructure.StarMegaStructureType[starIndex] != 0) // 如果不是戴森球且设置成了直接发电模式(productId为0)，则不请求能量
                     {
                         _this.genPool[i].capacityCurrentTick = 0;
@@ -104,16 +103,11 @@ namespace MoreMegaStructure
                         continue;
                     }
                     num += _this.genPool[i].EnergyCap_Gamma_Req(normalized.x, normalized.y, normalized.z, increase, eta);
-                    flag = true;
                 }
             }
-            if (_this.dysonSphere == null && flag)
+            if (dysonSphere != null)
             {
-                _this.dysonSphere = _this.factory.CheckOrCreateDysonSphere();
-            }
-            if (_this.dysonSphere != null)
-            {
-                _this.dysonSphere.energyReqCurrentTick += num;
+                dysonSphere.energyReqCurrentTick += num;
             }
 
             return false;

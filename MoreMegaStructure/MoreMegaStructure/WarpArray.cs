@@ -48,14 +48,14 @@ namespace MoreMegaStructure
         }
 
         [HarmonyPostfix]
-        [HarmonyPatch(typeof(GameData), "GameTick")]
-        public static void WarpArrayLogicUpdate(long time)
+        [HarmonyPatch(typeof(ThreadManager), "ProcessFrame")]
+        public static void WarpArrayLogicUpdate(long frameCounter)
         {
-            UpdateSectorTripCostRatio(time); // 每帧更新一部分星系，一秒全部更新一次
+            UpdateSectorTripCostRatio(frameCounter); // 每帧更新一部分星系，一秒全部更新一次
 
-            if (time % 60 == 44)
+            if (frameCounter % 60 == 44)
                 UpdateWarpArrayDatas();
-            if (time % 3600 == 45)
+            if (frameCounter % 3600 == 45)
                 SortWarpArray();
 
         }

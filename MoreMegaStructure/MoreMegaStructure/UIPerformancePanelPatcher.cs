@@ -14,28 +14,28 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(UIPerformancePanel), "RefreshCpuStatTexts")]
         public static void Refresh(ref UIPerformancePanel __instance)
         {
-            StringBuilder stringBuilder = new StringBuilder(__instance.cpuLabelText.text, 600 + PerformanceMonitorPatcher.cpuExtendedLength * 10);
-            StringBuilder stringBuilder2 = new StringBuilder(__instance.cpuValueText1.text, 600 + PerformanceMonitorPatcher.cpuExtendedLength * 10);
-            StringBuilder stringBuilder3 = new StringBuilder(__instance.cpuValueText2.text, 600 + PerformanceMonitorPatcher.cpuExtendedLength * 10);
+            //StringBuilder stringBuilder = new StringBuilder(__instance.cpuLabelText.text, 600 + PerformanceMonitorPatcher.cpuExtendedLength * 10);
+            //StringBuilder stringBuilder2 = new StringBuilder(__instance.cpuValueText1.text, 600 + PerformanceMonitorPatcher.cpuExtendedLength * 10);
+            //StringBuilder stringBuilder3 = new StringBuilder(__instance.cpuValueText2.text, 600 + PerformanceMonitorPatcher.cpuExtendedLength * 10);
 
-            //AppendCpuStatEntry(ECpuWorkEntryExtended.MoreMegaStructure, stringBuilder, stringBuilder2, stringBuilder3);
-            //AppendCpuStatEntry(ECpuWorkEntryExtended.MainLogic, stringBuilder, stringBuilder2, stringBuilder3);
-            //AppendCpuStatEntry(ECpuWorkEntryExtended.Receiver, stringBuilder, stringBuilder2, stringBuilder3);
-            //AppendCpuStatEntry(ECpuWorkEntryExtended.StarAssembly, stringBuilder, stringBuilder2, stringBuilder3);
-            //AppendCpuStatEntry(ECpuWorkEntryExtended.StarCannon, stringBuilder, stringBuilder2, stringBuilder3);
-            //AppendCpuStatEntry(ECpuWorkEntryExtended.EnemySearch, stringBuilder, stringBuilder2, stringBuilder3);
-            //AppendCpuStatEntry(ECpuWorkEntryExtended.Statistics, stringBuilder, stringBuilder2, stringBuilder3);
-            //AppendCpuStatEntry(ECpuWorkEntryExtended.Patch, stringBuilder, stringBuilder2, stringBuilder3);
+            ////AppendCpuStatEntry(ECpuWorkEntryExtended.MoreMegaStructure, stringBuilder, stringBuilder2, stringBuilder3);
+            ////AppendCpuStatEntry(ECpuWorkEntryExtended.MainLogic, stringBuilder, stringBuilder2, stringBuilder3);
+            ////AppendCpuStatEntry(ECpuWorkEntryExtended.Receiver, stringBuilder, stringBuilder2, stringBuilder3);
+            ////AppendCpuStatEntry(ECpuWorkEntryExtended.StarAssembly, stringBuilder, stringBuilder2, stringBuilder3);
+            ////AppendCpuStatEntry(ECpuWorkEntryExtended.StarCannon, stringBuilder, stringBuilder2, stringBuilder3);
+            ////AppendCpuStatEntry(ECpuWorkEntryExtended.EnemySearch, stringBuilder, stringBuilder2, stringBuilder3);
+            ////AppendCpuStatEntry(ECpuWorkEntryExtended.Statistics, stringBuilder, stringBuilder2, stringBuilder3);
+            ////AppendCpuStatEntry(ECpuWorkEntryExtended.Patch, stringBuilder, stringBuilder2, stringBuilder3);
 
-            for (int i = 44; i < PerformanceMonitorPatcher.cpuExtendedLength; i++)
-            {
-                AppendCpuStatEntry(i, stringBuilder, stringBuilder2, stringBuilder3);
-            }
+            //for (int i = 44; i < PerformanceMonitorPatcher.cpuExtendedLength; i++)
+            //{
+            //    AppendCpuStatEntry(i, stringBuilder, stringBuilder2, stringBuilder3);
+            //}
 
-            __instance.cpuLabelText.text = stringBuilder.ToString();
-            __instance.cpuValueText1.text = stringBuilder2.ToString();
-            __instance.cpuValueText2.text = stringBuilder3.ToString();
-            __instance.cpuContentTrans.sizeDelta = new Vector2(__instance.cpuContentTrans.sizeDelta.x, __instance.cpuLabelText.preferredHeight - 10f);
+            //__instance.cpuLabelText.text = stringBuilder.ToString();
+            //__instance.cpuValueText1.text = stringBuilder2.ToString();
+            //__instance.cpuValueText2.text = stringBuilder3.ToString();
+            //__instance.cpuContentTrans.sizeDelta = new Vector2(__instance.cpuContentTrans.sizeDelta.x, __instance.cpuLabelText.preferredHeight - 10f);
         }
 
 
