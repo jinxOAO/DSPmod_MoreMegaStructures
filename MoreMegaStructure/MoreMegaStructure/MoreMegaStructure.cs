@@ -81,6 +81,7 @@ namespace MoreMegaStructure
         public static ConfigEntry<bool> ShowIAUIWhenOpenDE;
         public static ConfigEntry<bool> IAStatisticPanelEnabled;
         public static ConfigEntry<bool> StarCannonOnly;
+        public static ConfigEntry<bool> EnableLandingProtection;
         // public static ConfigEntry<bool> HideWarpFieldUI;
         public static bool resolutionLower1080 = false;
 
@@ -255,6 +256,7 @@ namespace MoreMegaStructure
             ShowIAUIWhenOpenDE = Config.Bind("config", "AutoShowDEUI", true, "Set this to true will force to show the Interstellar Assembly's UI when opening/switching its Megastructure Editor Panel. Set to false will maintain the IA UI's last state. 将此项设置为true将在每次打开星际组装厂的巨构编辑器面板时，强制显示UI。设置为false则会维持上次的状态。");
             IAStatisticPanelEnabled = Config.Bind("config", "InterstellarAssemblyStatisticPanelEnabled", true, "If the Interstellar Assembly's production statistics have a excluive page. 星际组装厂的生产数据是否会拥有一个独立的面板页。");
             StarCannonOnly = Config.Bind("config", "StarCannonOnly", false, "Set this to true will disable all mega structures except DysonSphere and StarCannon. 将此项设置为true将禁用除了戴森球和恒星炮以外的任何巨构。");
+            EnableLandingProtection = Config.Bind("config", "EnableLandingProtection", true, "If you've installed the CustomCreateBirthStar or GalacticScale, enabling this option will prevent possible issues with logistics ships being unable to land, but it may cause non-warp speeds of logistics ships to be very fast in the early stages of the game. 若安装遗产mod或GalacticScale，开启此项将防止可能产生的物流船无法降落的问题，但会导致物流船非曲速的速度在游戏初期就很快。");
             UIStatisticsPatcher.enabled = IAStatisticPanelEnabled.Value;
             if (UIStatisticsPatcher.forceBanned) UIStatisticsPatcher.enabled = false;
 

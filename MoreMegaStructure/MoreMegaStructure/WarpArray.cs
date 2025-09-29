@@ -29,6 +29,7 @@ namespace MoreMegaStructure
         public const float warpSpeedInWarpField = 250 * 60 * 40000;
         public const float sailSpeedInWarpField = 400 * 500;
         public const float fixedSailSpeedInOtherMods = 400 * 100;
+        public static bool fixSailSpeed = false;
 
         // 运行时更新系数 无需存档
         public static List<WarpArrayData> arrays;
@@ -45,6 +46,12 @@ namespace MoreMegaStructure
                 tripEnergyCostRatioByStarIndex[i] = 1;
                 starIsInWhichWarpArray[i] = -1;
             }
+
+
+            if (MoreMegaStructure.EnableLandingProtection.Value && (CustomCreateBirthStarCompat.enabled || GalacticScaleCompat.enabled))
+                fixSailSpeed = true;
+            else
+                fixSailSpeed = false;
         }
 
         [HarmonyPostfix]
@@ -170,7 +177,7 @@ namespace MoreMegaStructure
         {
             //------------------------------------------------------------------------------
             float oriShipWarpSpeed = shipWarpSpeed;
-            if(CustomCreateBirthStarCompat.enabled || GalacticScaleCompat.enabled)
+            if(fixSailSpeed)
             {
                 shipSailSpeed = fixedSailSpeedInOtherMods > shipSailSpeed ? fixedSailSpeedInOtherMods : shipSailSpeed;
             }
