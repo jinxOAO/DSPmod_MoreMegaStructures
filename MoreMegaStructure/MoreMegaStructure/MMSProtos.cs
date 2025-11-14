@@ -1774,7 +1774,7 @@ namespace MoreMegaStructure
             LocalizationModule.RegisterTranslation("恒星炮修建中警告", "Star cannon needs to be built to at least the first stage before it can fire!", "恒星炮需要至少修建至第一阶段才能够开火！", "");
             LocalizationModule.RegisterTranslation("恒星炮冷却中警告", "Unable to fire because the star cannon is cooling down.", "恒星炮正在冷却中，无法开火！", "");
             LocalizationModule.RegisterTranslation("恒星炮充能中警告", "Unable to fire because the star cannon is charging.", "恒星炮正在充能中，无法开火！", "");
-            LocalizationModule.RegisterTranslation("目标无法定位警告", "Unable to locate any targets! Please check if this star system has surviving DF hive.", "无法定位任何目标！请确认该星系有存活的黑雾巢穴。", "");
+            LocalizationModule.RegisterTranslation("目标无法定位警告", "Unable to locate any targets! Please check that you've arrived in that star system at least once, and that star system has surviving DF hive.", "无法定位任何目标！请确认至少进入过该星系一次，且该星系有存活的黑雾巢穴。", "");
             LocalizationModule.RegisterTranslation("恒星炮不能向自身所在星系开火！", "Star cannon cannot fire at its own star system!", "恒星炮无法向自身所在星系开火！", "");
             LocalizationModule.RegisterTranslation("无法更改目标星系警告", "Unable to change the target star system when firing.", "恒星炮正在开火时无法更换目标星系！", "");
             LocalizationModule.RegisterTranslation("恒星级武器检测警告", "Star level weapon activation detected!", "检测到恒星级武器启动！", "");

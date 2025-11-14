@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using System.IO;
 using System.Security.Cryptography;
 using System;
+using static UnityEngine.EventSystems.EventTrigger;
 
 namespace MoreMegaStructure
 {
@@ -417,8 +418,33 @@ namespace MoreMegaStructure
             if (ptr0.id <= 0) // 目标已不存在
                 return false;
 
+            if(ptr0.dfRelayId > 0)
+            {
+                return CheckRelay(ref ptr0);
+            }
+
             return true;
         }
+
+
+        /// <summary>
+        /// 为避免击杀一个未实例化的行星上的中继站，导致行星Init一个Factory同时，错误地保持了planet.modData为null，从而使得存档时报错，因此阻止恒星炮锁定或攻击所在行星的factory为null的中继站
+        /// </summary>
+        /// <param name="ptr"></param>
+        /// <returns></returns>
+        public static bool CheckRelay(ref EnemyData ptr)
+        {
+            EnemyDFHiveSystem hive = GameMain.spaceSector.GetHiveByAstroId(ptr.originAstroId);
+            DFRelayComponent relayComponent = hive.relays.buffer[ptr.dfRelayId];
+            if (relayComponent != null && relayComponent.id == ptr.dfRelayId)
+            {
+                PlanetData planet = GameMain.spaceSector.galaxy.PlanetById(relayComponent.targetAstroId);
+                if (planet != null && planet.factory != null)
+                    return true;
+            }
+            return false;
+        }
+
 
 
         public static bool CheckAndSearchAllTargets()
@@ -468,6 +494,7 @@ namespace MoreMegaStructure
             return currentTargetIds.Count > 0;
         }
 
+      
 
         /// <summary>
         /// 根据当前瞄准的星系和是否有优先瞄准的黑雾巢穴的设定，返回下一个合法目标
@@ -492,21 +519,25 @@ namespace MoreMegaStructure
             AstroData[] galaxyAstros = spaceSector.galaxyAstros;
             Vector3 vector2 = GameMain.galaxy.stars[currentTargetStarIndex].uPosition;
             VectorLF3 zero = VectorLF3.zero;
-            
             for (int m = 0; m < enemyCursor; m++)
             {
                 ref EnemyData ptr3 = ref enemyPool[m];
                 if (ptr3.id != 0)
                 {
                     if (ptr3.dfTinderId != 0) // 不会锁定火种
-                        continue;
+                    { continue; }
                     EnemyDFHiveSystem enemyDFHiveSystem = dfHivesByAstro[ptr3.originAstroId - 1000000];
                     if (enemyDFHiveSystem == null || enemyDFHiveSystem.starData.index != currentTargetStarIndex) // 不是目标星系的黑雾巢穴
-                        continue;
+                    { continue; }
                     if (priorTargetHiveOriAstroId >= 0 && ptr3.originAstroId != priorTargetHiveOriAstroId)// 玩家要求优先攻击特定的黑雾巢穴，因此不属于特定黑雾巢穴的敌人被跳过
-                        continue;
+                    { continue; }
                     if (ptr3.dfSCoreId + ptr3.dfSNodeId + ptr3.dfSConnectorId + ptr3.dfSGammaId + ptr3.dfSTurretId + ptr3.dfSReplicatorId + ptr3.dfRelayId <= 0 && priorTargetHiveOriAstroId > -2) // 不是黑雾巢穴的建筑本体，跳过。恒星炮不会攻击敌舰，除非已经找不到hive作为目标，priorTargetHiveOriAstroId变为-2
-                        continue;
+                    { continue; }
+                    if( ptr3.dfRelayId > 0)
+                    {
+                        if (!CheckRelay(ref ptr3))
+                            continue;
+                    }
                     if (false)
                     {
                         Debug.Log($"dfsNode yes: {ptr3.dfSNodeId} {ptr3.dfSCoreId} {ptr3.dfSConnectorId} {ptr3.dfSGammaId} {ptr3.dfSTurretId} {ptr3.dfSReplicatorId} in astro{ptr3.astroId} and oriAstro {ptr3.originAstroId} and relayId {ptr3.dfRelayId}");
@@ -1058,6 +1089,59 @@ namespace MoreMegaStructure
             }
         }
 
+
+        ///// <summary>
+        ///// 仅供测试 3901 3902
+        ///// </summary>
+
+        //[HarmonyPrefix]
+        //[HarmonyPatch(typeof(PlanetFactory), "Init")]
+        //public static bool PlanetFactoryInitPrefix(ref PlanetFactory __instance, GameData _gameData, PlanetData _planet, int _index)
+        //{
+        //    Utils.Log($"Init planet factory {__instance.planet == null} and {__instance.planet?.factory}, _planet{_planet.id}");
+
+        //    Utils.Log($"Before data is {_planet?.modData?.Length}, is null?{_planet.modData == null}");
+        //    return true;
+        //}
+        //[HarmonyPostfix]
+        //[HarmonyPatch(typeof(PlanetFactory), "Init")]
+        //public static void PlanetFactoryInitPostfix(ref PlanetFactory __instance, GameData _gameData, PlanetData _planet, int _index)
+        //{
+        //    Utils.Log($"After data is {__instance.planet == null},{_planet?.modData?.Length}, and {__instance.planet?.modData?.Length}, is null ? {__instance.planet.modData == null}");
+        //}
+        ////[HarmonyPrefix]
+        ////[HarmonyPatch(typeof(EnemyDFHiveSystem), "NotifyRelayKilled")]
+        ////public static bool NotifyRelayKilledPrefix(ref EnemyDFHiveSystem __instance, ref EnemyData enemy)
+        ////{
+        ////    DFRelayComponent dfrelayComponent = __instance.relays.buffer[enemy.dfRelayId];
+        ////    if (dfrelayComponent != null && dfrelayComponent.id == enemy.dfRelayId)
+        ////    {
+        ////        __instance.relayNeutralizedCounter++;
+        ////        if (dfrelayComponent.baseState == 1 && dfrelayComponent.stage == 2)
+        ////        {
+        ////            PlanetData planetData = __instance.sector.galaxy.PlanetById(dfrelayComponent.targetAstroId);
+        ////            Utils.Log($"planet data is null? {planetData == null}");
+        ////            if(planetData != null )
+        ////            {
+        ////                Utils.Log($"factory is null? {planetData.factory == null}");
+        ////                if (planetData.factory != null )
+        ////                {
+        ////                    Utils.Log($"its planet id is {planetData.factory.planet?.id}, while true id is {planetData.id}");
+        ////                }
+        ////            }
+        ////            if (planetData != null)
+        ////            {
+        ////                PlanetFactory orCreateFactory = __instance.gameData.GetOrCreateFactory(planetData);
+        ////                __instance.sector.galaxy.astrosFactory[dfrelayComponent.targetAstroId] = orCreateFactory;
+        ////                if (orCreateFactory != null)
+        ////                {
+        ////                    dfrelayComponent.RealizePlanetBase(__instance.sector);
+        ////                }
+        ////            }
+        ////        }
+        ////    }
+        ////    return false;
+        ////}
 
 
         public static void Import(BinaryReader r)
