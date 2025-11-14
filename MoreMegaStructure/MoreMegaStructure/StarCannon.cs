@@ -439,7 +439,7 @@ namespace MoreMegaStructure
             if (relayComponent != null && relayComponent.id == ptr.dfRelayId)
             {
                 PlanetData planet = GameMain.spaceSector.galaxy.PlanetById(relayComponent.targetAstroId);
-                if (planet != null && planet.factory != null)
+                if (planet != null && (planet.factory != null || planet.modData != null))
                     return true;
             }
             return false;
