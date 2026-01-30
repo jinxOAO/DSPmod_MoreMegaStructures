@@ -1437,7 +1437,7 @@ namespace MoreMegaStructure
                 if (GameMain.galaxy.StarById(starId) != null)
                 {
                     string displayName = "星际组装厂".Translate() + " " + GameMain.galaxy.StarById(starId).displayName;
-                    UITools.Utils.UITextTruncateShow(__instance.planetNameText, ref displayName, __instance.planetNameTextWidthLimit);
+                    __instance.planetNameText.text = displayName;
                 }
             }
         }

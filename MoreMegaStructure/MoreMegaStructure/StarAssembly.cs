@@ -176,11 +176,27 @@ namespace MoreMegaStructure
                     oriIncIconObj = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Station Window/Station-scroll(Clone)/Viewport/pane/storage-box-0(Clone)/storage-icon/inc-3");
                 GameObject oriRemoveRecipeObj = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Assembler Window/produce/circle-back/stop-btn");
                 GameObject oriRemoveRecipeXObj = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Assembler Window/produce/circle-back/stop-btn/x");
-                GameObject oriInputFieldObj = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Blueprint Browser/inspector-group/Scroll View/Viewport/Content/group-1/input-short-text");
-                if(oriInputFieldObj == null)
-                    oriInputFieldObj = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Blueprint Browser/inspector-group/BP-panel-scroll(Clone)/Viewport/pane/group-1/input-short-text");
-                if (oriInputFieldObj == null)
+                GameObject oriInputFieldObj0 = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Belt Window/number-input");
+                //if (oriInputFieldObj == null)
+                //    oriInputFieldObj = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Blueprint Browser/inspector-group/BP-panel-scroll(Clone)/Viewport/pane/group-1/input-short-text");
+                if (oriInputFieldObj0 == null)
                     Utils.Log("Error when init oriInputField because some other mods has changed the Blueprint Browser UI. Please check if you've install the BluePrintTweaks and then contant jinxOAO.");
+
+                GameObject oriInputFieldObj = GameObject.Instantiate(oriInputFieldObj0);
+                oriInputFieldObj.GetComponent<RectTransform>().anchorMax = new Vector2(0, 1);
+                oriInputFieldObj.GetComponent<RectTransform>().anchorMin = new Vector2(0, 1);
+                if (oriInputFieldObj.GetComponent<UIButton>().transitions.Length > 0)
+                {
+                    oriInputFieldObj.GetComponent<UIButton>().transitions[0].normalColor = new Color(0, 0, 0, 0.4f);
+                }
+                oriInputFieldObj.GetComponent<Image>().sprite = Resources.Load<Sprite>("ui/textures/sprites/sci-fi/litter-panel-cc");
+                oriInputFieldObj.GetComponent<InputField>().contentType = InputField.ContentType.Standard;
+                oriInputFieldObj.GetComponent<InputField>().characterValidation = InputField.CharacterValidation.None;
+                oriInputFieldObj.transform.Find("number-text").GetComponent<Text>().alignment = TextAnchor.MiddleLeft;
+                oriInputFieldObj.transform.Find("number-text").GetComponent<Text>().color = new Color(1, 1, 1, 0.5f);
+                oriInputFieldObj.transform.Find("number-text").GetComponent<RectTransform>().anchorMax = new Vector2(0.92f, 1);
+                oriInputFieldObj.transform.Find("number-text").GetComponent<RectTransform>().anchorMin = new Vector2(0.08f, 0);
+
 
                 for (int i = 0; i < slotCount; i++)
                 {
@@ -191,7 +207,7 @@ namespace MoreMegaStructure
 
                     GameObject recipeSelectionObj = GameObject.Instantiate(oriSelectObj, slotObj.transform);
                     recipeSelectionObj.SetActive(true);
-                    recipeSelectionObj.transform.Find("tip-group/paste-button").gameObject.SetActive(false);
+                    recipeSelectionObj.transform.Find("tip-group/tip-text/paste-button").gameObject.SetActive(false);
                     recipePickerTxts.Add(recipeSelectionObj.transform.Find("tip-group/tip-text").gameObject.GetComponent<Text>());
 
                     GameObject circleButtonObj = recipeSelectionObj.transform.Find("circle").gameObject;
@@ -290,6 +306,7 @@ namespace MoreMegaStructure
                     
                     GameObject spdLimitInputObj = GameObject.Instantiate(oriInputFieldObj, spdLimitObj.transform);
                     spdLimitInputObj.name = "value-input";
+                    spdLimitInputObj.GetComponent<RectTransform>().pivot = new Vector2(0, 1);
                     spdLimitInputObj.transform.localPosition = new Vector3(30, 0, 0);
                     spdLimitInputObj.GetComponent<UIButton>().tips.tipTitle = "最大生产速度限制题目".Translate();
                     spdLimitInputObj.GetComponent<UIButton>().tips.tipText = "最大生产速度限制描述".Translate();
@@ -303,7 +320,6 @@ namespace MoreMegaStructure
                     string istr = i.ToString();
                     spdLimitInputObj.GetComponent<InputField>().onEndEdit.AddListener((x) => { SetProductSpeedRequest(Convert.ToInt32(istr), x); });
                     limitInputs.Add(spdLimitInputObj.GetComponent<InputField>());
-                    spdLimitInputObj.transform.Find("value-text").GetComponent<Text>().color = Color.white;
                     spdLimitObj.SetActive(false);
 
                     // 规范化速度设置按钮 
@@ -498,6 +514,7 @@ namespace MoreMegaStructure
                     tipButtonObj.GetComponent<RectTransform>().sizeDelta = new Vector2(20, 20); //按钮大小
                     tipButtonTxts.Add(tipButtonObj.transform.Find("Text").gameObject.GetComponent<Text>());
                     tipButtonObj.transform.Find("Text").gameObject.GetComponent<Text>().text = "?";
+                    tipButtonObj.transform.Find("Text").gameObject.GetComponent<Text>().verticalOverflow = VerticalWrapMode.Overflow;
                     Button tipButton = tipButtonObj.GetComponent<Button>();
                     tipButton.interactable = true;
                     tipButton.onClick.RemoveAllListeners();
