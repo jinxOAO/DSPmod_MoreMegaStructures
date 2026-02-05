@@ -61,315 +61,352 @@ namespace MoreMegaStructure
             }
 
             //引力发生装置
-            var itemGravityGenRecipe = oriRecipe.Copy();
-            var itemGravityGen = oriItem.Copy();
-            itemGravityGenRecipe.ID = recipeIdBias + 530;
-            itemGravityGenRecipe.Name = "引力发生装置";
-            itemGravityGenRecipe.name = "引力发生装置".Translate();
-            itemGravityGenRecipe.Description = "引力发生装置描述";
-            itemGravityGenRecipe.description = "引力发生装置描述".Translate();
-            itemGravityGenRecipe.Items = new int[] { 1107, 1127 };
-            itemGravityGenRecipe.ItemCounts = new int[] { 1, 1 };
-            itemGravityGenRecipe.Results = new int[] { 9480 };
-            itemGravityGenRecipe.ResultCounts = new int[] { 1 };
-            itemGravityGenRecipe.TimeSpend = 180;
-            itemGravityGenRecipe.GridIndex = 101 + pagePlus + linePlus;
-            itemGravityGenRecipe.preTech = LDB.techs.Select(1704);
-            Traverse.Create(itemGravityGenRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconGravityGen);
+            //var itemGravityGenRecipe = oriRecipe.Copy();
+            //var itemGravityGen = oriItem.Copy();
+            //itemGravityGenRecipe.ID = recipeIdBias + 530;
+            //itemGravityGenRecipe.Name = "引力发生装置";
+            //itemGravityGenRecipe.name = "引力发生装置".Translate();
+            //itemGravityGenRecipe.Description = "引力发生装置描述";
+            //itemGravityGenRecipe.description = "引力发生装置描述".Translate();
+            //itemGravityGenRecipe.Items = new int[] { 1107, 1127 };
+            //itemGravityGenRecipe.ItemCounts = new int[] { 1, 1 };
+            //itemGravityGenRecipe.Results = new int[] { 9480 };
+            //itemGravityGenRecipe.ResultCounts = new int[] { 1 };
+            //itemGravityGenRecipe.TimeSpend = 180;
+            //itemGravityGenRecipe.GridIndex = 101 + pagePlus + linePlus;
+            //itemGravityGenRecipe.preTech = LDB.techs.Select(1704);
+            //Traverse.Create(itemGravityGenRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconGravityGen);
             ProtoRegistry.RegisterItem(9480, "引力发生装置".Translate(), "引力发生装置描述".Translate(), "Assets/MegaStructureTab/gravitygenerator",
                                        101 + pagePlus + linePlus, 100, EItemType.Component,
                                        ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.9f, 0.3f)));
+            ProtoRegistry.RegisterRecipe(recipeIdBias + 530, ERecipeType.Assemble, 180, new int[] { 1107, 1127 }, new int[] { 1, 1 }, new int[] { 9480 },
+                                         new int[] { 1 }, "引力发生装置描述", 1704, 101 + pagePlus + linePlus, "Assets/MegaStructureTab/gravitygenerator");
 
             //位面约束环
-            var itemConstrainRingRecipe = oriRecipe.Copy();
-            var itemConstrainRing = oriItem.Copy();
-            itemConstrainRingRecipe.ID = recipeIdBias + 531;
-            itemConstrainRingRecipe.Name = "位面约束环";
-            itemConstrainRingRecipe.name = "位面约束环".Translate();
-            itemConstrainRingRecipe.Description = "位面约束环描述";
-            itemConstrainRingRecipe.description = "位面约束环描述".Translate();
-            itemConstrainRingRecipe.Items = new int[] { 1205, 1304 };
-            itemConstrainRingRecipe.ItemCounts = new int[] { 2, 1 };
-            if (MoreMegaStructure.GenesisCompatibility)
-            {
-                itemConstrainRingRecipe.Items = new int[] { 1205, 1119, 1126 };
-                itemConstrainRingRecipe.ItemCounts = new int[] { 2, 1, 1 };
-            }
+            //var itemConstrainRingRecipe = oriRecipe.Copy();
+            //var itemConstrainRing = oriItem.Copy();
+            //itemConstrainRingRecipe.ID = recipeIdBias + 531;
+            //itemConstrainRingRecipe.Name = "位面约束环";
+            //itemConstrainRingRecipe.name = "位面约束环".Translate();
+            //itemConstrainRingRecipe.Description = "位面约束环描述";
+            //itemConstrainRingRecipe.description = "位面约束环描述".Translate();
+            //itemConstrainRingRecipe.Items = new int[] { 1205, 1304 };
+            //itemConstrainRingRecipe.ItemCounts = new int[] { 2, 1 };
+            //if (MoreMegaStructure.GenesisCompatibility)
+            //{
+            //    itemConstrainRingRecipe.Items = new int[] { 1205, 1119, 1126 };
+            //    itemConstrainRingRecipe.ItemCounts = new int[] { 2, 1, 1 };
+            //}
 
-            itemConstrainRingRecipe.Results = new int[] { 9481 };
-            itemConstrainRingRecipe.ResultCounts = new int[] { 2 };
-            itemConstrainRingRecipe.TimeSpend = 180;
-            itemConstrainRingRecipe.GridIndex = 102 + pagePlus + linePlus;
-            itemConstrainRingRecipe.preTech = LDB.techs.Select(1141);
-            Traverse.Create(itemConstrainRingRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconConstrainRing);
+            //itemConstrainRingRecipe.Results = new int[] { 9481 };
+            //itemConstrainRingRecipe.ResultCounts = new int[] { 2 };
+            //itemConstrainRingRecipe.TimeSpend = 180;
+            //itemConstrainRingRecipe.GridIndex = 102 + pagePlus + linePlus;
+            //itemConstrainRingRecipe.preTech = LDB.techs.Select(1141);
+            //Traverse.Create(itemConstrainRingRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconConstrainRing);
             ProtoRegistry.RegisterItem(9481, "位面约束环".Translate(), "位面约束环描述".Translate(), "Assets/MegaStructureTab/constrainring",
                                        102 + pagePlus + linePlus, 100, EItemType.Component,
                                        ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.4f, 0.08f, 0.4f)));
+            if (MoreMegaStructure.GenesisCompatibility)
+            {
+
+                ProtoRegistry.RegisterRecipe(recipeIdBias + 531, ERecipeType.Assemble, 180, new int[] { 1205, 1119, 1126 }, new int[] { 2, 1, 1 }, new int[] { 9481 },
+                                             new int[] { 2 }, "位面约束环描述", 1141, 102 + pagePlus + linePlus, "Assets/MegaStructureTab/constrainring");
+            }
+            else
+            {
+                ProtoRegistry.RegisterRecipe(recipeIdBias + 531, ERecipeType.Assemble, 180, new int[] { 1205, 1304 }, new int[] { 2, 1 }, new int[] { 9481 },
+                                             new int[] { 2 }, "位面约束环描述", 1141, 102 + pagePlus + linePlus, "Assets/MegaStructureTab/constrainring");
+            }
+
 
 
             //引力钻头
-            var itemGravityDrillRecipe = oriRecipe.Copy();
-            var itemGravityDrill = oriItem.Copy();
-            itemGravityDrillRecipe.ID = recipeIdBias + 532;
-            itemGravityDrillRecipe.Name = "引力钻头";
-            itemGravityDrillRecipe.name = "引力钻头".Translate();
-            itemGravityDrillRecipe.Description = "引力钻头描述";
-            itemGravityDrillRecipe.description = "引力钻头描述".Translate();
-            itemGravityDrillRecipe.Items = new int[] { 9480, 9481, 1209 };
-            itemGravityDrillRecipe.ItemCounts = new int[] { 1, 1, 1 };
-            itemGravityDrillRecipe.Results = new int[] { 9482 };
-            itemGravityDrillRecipe.ResultCounts = new int[] { 1 };
-            itemGravityDrillRecipe.TimeSpend = 180;
-            itemGravityDrillRecipe.GridIndex = 103 + pagePlus + linePlus;
-            itemGravityDrillRecipe.preTech = LDB.techs.Select(1704);
-            Traverse.Create(itemGravityDrillRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconGravityDrill);
+            //var itemGravityDrillRecipe = oriRecipe.Copy();
+            //var itemGravityDrill = oriItem.Copy();
+            //itemGravityDrillRecipe.ID = recipeIdBias + 532;
+            //itemGravityDrillRecipe.Name = "引力钻头";
+            //itemGravityDrillRecipe.name = "引力钻头".Translate();
+            //itemGravityDrillRecipe.Description = "引力钻头描述";
+            //itemGravityDrillRecipe.description = "引力钻头描述".Translate();
+            //itemGravityDrillRecipe.Items = new int[] { 9480, 9481, 1209 };
+            //itemGravityDrillRecipe.ItemCounts = new int[] { 1, 1, 1 };
+            //itemGravityDrillRecipe.Results = new int[] { 9482 };
+            //itemGravityDrillRecipe.ResultCounts = new int[] { 1 };
+            //itemGravityDrillRecipe.TimeSpend = 180;
+            //itemGravityDrillRecipe.GridIndex = 103 + pagePlus + linePlus;
+            //itemGravityDrillRecipe.preTech = LDB.techs.Select(1704);
+            //Traverse.Create(itemGravityDrillRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconGravityDrill);
             ProtoRegistry.RegisterItem(9482, "引力钻头".Translate(), "引力钻头描述".Translate(), "Assets/MegaStructureTab/gravitydrill2",
                                        103 + pagePlus + linePlus, 50, EItemType.Component,
                                        ProtoRegistry.GetDefaultIconDesc(Color.black, new Color(0.3f, 0.9f, 0.3f)));
+            ProtoRegistry.RegisterRecipe(recipeIdBias + 532, ERecipeType.Assemble, 180, new int[] { 9480, 9481, 1209 }, new int[] { 1, 1, 1 }, new int[] { 9482 },
+                                             new int[] { 1 }, "引力钻头描述", 1704, 103 + pagePlus + linePlus, "Assets/MegaStructureTab/gravitydrill2");
 
             //隧穿激发装置
-            var itemExciterRecipe = oriRecipe.Copy();
-            var itemExciter = oriItem.Copy();
-            itemExciterRecipe.ID = recipeIdBias + 533;
-            itemExciterRecipe.Name = "隧穿激发装置";
-            itemExciterRecipe.name = "隧穿激发装置".Translate();
-            itemExciterRecipe.Description = "隧穿激发装置描述";
-            itemExciterRecipe.description = "隧穿激发装置描述".Translate();
-            itemExciterRecipe.Items = new int[] { 1206, 1404 };
-            itemExciterRecipe.ItemCounts = new int[] { 1, 1 };
-            if (MoreMegaStructure.GenesisCompatibility)
-            {
-                itemExciterRecipe.Items = new int[] { 1303, 1014 };
-                itemExciterRecipe.ItemCounts = new int[] { 1, 2 };
-            }
+            //var itemExciterRecipe = oriRecipe.Copy();
+            //var itemExciter = oriItem.Copy();
+            //itemExciterRecipe.ID = recipeIdBias + 533;
+            //itemExciterRecipe.Name = "隧穿激发装置";
+            //itemExciterRecipe.name = "隧穿激发装置".Translate();
+            //itemExciterRecipe.Description = "隧穿激发装置描述";
+            //itemExciterRecipe.description = "隧穿激发装置描述".Translate();
+            //itemExciterRecipe.Items = new int[] { 1206, 1404 };
+            //itemExciterRecipe.ItemCounts = new int[] { 1, 1 };
+            //if (MoreMegaStructure.GenesisCompatibility)
+            //{
+            //    itemExciterRecipe.Items = new int[] { 1303, 1014 };
+            //    itemExciterRecipe.ItemCounts = new int[] { 1, 2 };
+            //}
 
-            itemExciterRecipe.Results = new int[] { 9483 };
-            itemExciterRecipe.ResultCounts = new int[] { 6 };
-            itemExciterRecipe.TimeSpend = 360;
-            itemExciterRecipe.GridIndex = 104 + pagePlus + linePlus;
-            itemExciterRecipe.preTech = LDB.techs.Select(1703);
-            if (MoreMegaStructure.GenesisCompatibility)
-            {
-                itemExciterRecipe.preTech = LDB.techs.Select(1302);
-            }
-
-            Traverse.Create(itemExciterRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconTunnExciter);
+            //itemExciterRecipe.Results = new int[] { 9483 };
+            //itemExciterRecipe.ResultCounts = new int[] { 6 };
+            //itemExciterRecipe.TimeSpend = 360;
+            //itemExciterRecipe.GridIndex = 104 + pagePlus + linePlus;
+            //itemExciterRecipe.preTech = LDB.techs.Select(1703);
+            //if (MoreMegaStructure.GenesisCompatibility)
+            //{
+            //    itemExciterRecipe.preTech = LDB.techs.Select(1302);
+            //}
+            //Traverse.Create(itemExciterRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconTunnExciter); 
             ProtoRegistry.RegisterItem(9483, "隧穿激发装置".Translate(), "隧穿激发装置描述".Translate(), "Assets/MegaStructureTab/tunnelingexciter2",
                                        104 + pagePlus + linePlus, 200, EItemType.Component,
                                        ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.1f, 0.0f)));
+            ProtoRegistry.RegisterRecipe(recipeIdBias + 533, ERecipeType.Assemble, 360, new int[] { 1303, 1014 }, new int[] { 1, 2 }, new int[] { 9483 },
+                                             new int[] { 6 }, "隧穿激发装置描述", 1703, 104 + pagePlus + linePlus, "Assets/MegaStructureTab/tunnelingexciter2");
             //谐振盘
-            var itemDiscRecipe = oriRecipe.Copy();
-            var itemDisc = oriItem.Copy();
-            itemDiscRecipe.ID = recipeIdBias + 534;
-            itemDiscRecipe.Name = "谐振盘";
-            itemDiscRecipe.name = "谐振盘".Translate();
-            itemDiscRecipe.Description = "谐振盘描述";
-            itemDiscRecipe.description = "谐振盘描述".Translate();
-            itemDiscRecipe.Items = new int[] { 9483, 1113, 1305 };
-            itemDiscRecipe.ItemCounts = new int[] { 3, 2, 1 };
-            itemDiscRecipe.Results = new int[] { 9484 };
-            itemDiscRecipe.ResultCounts = new int[] { 1 };
-            itemDiscRecipe.TimeSpend = 240;
-            itemDiscRecipe.GridIndex = 105 + pagePlus + linePlus;
-            itemDiscRecipe.preTech = LDB.techs.Select(1303);
-            Traverse.Create(itemDiscRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconResDisc);
+            //var itemDiscRecipe = oriRecipe.Copy();
+            //var itemDisc = oriItem.Copy();
+            //itemDiscRecipe.ID = recipeIdBias + 534;
+            //itemDiscRecipe.Name = "谐振盘";
+            //itemDiscRecipe.name = "谐振盘".Translate();
+            //itemDiscRecipe.Description = "谐振盘描述";
+            //itemDiscRecipe.description = "谐振盘描述".Translate();
+            //itemDiscRecipe.Items = new int[] { 9483, 1113, 1305 };
+            //itemDiscRecipe.ItemCounts = new int[] { 3, 2, 1 };
+            //itemDiscRecipe.Results = new int[] { 9484 };
+            //itemDiscRecipe.ResultCounts = new int[] { 1 };
+            //itemDiscRecipe.TimeSpend = 240;
+            //itemDiscRecipe.GridIndex = 105 + pagePlus + linePlus;
+            //itemDiscRecipe.preTech = LDB.techs.Select(1303);
+            //Traverse.Create(itemDiscRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconResDisc);
             ProtoRegistry.RegisterItem(9484, "谐振盘".Translate(), "谐振盘描述".Translate(), "Assets/MegaStructureTab/resonancedisc",
                                        105 + pagePlus + linePlus, 200, EItemType.Component,
                                        ProtoRegistry.GetDefaultIconDesc(Color.gray, new Color(0.4f, 0.4f, 0.8f)));
+            ProtoRegistry.RegisterRecipe(recipeIdBias + 534, ERecipeType.Assemble, 240, new int[] { 9483, 1113, 1305 }, new int[] { 3, 2, 1 }, new int[] { 9484 },
+                                             new int[] { 1 }, "谐振盘描述", 1303, 105 + pagePlus + linePlus, "Assets/MegaStructureTab/resonancedisc");
             //光子探针
-            var itemProbeRecipe = oriRecipe.Copy();
-            var itemProbe = oriItem.Copy();
-            itemProbeRecipe.ID = recipeIdBias + 535;
-            itemProbeRecipe.Name = "光子探针";
-            itemProbeRecipe.name = "光子探针".Translate();
-            itemProbeRecipe.Description = "光子探针描述";
-            itemProbeRecipe.description = "光子探针描述".Translate();
-            itemProbeRecipe.Items = new int[] { 1404, 1208 };
-            itemProbeRecipe.ItemCounts = new int[] { 2, 1 };
-            if (MoreMegaStructure.GenesisCompatibility)
-            {
-                itemProbeRecipe.Items = new int[] { 1014, 1208 };
-                itemProbeRecipe.ItemCounts = new int[] { 4, 1 };
-            }
+            //var itemProbeRecipe = oriRecipe.Copy();
+            //var itemProbe = oriItem.Copy();
+            //itemProbeRecipe.ID = recipeIdBias + 535;
+            //itemProbeRecipe.Name = "光子探针";
+            //itemProbeRecipe.name = "光子探针".Translate();
+            //itemProbeRecipe.Description = "光子探针描述";
+            //itemProbeRecipe.description = "光子探针描述".Translate();
+            //itemProbeRecipe.Items = new int[] { 1404, 1208 };
+            //itemProbeRecipe.ItemCounts = new int[] { 2, 1 };
+            //if (MoreMegaStructure.GenesisCompatibility)
+            //{
+            //    itemProbeRecipe.Items = new int[] { 1014, 1208 };
+            //    itemProbeRecipe.ItemCounts = new int[] { 4, 1 };
+            //}
 
-            itemProbeRecipe.Results = new int[] { 9485 };
-            itemProbeRecipe.ResultCounts = new int[] { 1 };
-            itemProbeRecipe.TimeSpend = 240;
-            itemProbeRecipe.GridIndex = 106 + pagePlus + linePlus;
-            itemProbeRecipe.preTech = LDB.techs.Select(1504); //射线接收站的科技
-            Traverse.Create(itemProbeRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconPhotonProbe);
+            //itemProbeRecipe.Results = new int[] { 9485 };
+            //itemProbeRecipe.ResultCounts = new int[] { 1 };
+            //itemProbeRecipe.TimeSpend = 240;
+            //itemProbeRecipe.GridIndex = 106 + pagePlus + linePlus;
+            //itemProbeRecipe.preTech = LDB.techs.Select(1504); //射线接收站的科技
+            //Traverse.Create(itemProbeRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconPhotonProbe);
             var icondesc_alpha = ProtoRegistry.GetDefaultIconDesc(Color.gray, new Color(0.6f, 0.6f, 0.9f));
             icondesc_alpha.solidAlpha = 0.1f;
             ProtoRegistry.RegisterItem(9485, "光子探针".Translate(), "光子探针描述".Translate(), "Assets/MegaStructureTab/photonprobeflipsmall",
                                        106 + pagePlus + linePlus, 200, EItemType.Component, icondesc_alpha);
+            ProtoRegistry.RegisterRecipe(recipeIdBias + 535, ERecipeType.Assemble, 240, new int[] { 1404, 1208 }, new int[] { 2, 1 }, new int[] { 9485 },
+                                             new int[] { 1 }, "光子探针描述", 1504, 106 + pagePlus + linePlus, "Assets/MegaStructureTab/photonprobeflipsmall");
 
             //量子计算机
-            var itemQuanCompRecipe = oriRecipe.Copy();
-            var itemQuanComp = oriItem.Copy();
-            itemQuanCompRecipe.ID = recipeIdBias + 536;
-            itemQuanCompRecipe.Name = "量子计算机";
-            itemQuanCompRecipe.name = "量子计算机".Translate();
-            itemQuanCompRecipe.Description = "量子计算机描述";
-            itemQuanCompRecipe.description = "量子计算机描述".Translate();
-            itemQuanCompRecipe.Items = new int[] { 1305, 1402, 9483 };
-            itemQuanCompRecipe.ItemCounts = new int[] { 3, 2, 1 };
-            itemQuanCompRecipe.Results = new int[] { 9486 };
-            itemQuanCompRecipe.ResultCounts = new int[] { 1 };
-            itemQuanCompRecipe.TimeSpend = 720;
-            itemQuanCompRecipe.GridIndex = 107 + pagePlus + linePlus;
-            itemQuanCompRecipe.preTech = LDB.techs.Select(1303);
-            Traverse.Create(itemQuanCompRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconQuanComp);
+            //var itemQuanCompRecipe = oriRecipe.Copy();
+            //var itemQuanComp = oriItem.Copy();
+            //itemQuanCompRecipe.ID = recipeIdBias + 536;
+            //itemQuanCompRecipe.Name = "量子计算机";
+            //itemQuanCompRecipe.name = "量子计算机".Translate();
+            //itemQuanCompRecipe.Description = "量子计算机描述";
+            //itemQuanCompRecipe.description = "量子计算机描述".Translate();
+            //itemQuanCompRecipe.Items = new int[] { 1305, 1402, 9483 };
+            //itemQuanCompRecipe.ItemCounts = new int[] { 3, 2, 1 };
+            //itemQuanCompRecipe.Results = new int[] { 9486 };
+            //itemQuanCompRecipe.ResultCounts = new int[] { 1 };
+            //itemQuanCompRecipe.TimeSpend = 720;
+            //itemQuanCompRecipe.GridIndex = 107 + pagePlus + linePlus;
+            //itemQuanCompRecipe.preTech = LDB.techs.Select(1303);
+            //Traverse.Create(itemQuanCompRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconQuanComp);
             var icondesc_alpha2 = ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0f, 0.7f, 1f));
             icondesc_alpha2.solidAlpha = 0f;
             ProtoRegistry.RegisterItem(9486, "量子计算机".Translate(), "量子计算机描述".Translate(), "Assets/MegaStructureTab/quantumcomputer3",
                                        107 + pagePlus + linePlus, 200, EItemType.Component, icondesc_alpha2);
+            ProtoRegistry.RegisterRecipe(recipeIdBias + 536, ERecipeType.Assemble, 720, new int[] { 1305, 1402, 9483 }, new int[] { 3, 2, 1 }, new int[] { 9486 },
+                                             new int[] { 1 }, "量子计算机描述", 1303, 107 + pagePlus + linePlus, "Assets/MegaStructureTab/quantumcomputer3");
             //星际组装厂组件
-            var itemIACompoRecipe = oriRecipe.Copy();
-            var itemIACompo = oriItem.Copy();
-            itemIACompoRecipe.ID = recipeIdBias + 537;
-            itemIACompoRecipe.Name = "星际组装厂组件";
-            itemIACompoRecipe.name = "星际组装厂组件".Translate();
-            itemIACompoRecipe.Description = "星际组装厂组件描述";
-            itemIACompoRecipe.description = "星际组装厂组件描述".Translate();
-            itemIACompoRecipe.Items = new int[] { 1125, 2305, 1143 };
-            itemIACompoRecipe.ItemCounts = new int[] { 3, 3, 1 };
-            itemIACompoRecipe.Results = new int[] { 9487 };
-            itemIACompoRecipe.ResultCounts = new int[] { 1 };
-            itemIACompoRecipe.TimeSpend = 480;
-            itemIACompoRecipe.GridIndex = 108 + pagePlus + linePlus;
-            itemIACompoRecipe.preTech = LDB.techs.Select(1303);
-            if (MoreMegaStructure.isBattleActive) itemIACompoRecipe.preTech = LDB.techs.Select(1922);
-            Traverse.Create(itemIACompoRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconIACompo);
+            //var itemIACompoRecipe = oriRecipe.Copy();
+            //var itemIACompo = oriItem.Copy();
+            //itemIACompoRecipe.ID = recipeIdBias + 537;
+            //itemIACompoRecipe.Name = "星际组装厂组件";
+            //itemIACompoRecipe.name = "星际组装厂组件".Translate();
+            //itemIACompoRecipe.Description = "星际组装厂组件描述";
+            //itemIACompoRecipe.description = "星际组装厂组件描述".Translate();
+            //itemIACompoRecipe.Items = new int[] { 1125, 2305, 1143 };
+            //itemIACompoRecipe.ItemCounts = new int[] { 3, 3, 1 };
+            //itemIACompoRecipe.Results = new int[] { 9487 };
+            //itemIACompoRecipe.ResultCounts = new int[] { 1 };
+            //itemIACompoRecipe.TimeSpend = 480;
+            //itemIACompoRecipe.GridIndex = 108 + pagePlus + linePlus;
+            //itemIACompoRecipe.preTech = LDB.techs.Select(1303);
+            //if (MoreMegaStructure.isBattleActive) itemIACompoRecipe.preTech = LDB.techs.Select(1922);
+            //Traverse.Create(itemIACompoRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconIACompo);
             ProtoRegistry.RegisterItem(9487, "星际组装厂组件".Translate(), "星际组装厂组件描述".Translate(), "Assets/MegaStructureTab/iacomponent",
                                        108 + pagePlus + linePlus, 200, EItemType.Component,
                                        ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.7f, 0.2f, 0.7f)));
+            ProtoRegistry.RegisterRecipe(recipeIdBias + 537, ERecipeType.Assemble, 480, new int[] { 1125, 2305, 1143 }, new int[] { 3, 3, 1 }, new int[] { 9487 },
+                                             new int[] { 1 }, "星际组装厂组件描述", 1303, 108 + pagePlus + linePlus, "Assets/MegaStructureTab/iacomponent");
 
             //下面是火箭
             var oriRecipe2 = LDB.recipes.Select(83);
             var oriItem2 = LDB.items.Select(1503);
             //物质解压器运载火箭
-            var rocketMDRecipe = oriRecipe2.Copy();
-            var rocketMD = oriItem2.Copy();
-            rocketMDRecipe.ID = recipeIdBias + 538;
-            rocketMDRecipe.Name = "物质解压器运载火箭";
-            rocketMDRecipe.name = "物质解压器运载火箭".Translate();
-            rocketMDRecipe.Description = "物质解压器运载火箭描述";
-            rocketMDRecipe.description = "物质解压器运载火箭描述".Translate();
-            rocketMDRecipe.Items = new int[] { 9482, 9484, 1802 };
-            rocketMDRecipe.ItemCounts = new int[] { 2, 1, 2 };
-            rocketMDRecipe.Results = new int[] { 9488 };
-            rocketMDRecipe.ResultCounts = new int[] { 1 };
-            rocketMDRecipe.TimeSpend = 480;
-            rocketMDRecipe.GridIndex = 201 + pagePlus;
-            rocketMDRecipe.preTech = LDB.techs.Select(1522); //垂直发射井科技
-            if (MoreMegaStructure.isBattleActive) rocketMDRecipe.preTech = LDB.techs.Select(1920);
-            Traverse.Create(rocketMDRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconRocketMattD);
+            //var rocketMDRecipe = oriRecipe2.Copy();
+            //var rocketMD = oriItem2.Copy();
+            //rocketMDRecipe.ID = recipeIdBias + 538;
+            //rocketMDRecipe.Name = "物质解压器运载火箭";
+            //rocketMDRecipe.name = "物质解压器运载火箭".Translate();
+            //rocketMDRecipe.Description = "物质解压器运载火箭描述";
+            //rocketMDRecipe.description = "物质解压器运载火箭描述".Translate();
+            //rocketMDRecipe.Items = new int[] { 9482, 9484, 1802 };
+            //rocketMDRecipe.ItemCounts = new int[] { 2, 1, 2 };
+            //rocketMDRecipe.Results = new int[] { 9488 };
+            //rocketMDRecipe.ResultCounts = new int[] { 1 };
+            //rocketMDRecipe.TimeSpend = 480;
+            //rocketMDRecipe.GridIndex = 201 + pagePlus;
+            //rocketMDRecipe.preTech = LDB.techs.Select(1522); //垂直发射井科技
+            //if (MoreMegaStructure.isBattleActive) rocketMDRecipe.preTech = LDB.techs.Select(1920);
+            //Traverse.Create(rocketMDRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconRocketMattD);
             ProtoRegistry.RegisterItem(9488, "物质解压器运载火箭".Translate(), "物质解压器运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketMatter",
                                        201 + pagePlus, 20, EItemType.Product,
                                        ProtoRegistry.GetDefaultIconDesc(new Color(1f, 0.9f, 0.9f), new Color(0.7f, 0.2f, 0.2f)));
+            var rocketMDRecipe = ProtoRegistry.RegisterRecipe(recipeIdBias + 538, ERecipeType.Assemble, 480, new int[] { 9482, 9484, 1802 }, new int[] { 2, 1, 2 }, new int[] { 9488 },
+                                             new int[] { 1 }, "物质解压器运载火箭描述", 1522, 201 + pagePlus, "Assets/MegaStructureTab/rocketMatter");
             //科学枢纽运载火箭
-            var rocketSNRecipe = oriRecipe2.Copy();
-            var rocketSN = oriItem2.Copy();
-            rocketSNRecipe.ID = recipeIdBias + 539;
-            rocketSNRecipe.Name = "科学枢纽运载火箭";
-            rocketSNRecipe.name = "科学枢纽运载火箭".Translate();
-            rocketSNRecipe.Description = "科学枢纽运载火箭描述";
-            rocketSNRecipe.description = "科学枢纽运载火箭描述".Translate();
-            rocketSNRecipe.Items = new int[] { 9481, 9486, 1802 };
-            rocketSNRecipe.ItemCounts = new int[] { 3, 1, 2 };
-            rocketSNRecipe.Results = new int[] { 9489 };
-            rocketSNRecipe.ResultCounts = new int[] { 1 };
-            rocketSNRecipe.TimeSpend = 480;
-            rocketSNRecipe.GridIndex = 202 + pagePlus;
-            rocketSNRecipe.preTech = LDB.techs.Select(1508); //最终胜利科技
-            if (MoreMegaStructure.isBattleActive) rocketSNRecipe.preTech = LDB.techs.Select(1924);
-            if (MoreMegaStructure.GenesisCompatibility) rocketSNRecipe.preTech = LDB.techs.Select(1508);
-            Traverse.Create(rocketSNRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconRocketScieN);
+            //var rocketSNRecipe = oriRecipe2.Copy();
+            //var rocketSN = oriItem2.Copy();
+            //rocketSNRecipe.ID = recipeIdBias + 539;
+            //rocketSNRecipe.Name = "科学枢纽运载火箭";
+            //rocketSNRecipe.name = "科学枢纽运载火箭".Translate();
+            //rocketSNRecipe.Description = "科学枢纽运载火箭描述";
+            //rocketSNRecipe.description = "科学枢纽运载火箭描述".Translate();
+            //rocketSNRecipe.Items = new int[] { 9481, 9486, 1802 };
+            //rocketSNRecipe.ItemCounts = new int[] { 3, 1, 2 };
+            //rocketSNRecipe.Results = new int[] { 9489 };
+            //rocketSNRecipe.ResultCounts = new int[] { 1 };
+            //rocketSNRecipe.TimeSpend = 480;
+            //rocketSNRecipe.GridIndex = 202 + pagePlus;
+            //rocketSNRecipe.preTech = LDB.techs.Select(1508); //最终胜利科技
+            //if (MoreMegaStructure.isBattleActive) rocketSNRecipe.preTech = LDB.techs.Select(1924);
+            //if (MoreMegaStructure.GenesisCompatibility) rocketSNRecipe.preTech = LDB.techs.Select(1508);
+            //Traverse.Create(rocketSNRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconRocketScieN);
             ProtoRegistry.RegisterItem(9489, "科学枢纽运载火箭".Translate(), "科学枢纽运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketScience",
                                        202 + pagePlus, 20, EItemType.Product,
                                        ProtoRegistry.GetDefaultIconDesc(new Color(1f, 1f, 0.9f), new Color(0.7f, 0.7f, 0.2f)));
+            var rocketSNRecipe = ProtoRegistry.RegisterRecipe(recipeIdBias + 539, ERecipeType.Assemble, 480, new int[] { 9481, 9486, 1802 }, new int[] { 3, 1, 2 }, new int[] { 9489 },
+                                             new int[] { 1 }, "科学枢纽运载火箭描述", 1522, 202 + pagePlus, "Assets/MegaStructureTab/rocketScience");
             //谐振发射器运载火箭
-            var rocketWBARecipe = oriRecipe2.Copy();
-            var rocketWBA = oriItem2.Copy();
-            rocketWBARecipe.ID = recipeIdBias + 540;
-            rocketWBARecipe.Name = "谐振发射器运载火箭";
-            rocketWBARecipe.name = "谐振发射器运载火箭".Translate();
-            rocketWBARecipe.Description = "谐振发射器运载火箭描述";
-            rocketWBARecipe.description = "谐振发射器运载火箭描述".Translate();
-            rocketWBARecipe.Items = new int[] { 9480, 9484, 1802 };
-            rocketWBARecipe.ItemCounts = new int[] { 1, 4, 2 };
-            rocketWBARecipe.Results = new int[] { 9490 };
-            rocketWBARecipe.ResultCounts = new int[] { 1 };
-            rocketWBARecipe.TimeSpend = 480;
-            rocketWBARecipe.GridIndex = 203 + pagePlus;
-            rocketWBARecipe.preTech = LDB.techs.Select(1522); //垂直发射井科技
-            if (MoreMegaStructure.isBattleActive) rocketWBARecipe.preTech = LDB.techs.Select(1921);
-            Traverse.Create(rocketWBARecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconRocketWarpG);
+            //var rocketWBARecipe = oriRecipe2.Copy();
+            //var rocketWBA = oriItem2.Copy();
+            //rocketWBARecipe.ID = recipeIdBias + 540;
+            //rocketWBARecipe.Name = "谐振发射器运载火箭";
+            //rocketWBARecipe.name = "谐振发射器运载火箭".Translate();
+            //rocketWBARecipe.Description = "谐振发射器运载火箭描述";
+            //rocketWBARecipe.description = "谐振发射器运载火箭描述".Translate();
+            //rocketWBARecipe.Items = new int[] { 9480, 9484, 1802 };
+            //rocketWBARecipe.ItemCounts = new int[] { 1, 4, 2 };
+            //rocketWBARecipe.Results = new int[] { 9490 };
+            //rocketWBARecipe.ResultCounts = new int[] { 1 };
+            //rocketWBARecipe.TimeSpend = 480;
+            //rocketWBARecipe.GridIndex = 203 + pagePlus;
+            //rocketWBARecipe.preTech = LDB.techs.Select(1522); //垂直发射井科技
+            //if (MoreMegaStructure.isBattleActive) rocketWBARecipe.preTech = LDB.techs.Select(1921);
+            //Traverse.Create(rocketWBARecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconRocketWarpG);
             ProtoRegistry.RegisterItem(9490, "谐振发射器运载火箭".Translate(), "谐振发射器运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketWarp", 203 + pagePlus,
                                        20, EItemType.Product,
                                        ProtoRegistry.GetDefaultIconDesc(new Color(0.9f, 1f, 0.9f), new Color(0.2f, 0.7f, 0.2f)));
+            var rocketWBARecipe = ProtoRegistry.RegisterRecipe(recipeIdBias + 540, ERecipeType.Assemble, 480, new int[] { 9480, 9484, 1802 }, new int[] { 1, 4, 2 }, new int[] { 9490 },
+                                             new int[] { 1 }, "谐振发射器运载火箭描述", 1522, 203 + pagePlus, "Assets/MegaStructureTab/rocketWarp");
             //星际组装厂运载火箭
-            var rocketIARecipe = oriRecipe2.Copy();
-            var rocketIA = oriItem2.Copy();
-            rocketIARecipe.ID = recipeIdBias + 541;
-            rocketIARecipe.Name = "星际组装厂运载火箭";
-            rocketIARecipe.name = "星际组装厂运载火箭".Translate();
-            rocketIARecipe.Description = "星际组装厂运载火箭描述";
-            rocketIARecipe.description = "星际组装厂运载火箭描述".Translate();
-            rocketIARecipe.Items = new int[] { 9487, 1802 };
-            rocketIARecipe.ItemCounts = new int[] { 2, 2 };
-            rocketIARecipe.Results = new int[] { 9491 };
-            rocketIARecipe.ResultCounts = new int[] { 1 };
-            rocketIARecipe.TimeSpend = 480;
-            rocketIARecipe.GridIndex = 204 + pagePlus;
-            rocketIARecipe.preTech = LDB.techs.Select(1522); //垂直发射井科技
-            if (MoreMegaStructure.isBattleActive) rocketIARecipe.preTech = LDB.techs.Select(1922);
-            Traverse.Create(rocketIARecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconRocketMegaA);
+            //var rocketIARecipe = oriRecipe2.Copy();
+            //var rocketIA = oriItem2.Copy();
+            //rocketIARecipe.ID = recipeIdBias + 541;
+            //rocketIARecipe.Name = "星际组装厂运载火箭";
+            //rocketIARecipe.name = "星际组装厂运载火箭".Translate();
+            //rocketIARecipe.Description = "星际组装厂运载火箭描述";
+            //rocketIARecipe.description = "星际组装厂运载火箭描述".Translate();
+            //rocketIARecipe.Items = new int[] { 9487, 1802 };
+            //rocketIARecipe.ItemCounts = new int[] { 2, 2 };
+            //rocketIARecipe.Results = new int[] { 9491 };
+            //rocketIARecipe.ResultCounts = new int[] { 1 };
+            //rocketIARecipe.TimeSpend = 480;
+            //rocketIARecipe.GridIndex = 204 + pagePlus;
+            //rocketIARecipe.preTech = LDB.techs.Select(1522); //垂直发射井科技
+            //if (MoreMegaStructure.isBattleActive) rocketIARecipe.preTech = LDB.techs.Select(1922);
+            //Traverse.Create(rocketIARecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconRocketMegaA);
             ProtoRegistry.RegisterItem(9491, "星际组装厂运载火箭".Translate(), "星际组装厂运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketAssembly",
                                        204 + pagePlus, 20, EItemType.Product,
                                        ProtoRegistry.GetDefaultIconDesc(new Color(0.9f, 0.9f, 1f), new Color(0.1f, 0.5f, 0.7f)));
+            var rocketIARecipe = ProtoRegistry.RegisterRecipe(recipeIdBias + 541, ERecipeType.Assemble, 480, new int[] { 9487, 1802 }, new int[] { 2, 2 }, new int[] { 9491 },
+                                             new int[] { 1 }, "星际组装厂运载火箭描述", 1522, 204 + pagePlus, "Assets/MegaStructureTab/rocketAssembly");
             //晶体重构器运载火箭
-            var rocketCRRecipe = oriRecipe2.Copy();
-            var rocketCR = oriItem2.Copy();
-            rocketCRRecipe.ID = recipeIdBias + 542;
-            rocketCRRecipe.Name = "晶体重构器运载火箭";
-            rocketCRRecipe.name = "晶体重构器运载火箭".Translate();
-            rocketCRRecipe.Description = "晶体重构器运载火箭描述";
-            rocketCRRecipe.description = "晶体重构器运载火箭描述".Translate();
-            rocketCRRecipe.Items = new int[] { 9485, 1802, 1305 };
-            rocketCRRecipe.ItemCounts = new int[] { 1, 2, 2 };
-            rocketCRRecipe.Results = new int[] { 9492 };
-            rocketCRRecipe.ResultCounts = new int[] { 1 };
-            rocketCRRecipe.TimeSpend = 480;
-            rocketCRRecipe.GridIndex = 205 + pagePlus;
-            rocketCRRecipe.preTech = LDB.techs.Select(1522); //垂直发射井科技
-            if (MoreMegaStructure.isBattleActive) rocketCRRecipe.preTech = LDB.techs.Select(1923);
-            Traverse.Create(rocketCRRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconRocketCrysM);
+            //var rocketCRRecipe = oriRecipe2.Copy();
+            //var rocketCR = oriItem2.Copy();
+            //rocketCRRecipe.ID = recipeIdBias + 542;
+            //rocketCRRecipe.Name = "晶体重构器运载火箭";
+            //rocketCRRecipe.name = "晶体重构器运载火箭".Translate();
+            //rocketCRRecipe.Description = "晶体重构器运载火箭描述";
+            //rocketCRRecipe.description = "晶体重构器运载火箭描述".Translate();
+            //rocketCRRecipe.Items = new int[] { 9485, 1802, 1305 };
+            //rocketCRRecipe.ItemCounts = new int[] { 1, 2, 2 };
+            //rocketCRRecipe.Results = new int[] { 9492 };
+            //rocketCRRecipe.ResultCounts = new int[] { 1 };
+            //rocketCRRecipe.TimeSpend = 480;
+            //rocketCRRecipe.GridIndex = 205 + pagePlus;
+            //rocketCRRecipe.preTech = LDB.techs.Select(1522); //垂直发射井科技
+            //if (MoreMegaStructure.isBattleActive) rocketCRRecipe.preTech = LDB.techs.Select(1923);
+            //Traverse.Create(rocketCRRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconRocketCrysM);
             ProtoRegistry.RegisterItem(9492, "晶体重构器运载火箭".Translate(), "晶体重构器运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketCrystal",
                                        205 + pagePlus, 20, EItemType.Product,
                                        ProtoRegistry.GetDefaultIconDesc(new Color(1f, 0.9f, 1f), new Color(0.7f, 0.2f, 0.7f)));
+            var rocketCRRecipe = ProtoRegistry.RegisterRecipe(recipeIdBias + 542, ERecipeType.Assemble, 480, new int[] { 9485, 1802, 1305 }, new int[] { 1, 2, 2 }, new int[] { 9492 },
+                                             new int[] { 1 }, "晶体重构器运载火箭描述", 1522, 205 + pagePlus, "Assets/MegaStructureTab/rocketCrystal");
 
 
             //多功能集成组件
-            var oriItem4 = LDB.items.Select(1131); //地基
-            var itemICRecipe = oriRecipe.Copy();
-            var itemIC = oriItem4.Copy();
-            itemICRecipe.ID = recipeIdBias + 550;
-            itemICRecipe.Name = "多功能集成组件";
-            itemICRecipe.name = "多功能集成组件".Translate();
-            itemICRecipe.Description = "多功能集成组件描述";
-            itemICRecipe.description = "多功能集成组件描述".Translate();
-            itemICRecipe.Items = new int[] { 9500 };
-            itemICRecipe.ItemCounts = new int[] { 1 };
-            itemICRecipe.Results = new int[] { 9500 };
-            itemICRecipe.ResultCounts = new int[] { 1 };
-            itemICRecipe.GridIndex = 199 + pagePlus + linePlus;
-            itemICRecipe.TimeSpend = 60;
-            itemICRecipe.preTech = LDB.techs.Select(1203); //量子打印科技
-            Traverse.Create(itemICRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconInterCompo);
+            //var oriItem4 = LDB.items.Select(1131); //地基
+            //var itemICRecipe = oriRecipe.Copy();
+            //var itemIC = oriItem4.Copy();
+            //itemICRecipe.ID = recipeIdBias + 550;
+            //itemICRecipe.Name = "多功能集成组件";
+            //itemICRecipe.name = "多功能集成组件".Translate();
+            //itemICRecipe.Description = "多功能集成组件描述";
+            //itemICRecipe.description = "多功能集成组件描述".Translate();
+            //itemICRecipe.Items = new int[] { 9500 };
+            //itemICRecipe.ItemCounts = new int[] { 1 };
+            //itemICRecipe.Results = new int[] { 9500 };
+            //itemICRecipe.ResultCounts = new int[] { 1 };
+            //itemICRecipe.GridIndex = 199 + pagePlus + linePlus;
+            //itemICRecipe.TimeSpend = 60;
+            //itemICRecipe.preTech = LDB.techs.Select(1203); //量子打印科技
+            //Traverse.Create(itemICRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconInterCompo);
             ProtoRegistry.RegisterItem(9500, "多功能集成组件".Translate(), "多功能集成组件描述".Translate(), "Assets/MegaStructureTab/integratedcomponents",
                                        109 + pagePlus + linePlus, 1000, EItemType.Component,
                                        ProtoRegistry.GetDefaultIconDesc(Color.white, Color.white));
+            ProtoRegistry.RegisterRecipe(recipeIdBias + 550, ERecipeType.Assemble, 60, new int[] { 9500 }, new int[] { 1}, new int[] { 9500 },
+                                             new int[] { 1 }, "多功能集成组件描述", 1203, 199 + pagePlus + linePlus, "Assets/MegaStructureTab/integratedcomponents");
 
             //快速组装配方
             var oriRecipe5 = LDB.recipes.Select(47);
@@ -720,35 +757,35 @@ namespace MoreMegaStructure
             LDB.items.Select(2316).recipes.Add(quickMiningRecipe);
             LDB.items.Select(2306).recipes.Add(quickPumpRecipe);
 
-            //LDBTool.PostAddProto(itemGravityGen);
-            LDBTool.PreAddProto(itemGravityGenRecipe);
-            //LDBTool.PreAddProto(itemConstrainRing);
-            LDBTool.PreAddProto(itemConstrainRingRecipe);
-            //LDBTool.PreAddProto(itemGravityDrill);
-            LDBTool.PreAddProto(itemGravityDrillRecipe);
-            //LDBTool.PreAddProto(itemExciter);
-            LDBTool.PreAddProto(itemExciterRecipe);
-            //LDBTool.PreAddProto(itemDisc);
-            LDBTool.PreAddProto(itemDiscRecipe);
-            //LDBTool.PreAddProto(itemProbe);
-            LDBTool.PreAddProto(itemProbeRecipe);
-            //LDBTool.PreAddProto(itemQuanComp);
-            LDBTool.PreAddProto(itemQuanCompRecipe);
-            //LDBTool.PreAddProto(itemIACompo);
-            LDBTool.PreAddProto(itemIACompoRecipe);
-            //LDBTool.PreAddProto(itemIC);
-            LDBTool.PreAddProto(itemICRecipe);
+            ////LDBTool.PostAddProto(itemGravityGen);
+            //LDBTool.PreAddProto(itemGravityGenRecipe);
+            ////LDBTool.PreAddProto(itemConstrainRing);
+            //LDBTool.PreAddProto(itemConstrainRingRecipe);
+            ////LDBTool.PreAddProto(itemGravityDrill);
+            //LDBTool.PreAddProto(itemGravityDrillRecipe);
+            ////LDBTool.PreAddProto(itemExciter);
+            //LDBTool.PreAddProto(itemExciterRecipe);
+            ////LDBTool.PreAddProto(itemDisc);
+            //LDBTool.PreAddProto(itemDiscRecipe);
+            ////LDBTool.PreAddProto(itemProbe);
+            //LDBTool.PreAddProto(itemProbeRecipe);
+            ////LDBTool.PreAddProto(itemQuanComp);
+            //LDBTool.PreAddProto(itemQuanCompRecipe);
+            ////LDBTool.PreAddProto(itemIACompo);
+            //LDBTool.PreAddProto(itemIACompoRecipe);
+            ////LDBTool.PreAddProto(itemIC);
+            //LDBTool.PreAddProto(itemICRecipe);
 
-            //LDBTool.PreAddProto(rocketMD);
-            LDBTool.PreAddProto(rocketMDRecipe);
-            //LDBTool.PreAddProto(rocketSN);
-            LDBTool.PreAddProto(rocketSNRecipe);
-            //LDBTool.PreAddProto(rocketWBA);
-            LDBTool.PreAddProto(rocketWBARecipe);
-            //LDBTool.PreAddProto(rocketIA);
-            LDBTool.PreAddProto(rocketIARecipe);
-            //LDBTool.PreAddProto(rocketCR);
-            LDBTool.PreAddProto(rocketCRRecipe);
+            ////LDBTool.PreAddProto(rocketMD);
+            //LDBTool.PreAddProto(rocketMDRecipe);
+            ////LDBTool.PreAddProto(rocketSN);
+            //LDBTool.PreAddProto(rocketSNRecipe);
+            ////LDBTool.PreAddProto(rocketWBA);
+            //LDBTool.PreAddProto(rocketWBARecipe);
+            ////LDBTool.PreAddProto(rocketIA);
+            //LDBTool.PreAddProto(rocketIARecipe);
+            ////LDBTool.PreAddProto(rocketCR);
+            //LDBTool.PreAddProto(rocketCRRecipe);
 
             //LDBTool.PostAddProto(ReceiverIron);
             //LDBTool.PostAddProto(ReceiverIronRecipe);
@@ -881,7 +918,8 @@ namespace MoreMegaStructure
         }
 
         public static void EditOriRR(Proto proto)
-        {            
+        {
+            return;
             if (proto is ItemProto && proto.ID == 2208)
             {
                 var rr = proto as ItemProto;
@@ -1316,22 +1354,23 @@ namespace MoreMegaStructure
 
 
             //Exchanger
-            var ExchangerRecipe = oriRecipe3.Copy();
+            //var ExchangerRecipe = oriRecipe3.Copy();
+            //ExchangerRecipe.ID = recipeIdBias + 575;
+            //ExchangerRecipe.Name = "物资交换器";
+            //ExchangerRecipe.name = "物资交换器".Translate();
+            //ExchangerRecipe.Description = "物资交换器描述";
+            //ExchangerRecipe.description = "物资交换器描述".Translate();
+            //ExchangerRecipe.Items = new int[] { 2104, 2208 };
+            //ExchangerRecipe.ItemCounts = new int[] { 1, 1 };
+            //ExchangerRecipe.Results = new int[] { 9512 };
+            //ExchangerRecipe.ResultCounts = new int[] { 1 };
+            //ExchangerRecipe.GridIndex = 309 + pagePlus;
+            //ExchangerRecipe.TimeSpend = 480;
+            //Traverse.Create(ExchangerRecipe).Field("_iconSprite").SetValue(Resources.Load<Sprite>("Assets/MegaStructureTab/exchangeLS"));
+            //ExchangerRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技
+            //if (MoreMegaStructure.isBattleActive) ExchangerRecipe.preTech = LDB.techs.Select(1922);
+
             var Exchanger = oriLogisticStation.Copy();
-            ExchangerRecipe.ID = recipeIdBias + 575;
-            ExchangerRecipe.Name = "物资交换器";
-            ExchangerRecipe.name = "物资交换器".Translate();
-            ExchangerRecipe.Description = "物资交换器描述";
-            ExchangerRecipe.description = "物资交换器描述".Translate();
-            ExchangerRecipe.Items = new int[] { 2104, 2208 };
-            ExchangerRecipe.ItemCounts = new int[] { 1, 1 };
-            ExchangerRecipe.Results = new int[] { 9512 };
-            ExchangerRecipe.ResultCounts = new int[] { 1 };
-            ExchangerRecipe.GridIndex = 309 + pagePlus;
-            ExchangerRecipe.TimeSpend = 480;
-            Traverse.Create(ExchangerRecipe).Field("_iconSprite").SetValue(Resources.Load<Sprite>("Assets/MegaStructureTab/exchangeLS"));
-            ExchangerRecipe.preTech = LDB.techs.Select(1504); //射线接收站科技
-            if (MoreMegaStructure.isBattleActive) ExchangerRecipe.preTech = LDB.techs.Select(1922);
             Exchanger.ID = 9512;
             Exchanger.Name = "物资交换器";
             Exchanger.name = "物资交换器".Translate();
@@ -1340,12 +1379,27 @@ namespace MoreMegaStructure
             Exchanger.GridIndex = 309 + pagePlus;
             Exchanger.HeatValue = 0L;
             Exchanger.prefabDesc = oriLogisticStation.prefabDesc.Copy();
+            //Exchanger.makes = new List<RecipeProto> { ExchangerRecipe };
+
+            LDBTool.PreAddProto(Exchanger);
+
+            Traverse.Create(Exchanger).Field("_iconSprite").SetValue(Resources.Load<Sprite>("Assets/MegaStructureTab/exchangeLS"));
+            RecipeProto ExchangerRecipe;
+            if (MoreMegaStructure.isBattleActive)
+            {
+                ExchangerRecipe = ProtoRegistry.RegisterRecipe(575 + recipeIdBias, ERecipeType.Assemble, 480, new int[] { 2104, 2208 }, new int[] { 1, 1 }, new int[] { 9512 },
+                                             new int[] { 1 }, "物资交换器描述", 1922, 309 + pagePlus, "物资交换器", "Assets/MegaStructureTab/exchangeLS");
+            }
+            else
+            {
+                ExchangerRecipe = ProtoRegistry.RegisterRecipe(575 + recipeIdBias, ERecipeType.Assemble, 480, new int[] { 2104, 2208 }, new int[] { 1, 1 }, new int[] { 9512 },
+                                             new int[] { 1 }, "物资交换器描述", 1504, 309 + pagePlus, "物资交换器", "Assets/MegaStructureTab/exchangeLS");
+            }
+
             Exchanger.handcraft = ExchangerRecipe;
             Exchanger.handcrafts = new List<RecipeProto> { ExchangerRecipe };
             Exchanger.maincraft = ExchangerRecipe;
             Exchanger.recipes = new List<RecipeProto> { ExchangerRecipe };
-            //Exchanger.makes = new List<RecipeProto> { ExchangerRecipe };
-            Traverse.Create(Exchanger).Field("_iconSprite").SetValue(Resources.Load<Sprite>("Assets/MegaStructureTab/exchangeLS"));
 
             LDBTool.PostAddProto(ReceiverIron);
             LDBTool.PostAddProto(ReceiverIronRecipe);
@@ -1365,8 +1419,7 @@ namespace MoreMegaStructure
             LDBTool.PostAddProto(ReceiverCoalRecipe);
             LDBTool.PostAddProto(ReceiverGrating);
             LDBTool.PostAddProto(ReceiverGratingRecipe);
-            LDBTool.PostAddProto(Exchanger);
-            LDBTool.PostAddProto(ExchangerRecipe);
+            //LDBTool.PostAddProto(ExchangerRecipe);
         }
 
         public class StringProto

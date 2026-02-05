@@ -26,7 +26,7 @@ namespace MoreMegaStructure
     [BepInDependency(DSPModSavePlugin.MODGUID)]
     [CommonAPISubmoduleDependency(nameof(ProtoRegistry), nameof(TabSystem), nameof(LocalizationModule))]
     [BepInDependency("starfi5h.plugin.ModFixerOne")]
-    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.8.8")]
+    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.8.9")]
     public class MoreMegaStructure : BaseUnityPlugin, IModCanSave
     {
         /// <summary>
@@ -333,7 +333,7 @@ namespace MoreMegaStructure
             LDBTool.PreAddDataAction += MMSProtos.AddNewItems;
             LDBTool.PreAddDataAction += MMSProtos.AddNewItems2;
             LDBTool.PostAddDataAction += MMSProtos.AddGenesisRecipes;
-            LDBTool.PostAddDataAction += MMSProtos.AddReceivers;
+            LDBTool.PreAddDataAction += MMSProtos.AddReceivers;
             LDBTool.PostAddDataAction += MMSProtos.RefreshInitAll;
             LDBTool.EditDataAction += MMSProtos.EditOriRR;
 
