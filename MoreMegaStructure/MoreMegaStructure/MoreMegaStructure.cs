@@ -1117,7 +1117,7 @@ namespace MoreMegaStructure
 
             MMSCPU.EndSample(ECpuWorkEntryExtended.Receiver);
             MMSCPU.EndSample(ECpuWorkEntryExtended.MainLogic);
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
             return false;
         }
 
@@ -2273,3 +2273,4 @@ namespace MoreMegaStructure
     //    }
     //}
 }
+
