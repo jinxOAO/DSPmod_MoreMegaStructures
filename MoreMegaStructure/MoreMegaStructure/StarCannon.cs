@@ -143,7 +143,7 @@ namespace MoreMegaStructure
         /// </summary>
         public static void RefreshStarCannonProperties()
         {
-            if (starCannonStarIndex >= 0 && starCannonStarIndex < 1000 && MoreMegaStructure.StarMegaStructureType[starCannonStarIndex] == 6 && starCannonStarIndex < GameMain.galaxy.starCount)
+            if (starCannonStarIndex >= 0 && starCannonStarIndex < MoreMegaStructure.MegaArrayLength && MoreMegaStructure.StarMegaStructureType[starCannonStarIndex] == 6 && starCannonStarIndex < GameMain.galaxy.starCount)
             {
                 int[] res = GetStarCannonProperties(GameMain.data.dysonSpheres[starCannonStarIndex]);
                 starCannonLevel = res[0];
@@ -673,7 +673,7 @@ namespace MoreMegaStructure
                 return;
 
             int starIndex = __instance.starData.index;
-            if (starIndex >= 1000)
+            if (starIndex >= MoreMegaStructure.MegaArrayLength)
                 return;
 
             if (MoreMegaStructure.StarMegaStructureType[starIndex] != 6 )

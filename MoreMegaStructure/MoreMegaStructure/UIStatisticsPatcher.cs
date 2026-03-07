@@ -129,7 +129,7 @@ namespace MoreMegaStructure
                 for (int i = 0; i < itemsData.Count; i++)
                 {
                     int nowStarId = itemsData[i] / 100;
-                    if (oldStarId != nowStarId && oldStarId != -1 && oldStarId <= 1000 && oldStarId > 0)
+                    if (oldStarId != nowStarId && oldStarId != -1 && oldStarId <= MoreMegaStructure.MegaArrayLength && oldStarId > 0)
                     {
                         if (MoreMegaStructure.StarMegaStructureType[oldStarId - 1] == 4)
                         {
@@ -143,7 +143,7 @@ namespace MoreMegaStructure
                     if (i == itemsData.Count - 1)
                     {
                         oldStarId = nowStarId;
-                        if (oldStarId > 0 && oldStarId <= 1000 && MoreMegaStructure.StarMegaStructureType[oldStarId - 1] == 4)
+                        if (oldStarId > 0 && oldStarId <= MoreMegaStructure.MegaArrayLength && MoreMegaStructure.StarMegaStructureType[oldStarId - 1] == 4)
                         {
                             itemsData.Add(oldStarId * 100 + GameMain.galaxy.StarById(oldStarId).planetCount + 1);
                             items.Add(MMSPlanetById(oldStarId * 100 + GameMain.galaxy.StarById(oldStarId).planetCount + 1).displayName);
@@ -302,7 +302,7 @@ namespace MoreMegaStructure
                 for (int i = GameMain.data.factories.Length; i < GameMain.data.factories.Length + GameMain.galaxy.starCount; i++) // 加入巨构统计
                 {
                     int idx = GameMain.data.factories.Length + GameMain.galaxy.starCount - i - 1;
-                    if (idx < 1000 && MoreMegaStructure.StarMegaStructureType[idx] == 4) __instance.AddProductStatGroup(i);
+                    if (idx < MoreMegaStructure.MegaArrayLength && MoreMegaStructure.StarMegaStructureType[idx] == 4) __instance.AddProductStatGroup(i);
                 }
             }
             else if (__instance.gameData.localPlanet != null && __instance.astroFilter == 0)
@@ -338,7 +338,7 @@ namespace MoreMegaStructure
                     for (int k = GameMain.data.factories.Length; k < GameMain.data.factories.Length + GameMain.galaxy.starCount; k++) // 加入巨构统计
                     {
                         int idx = GameMain.data.factories.Length + GameMain.galaxy.starCount - k - 1;
-                        if (idx < 1000 && MoreMegaStructure.StarMegaStructureType[idx] == 4) __instance.AddProductStatGroup(k);
+                        if (idx < MoreMegaStructure.MegaArrayLength && MoreMegaStructure.StarMegaStructureType[idx] == 4) __instance.AddProductStatGroup(k);
                     }
 
                     int starCount = __instance.gameData.galaxy.starCount;
@@ -581,8 +581,8 @@ namespace MoreMegaStructure
             if (astroFilter == 0) // 把所有组装厂数据都写入
             {
                 int minStarCount = GameMain.galaxy.starCount;
-                if (minStarCount > 1000)
-                    minStarCount = 1000;
+                if (minStarCount > MoreMegaStructure.MegaArrayLength)
+                    minStarCount = MoreMegaStructure.MegaArrayLength;
                 for (int starIndex = 0; starIndex < minStarCount; starIndex++)
                 {
                     if (MoreMegaStructure.StarMegaStructureType[starIndex] == (int)EMegaType.InterstellarAssembly)

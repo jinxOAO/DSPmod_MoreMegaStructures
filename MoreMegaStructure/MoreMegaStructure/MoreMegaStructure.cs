@@ -26,13 +26,13 @@ namespace MoreMegaStructure
     [BepInDependency(DSPModSavePlugin.MODGUID)]
     [CommonAPISubmoduleDependency(nameof(ProtoRegistry), nameof(TabSystem), nameof(LocalizationModule))]
     [BepInDependency("starfi5h.plugin.ModFixerOne")]
-    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.8.9")]
+    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.9.0")]
     public class MoreMegaStructure : BaseUnityPlugin, IModCanSave
     {
         /// <summary>
         /// mod版本会进行存档
         /// </summary>
-        public static int modVersion = 160;
+        public static int modVersion = 190;
 
         public static int savedModVersion = 160;
 
@@ -204,7 +204,9 @@ namespace MoreMegaStructure
         /// <summary>
         /// 下面的数据为游戏运行时的关键数据，且会进行存档
         /// </summary>
-        public static int[] StarMegaStructureType = new int[1000]; //用于存储每个恒星所构建的巨构建筑类型，默认为0则为戴森球，1物质解压器，2科学枢纽，3折跃场，4星际组装厂，5晶体重构器，6恒星炮
+        public const int MegaArrayOldLen = 1000;
+        public const int MegaArrayLength = 1200;
+        public static int[] StarMegaStructureType = new int[MegaArrayLength]; //用于存储每个恒星所构建的巨构建筑类型，默认为0则为戴森球，1物质解压器，2科学枢纽，3折跃场，4星际组装厂，5晶体重构器，6恒星炮
 
         public static int maxAutoReceiveGear = 1000;
         public static long autoReceiveGearProgress;
@@ -249,7 +251,7 @@ namespace MoreMegaStructure
             NonlinearEnergy = Config.Bind("config", "NonlinearEnergyAssignmentAdjust2", true,
                                                 "Turn this to true will let you adjust the energy allocation of the Interstellar Assembly more finely within the range of lower value. 将此项设置为true能够使你在调整星际组装厂配方的能量分配时，在较低分配比例的区间内更加精细地调整。");
             Support1000Stars = Config.Bind("config", "Support1000Stars", false,
-                                                 "Turn this to true will let the Interstellar Assemblies support upto 1000 stars (default is 100), but this might slow down your game or your save/load speed. 将此项设置为true能够使星际组装厂支持最多1000个星系（默认只支持100以下），但这可能使你的游戏速度或存读档速度被拖慢。");
+                                                 "Turn this to true will let the Interstellar Assemblies support upto 1024 stars (default is 100), but this might slow down your game or your save/load speed. 将此项设置为true能够使星际组装厂支持最多1024个星系（默认只支持100以下），但这可能使你的游戏速度或存读档速度被拖慢。");
             NoWasteResources = Config.Bind("config", "NoWasteResources", true,
                                                  "Turn this to false might slightly increase the game speed. But this will cause: if one of the various materials required by a recipe in Interstellar Assembly is insufficient, (its supply cannot meet the speed of full-speed production). Although the actual output will slow down, other sufficient materials may still be consumed at full speed, which means that they may be wasted.  将此项设置为false可能会轻微提升游戏速度，但这会导致：当星际组装厂中的部分原材料不支持满速消耗时，虽然产出速度按照最低供应原材料的速度为准，但其他充足供应的原材料仍被满速消耗而产生浪费。");
             ReverseStarCannonShellAlignDirection = Config.Bind("config", "ReverseStarCannonShellAlignDirection", false, "Turn this to true will reverse the align direction of all the shell of star cannon when firing, which means the south pole (of the shells) will point to the target star rather than the north pole.  将此项设置为true会反转恒星炮开火时壳层的对齐方向，这意味着所有壳层的南极将指向目标恒星开火（而非默认的北极）。如果你的炮口造反了，可以尝试更改此项设置。");
@@ -351,6 +353,7 @@ namespace MoreMegaStructure
 
         public void Start()
         {
+            InitWhenStart();
             GetVanillaUITexts();
             InitMegaSetUI();
             LateInitOtherUI();
@@ -402,6 +405,15 @@ namespace MoreMegaStructure
                 {
                     Utils.Log(DSPGame.globalOption.languageLCID.ToString());
                 }
+            }
+        }
+
+        public static void InitWhenStart()
+        {
+            StarMegaStructureType = new int[MegaArrayLength];
+            for (int i = 0; i < MegaArrayLength; i++)
+            {
+                StarMegaStructureType[i] = 0;
             }
         }
 
@@ -897,7 +909,7 @@ namespace MoreMegaStructure
         public static void UIDEPowerDescUpdateUIPostPatch(ref UIDEPowerDesc __instance)
         {
             int StarIndex = __instance.dysonSphere.starData.index;
-            if (StarIndex < 0 || StarIndex >= 1000)
+            if (StarIndex < 0 || StarIndex >= MegaArrayLength)
                 return;
             if (StarMegaStructureType[StarIndex] == 0)
                 return;
@@ -934,7 +946,7 @@ namespace MoreMegaStructure
             MMSCPU.BeginSample(ECpuWorkEntryExtended.Receiver);
             int idx = factory.planet.star.id - 1;
             bool postWork = false;
-            if (idx < 0 || idx > 999)
+            if (idx < 0 || idx >= MegaArrayLength)
             {
                 //Debug.LogWarning("GameTick_GammaPatch index out of range. Now return true.");
                 postWork = true;
@@ -1120,7 +1132,7 @@ namespace MoreMegaStructure
 
             MMSCPU.EndSample(ECpuWorkEntryExtended.Receiver);
             MMSCPU.EndSample(ECpuWorkEntryExtended.MainLogic);
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
             return false;
         }
 
@@ -1189,7 +1201,7 @@ namespace MoreMegaStructure
             MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
             MMSCPU.BeginSample(ECpuWorkEntryExtended.MainLogic);
             int idx = __instance.starData.id - 1;
-            if (idx < 0 || idx > 999)
+            if (idx < 0 || idx >= MegaArrayLength)
             {
                 return;
             }
@@ -1345,7 +1357,7 @@ namespace MoreMegaStructure
             int gmProtoId = factory.entityPool[__instance.entityId].protoId;
             if (gmProtoId != 2312) return; //只修改原始火箭发射器
 
-            if (starIndex < 0 || starIndex > 999)
+            if (starIndex < 0 || starIndex >= MegaArrayLength)
             {
                 //Debug.LogWarning("SiloInternalUpdate Patch Error because starIndex out of range.");
                 return;
@@ -1425,7 +1437,7 @@ namespace MoreMegaStructure
             int gmProtoId = factory.entityPool[__instance.entityId].protoId;
             if (gmProtoId != 2311) return; //只修改原始弹射器
 
-            if (starIndex < 0 || starIndex > 999)
+            if (starIndex < 0 || starIndex >= MegaArrayLength)
             {
                 return;
             }
@@ -1560,7 +1572,7 @@ namespace MoreMegaStructure
                 if (star == null) return;
                 curStar = star;
                 int idx = star.id - 1;
-                idx = idx < 0 ? 0 : (idx > 999 ? 999 : idx);
+                idx = idx < 0 ? 0 : (idx >= MegaArrayLength ? MegaArrayLength - 1 : idx);
 
                 StarAssembly.RefreshUI(forceShowUI);
 
@@ -1745,9 +1757,9 @@ namespace MoreMegaStructure
             try
             {
                 int idx = curStar.id - 1;
-                if (idx > 999)
+                if (idx >= MegaArrayLength)
                 {
-                    UIRealtimeTip.Popup("警告巨构不支持恒星系数量大于1000个".Translate());
+                    UIRealtimeTip.Popup("警告巨构不支持恒星系数量大于1200个".Translate());
                     return;
                 }
 
@@ -1932,7 +1944,7 @@ namespace MoreMegaStructure
 
         public static int GetStarCannonBuiltIndex()
         {
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < MegaArrayLength; i++)
             {
                 if (StarMegaStructureType[i] == 6) return i;
             }
@@ -2029,9 +2041,17 @@ namespace MoreMegaStructure
             curStar = null;
             curDysonSphere = null;
             savedModVersion = r.ReadInt32();
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < MegaArrayOldLen; i++)
             {
                 StarMegaStructureType[i] = r.ReadInt32();
+            }
+
+            if(savedModVersion >= 190)
+            {
+                for (int i = MegaArrayOldLen; i < MegaArrayLength; i++)
+                {
+                    StarMegaStructureType[i] = r.ReadInt32();
+                }
             }
 
             if (savedModVersion >= 101)
@@ -2093,7 +2113,7 @@ namespace MoreMegaStructure
         public void Export(BinaryWriter w)
         {
             w.Write(modVersion);
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < MegaArrayLength; i++)
             {
                 w.Write(StarMegaStructureType[i]);
             }
@@ -2112,7 +2132,7 @@ namespace MoreMegaStructure
 
         public void IntoOtherSave()
         {
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < MegaArrayLength; i++)
             {
                 StarMegaStructureType[i] = 0;
             }

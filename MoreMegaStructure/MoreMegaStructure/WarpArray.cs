@@ -73,7 +73,7 @@ namespace MoreMegaStructure
             lock (obj)
             {
                 arrays.Clear();
-                for (int starIndex = 0; starIndex < GameMain.galaxy.starCount && starIndex < 1000; starIndex++)
+                for (int starIndex = 0; starIndex < GameMain.galaxy.starCount && starIndex < MoreMegaStructure.MegaArrayLength; starIndex++)
                 {
                     if (MoreMegaStructure.StarMegaStructureType[starIndex] == 3)
                     {
@@ -103,7 +103,7 @@ namespace MoreMegaStructure
                 for (int i = 0; i < arrays.Count; i++)
                 {
                     int starIndex = arrays[i].starIndex;
-                    if (starIndex >= 0 && starIndex < 1000 && MoreMegaStructure.StarMegaStructureType[starIndex] == 3)
+                    if (starIndex >= 0 && starIndex < MoreMegaStructure.MegaArrayLength && MoreMegaStructure.StarMegaStructureType[starIndex] == 3)
                     {
                         if (GameMain.data.dysonSpheres[starIndex] != null)
                         {

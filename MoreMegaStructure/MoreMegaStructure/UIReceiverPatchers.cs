@@ -58,7 +58,7 @@ namespace MoreMegaStructure
             productSetParentObj.name = "sub-button-group";
             productSetParentObj.transform.SetParent(GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Power Generator Window/ray-receiver").transform);
             productSetParentObj.transform.localScale = Vector3.one;
-            productSetParentObj.transform.localPosition = new Vector3(-165, 60, 0);
+            productSetParentObj.transform.localPosition = new Vector3(-154, 60, 0);
             for (int i = 0; i < 12; i++) 
             {
                 GameObject go = GameObject.Instantiate(oriMode1ButtonObj, productSetParentObj.transform);
@@ -78,10 +78,12 @@ namespace MoreMegaStructure
                 icon.transform.SetParent(go.transform);
                 Image img = icon.AddComponent<Image>();
                 img.sprite = LDB.items.Select(1101)._iconSprite;
-                icon.GetComponent<RectTransform>().pivot = new Vector2(0, 1);
+                icon.GetComponent<RectTransform>().anchorMax = new Vector2(0.5f, 0.5f);
+                icon.GetComponent<RectTransform>().anchorMin = new Vector2(0.5f, 0.5f);
+                icon.GetComponent<RectTransform>().pivot = new Vector2(0.5f, 0.5f);
                 icon.GetComponent<RectTransform>().sizeDelta = new Vector2(24, 24);
+                icon.GetComponent<RectTransform>().anchoredPosition3D = new Vector3(0, 0, 0);
                 icon.transform.localScale = Vector3.one;
-                icon.transform.localPosition = new Vector3(0, 0, 0);
 
                 productSetButtonObjs.Add(go);
                 productSetImages.Add(img);
@@ -95,7 +97,7 @@ namespace MoreMegaStructure
             applyAllObj0.name = "apply-all-button";
             GameObject.DestroyImmediate(applyAllObj0.GetComponent<Button>());
             applyAllObj0.transform.localScale = Vector3.one;
-            applyAllObj0.transform.localPosition = new Vector3(-155, 35);
+            applyAllObj0.GetComponent<RectTransform>().anchoredPosition3D = new Vector3(0, 35, 0);
             applyAllObj0.GetComponent<RectTransform>().sizeDelta = new Vector2(310, 25);
             Button applyAllButton0 = applyAllObj0.AddComponent<Button>();
             applyAllUIBtn0 = applyAllObj0.GetComponent<UIButton>();
@@ -103,8 +105,8 @@ namespace MoreMegaStructure
             applyAllUIBtn0.tips.tipTitle = "";
             applyAllButtonText0 = applyAllObj0.transform.Find("button-text").gameObject.GetComponent<Text>();
             applyAllButtonText0.fontSize = 16;
-            oriMode1ButtonObj.transform.localPosition = new Vector3(-155, 65, 0);
-            oriMode2ButtonObj.transform.localPosition = new Vector3(5, 65, 0);
+            oriMode1ButtonObj.GetComponent<RectTransform>().anchoredPosition3D = new Vector3(-80, 65, 0);
+            oriMode2ButtonObj.GetComponent<RectTransform>().anchoredPosition3D = new Vector3(80, 65, 0);
             oriMode1ButtonObj.GetComponent<RectTransform>().sizeDelta = new Vector2(150, 25);
             oriMode2ButtonObj.GetComponent<RectTransform>().sizeDelta = new Vector2(150, 25);
 
@@ -113,7 +115,7 @@ namespace MoreMegaStructure
             applyAllObj.name = "apply-all-button";
             GameObject.DestroyImmediate(applyAllObj.GetComponent<Button>());
             applyAllObj.transform.localScale = Vector3.one;
-            applyAllObj.transform.localPosition = new Vector3(84, -28);
+            applyAllObj.GetComponent<RectTransform>().anchoredPosition3D = new Vector3(154, -28);
             applyAllObj.GetComponent<RectTransform>().sizeDelta = new Vector2(164, 24);
             Button applyAllButton = applyAllObj.AddComponent<Button>();
             applyAllUIBtn = applyAllObj.GetComponent<UIButton>();

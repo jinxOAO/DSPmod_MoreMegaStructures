@@ -545,7 +545,7 @@ namespace MoreMegaStructure
             curSpecType = new List<int>();
             inProgressSpecType = new List<int>();
             satisfiedSpecType = new List<int>();
-            for (int starIndex = 0; starIndex < 1000; starIndex++)
+            for (int starIndex = 0; starIndex < MoreMegaStructure.MegaArrayLength; starIndex++)
             {
                 recipeIds.Add(new List<int> { 0 });
                 weights.Add(new List<double> { 1 });
@@ -570,7 +570,7 @@ namespace MoreMegaStructure
 
         public static void ResetDataAfterStarIndex100()
         {
-            for (int i = 100; i < 1000; i++)
+            for (int i = 100; i < MoreMegaStructure.MegaArrayLength; i++)
             {
                 for (int j = 0; j < slotCount; j++)
                 {
@@ -608,7 +608,7 @@ namespace MoreMegaStructure
         /// </summary>
         public static void InitInGameData()
         {
-            int maxStarIndex = MoreMegaStructure.Support1000Stars.Value ? 1000 : 100;
+            int maxStarIndex = MoreMegaStructure.Support1000Stars.Value ? MoreMegaStructure.MegaArrayLength : 100;
             for (int starIndex = 0; starIndex  < maxStarIndex; starIndex ++)
             {
                 if (MoreMegaStructure.StarMegaStructureType[starIndex] == 4)
@@ -1302,7 +1302,6 @@ namespace MoreMegaStructure
         /// <param name="starIndex"></param>
         public static void SendProductToGround(int starIndex)
         {
-            
             int planetCount = GameMain.galaxy.stars[starIndex].planetCount;
             for (int i = 0; i < planetCount; i++)
             {
@@ -1631,7 +1630,7 @@ namespace MoreMegaStructure
         public static void UpdateSpecializeState(DysonSphere sphere, int div)
         {
             int starIndex = sphere.starData.index;
-            if (starIndex >= 1000) return;
+            if (starIndex >= MoreMegaStructure.MegaArrayLength) return;
             bool sandBoxMode = GameMain.data.gameDesc.isSandboxMode;
             if (sandBoxMode)
                 div = 1;
@@ -1682,7 +1681,7 @@ namespace MoreMegaStructure
             if (MoreMegaStructure.curStar == null) return;
             showingLimit = true;
             int starIndex = MoreMegaStructure.curStar.index;
-            if (starIndex < 1000 && MoreMegaStructure.StarMegaStructureType[starIndex] == 4)
+            if (starIndex < MoreMegaStructure.MegaArrayLength && MoreMegaStructure.StarMegaStructureType[starIndex] == 4)
             {
                 if (forceShowUI)
                 {
@@ -1956,9 +1955,9 @@ namespace MoreMegaStructure
             int starIndex = MoreMegaStructure.curStar.index;
             if(MoreMegaStructure.Support1000Stars.Value)
             {
-                if (starIndex > 999)
+                if (starIndex >= MoreMegaStructure.MegaArrayLength)
                 {
-                    UIRealtimeTip.Popup("警告巨构不支持恒星系数量大于1000个".Translate());
+                    UIRealtimeTip.Popup("警告巨构不支持恒星系数量大于1200个".Translate());
                     return;
                 }
             }
@@ -2368,7 +2367,7 @@ namespace MoreMegaStructure
                 int support1000 = r.ReadInt32(); // 读取是否后续记录了101~1000个星系的数据
                 if (support1000 > 0) // 如果记录了，则读取后续数据
                 {
-                    for (int i = 100; i < 1000; i++)
+                    for (int i = 100; i < MoreMegaStructure.MegaArrayOldLen; i++)
                     {
                         for (int j = 0; j < slotCountInSave; j++)
                         {
@@ -2385,6 +2384,19 @@ namespace MoreMegaStructure
                             incProgress[i][j] = 0;
                         }
                     }
+                    if(MoreMegaStructure.savedModVersion >= 190)
+                    {
+                        for (int i = MoreMegaStructure.MegaArrayOldLen; i < MoreMegaStructure.MegaArrayLength; i++)
+                        {
+                            for (int j = 0; j < slotCount; j++)
+                            {
+                                recipeIds[i][j] = r.ReadInt32();
+                                weights[i][j] = r.ReadDouble();
+                                progress[i][j] = r.ReadDouble();
+                                incProgress[i][j] = r.ReadDouble();
+                            }
+                        }
+                    }
                 }
                 else
                 {
@@ -2395,9 +2407,12 @@ namespace MoreMegaStructure
             {
                 ResetDataAfterStarIndex100();
             }
+
+            int end = MoreMegaStructure.savedModVersion >= 190 ? MoreMegaStructure.MegaArrayLength : MoreMegaStructure.MegaArrayOldLen;
+
             if (MoreMegaStructure.savedModVersion >= 120)
             {
-                for (int i = 0; i < 1000; i++)
+                for (int i = 0; i < end; i++)
                 {
                     specProgress[i] = r.ReadInt32();
                     curSpecType[i] = r.ReadInt32();
@@ -2407,7 +2422,7 @@ namespace MoreMegaStructure
             }
             if(MoreMegaStructure.savedModVersion >= 130)
             {
-                for (int i = 0; i < 1000; i++)
+                for (int i = 0; i < end; i++)
                 {
                     for (int j = 0; j < slotCountInSave; j++)
                     {
@@ -2436,7 +2451,7 @@ namespace MoreMegaStructure
             w.Write(support1000 ? 1 : 0); // 在100组数据后写入1或0，记录是否后续还有最多1000个星系的数据
             if (support1000) // 如果设置支持了1000星系，则将101~1000星系的数据写入存档
             {
-                for (int i = 100; i < 1000; i++)
+                for (int i = 100; i < MoreMegaStructure.MegaArrayLength; i++)
                 {
                     for (int j = 0; j < slotCount; j++)
                     {
@@ -2447,14 +2462,14 @@ namespace MoreMegaStructure
                     }
                 }
             }
-            for (int i = 0; i <1000;  i++) 
+            for (int i = 0; i <MoreMegaStructure.MegaArrayLength;  i++) 
             {
                 w.Write(specProgress[i]);
                 w.Write(curSpecType[i]);
                 w.Write(inProgressSpecType[i]);
                 w.Write(satisfiedSpecType[i]);
             }
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < MoreMegaStructure.MegaArrayLength; i++)
             {
                 for (int j = 0; j < slotCount; j++)
                 {
