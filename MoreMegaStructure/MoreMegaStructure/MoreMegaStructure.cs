@@ -26,15 +26,15 @@ namespace MoreMegaStructure
     [BepInDependency(DSPModSavePlugin.MODGUID)]
     [CommonAPISubmoduleDependency(nameof(ProtoRegistry), nameof(TabSystem), nameof(LocalizationModule))]
     [BepInDependency("starfi5h.plugin.ModFixerOne")]
-    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.9.0")]
+    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.9.1")]
     public class MoreMegaStructure : BaseUnityPlugin, IModCanSave
     {
         /// <summary>
         /// mod版本会进行存档
         /// </summary>
-        public static int modVersion = 190;
+        public static int modVersion = 191;
 
-        public static int savedModVersion = 160;
+        public static int savedModVersion = 190;
 
         public static bool CompatibilityPatchUnlocked = false;
 
@@ -1848,7 +1848,7 @@ namespace MoreMegaStructure
                 if (type == 4)
                 {
                     StarAssembly.ResetArchiveDataByStarIndex(idx);
-                    StarAssembly.CalcInGameDataByStarIndex(idx);
+                    StarAssembly.ResetInGameDataByStarIndex(idx);
                     StarAssembly.ForceResetIncDataCache();
                     RefreshUILabels(curStar, true);
                 }
@@ -2076,13 +2076,13 @@ namespace MoreMegaStructure
             if (savedModVersion >= 110)
             {
                 StarAssembly.Import(r);
-                StarAssembly.InitInGameData();
+                StarAssembly.CalcInGameData();
                 //StarAssembly.ResetUIBtnTransitions();
             }
             else
             {
                 StarAssembly.ResetAndInitArchiveData();
-                StarAssembly.InitInGameData();
+                StarAssembly.CalcInGameData();
                 //StarAssembly.ResetUIBtnTransitions();
             }
             
@@ -2148,6 +2148,7 @@ namespace MoreMegaStructure
             InitResolutionWhenLoad();
             //EffectRenderer.InitAll();
             UIBuildMenuPatcher.InitDataWhenLoad();
+            StarAssembly.IntoOtherSave();
             StarCannon.IntoOtherSave();
             WarpArray.IntoOtherSave();
             UIWarpArray.IntoOtherSave();

@@ -24,6 +24,7 @@ namespace MoreMegaStructure
         public static List<int> inProgressSpecType = new List<int>(); // 正处在特化进程中的类型
         public static List<int> satisfiedSpecType = new List<int>(); // 当前正满足要求的特化类型
         public static List<List<int>> productSpeedRequest = new List<List<int>>(); // 手动期望的（要求的）生产速率
+        public static Dictionary<int, Dictionary<int, int>> productStorage = new Dictionary<int, Dictionary<int, int>>(); // 存储产物已暂时堆积在巨构中的数量（可供相同星际组装厂的其他需要此产物作为原材料的配方取用），不区分slot只按照产物Id存储。
 
         // 以下为不需要存档的数据，在载入时重置或者重新计算
         public static Dictionary<int, List<List<int>>> items = new Dictionary<int, List<List<int>>>(); // 存储recipe的原材料的Id
@@ -31,8 +32,6 @@ namespace MoreMegaStructure
         public static Dictionary<int, List<List<int>>> itemCounts = new Dictionary<int, List<List<int>>>(); // 存储recipe的原材料的需求数量
         public static Dictionary<int, List<List<int>>> productCounts = new Dictionary<int, List<List<int>>>(); // 存储recipe的产物的产出数量
         public static Dictionary<int, List<int>> timeSpend = new Dictionary<int, List<int>>(); // 存储recipe的所需时间
-        public static Dictionary<int, Dictionary<int, int>> productStorage = new Dictionary<int, Dictionary<int, int>>(); // 存储产物已暂时堆积在巨构中的数量（可供相同星际组装厂的其他需要此产物作为原材料的配方取用），不区分slot只按照产物Id存储。不进行存档，读档后重置。
-        // 上述productStorage项会存在：如果反复疯狂更换recipe会一直增加字典项，可能拖慢速度，但是重进游戏后冗余key会自动清除，因此暂时不做游戏内清理
         public static Dictionary<int, Dictionary<int,int>> productStorageInc = new Dictionary<int, Dictionary<int, int>>(); // 存储产物的增产点数
         public static Dictionary<int, List<int>> specBuffLevel = new Dictionary<int, List<int>>(); // 星际组装厂特化后，配方能触发加成
         public static List<int> currentStarIncs = new List<int>();
@@ -609,6 +608,33 @@ namespace MoreMegaStructure
         public static void InitInGameData()
         {
             int maxStarIndex = MoreMegaStructure.Support1000Stars.Value ? MoreMegaStructure.MegaArrayLength : 100;
+            for (int starIndex = 0; starIndex < maxStarIndex; starIndex++)
+            {
+                if (MoreMegaStructure.StarMegaStructureType[starIndex] == 4)
+                {
+                    ResetInGameDataByStarIndex(starIndex);
+                }
+            }
+            //currentStarIndex = 0;
+            currentRecipeSlot = 0;
+            currentStarIncs = new List<int>();
+            for (int i = 0; i < slotCount; i++)
+            {
+                currentStarIncs.Add(0);
+            }
+            lockSliderListener = false;
+            blueBuffByTCFV = 0;
+            r002ByTCFV = 0;
+            r106ByTCFV = 0;
+            r208ByTCFV = 0;
+        }
+
+        /// <summary>
+        /// 初始化并计算游戏运行时数据
+        /// </summary>
+        public static void CalcInGameData()
+        {
+            int maxStarIndex = MoreMegaStructure.Support1000Stars.Value ? MoreMegaStructure.MegaArrayLength : 100;
             for (int starIndex = 0; starIndex  < maxStarIndex; starIndex ++)
             {
                 if (MoreMegaStructure.StarMegaStructureType[starIndex] == 4)
@@ -641,6 +667,9 @@ namespace MoreMegaStructure
 
         public static void ResetInGameDataByStarIndex(int starIndex)
         {
+            productStorage[starIndex] = new Dictionary<int, int>();
+            productStorageInc[starIndex] = new Dictionary<int, int>();
+            productStorage[starIndex][9500] = 0;
             CalcInGameDataByStarIndex(starIndex);
         }
 
@@ -651,9 +680,6 @@ namespace MoreMegaStructure
             itemCounts[starIndex] = new List<List<int>>();
             productCounts[starIndex] = new List<List<int>>();
             timeSpend[starIndex] = new List<int>();
-            productStorage[starIndex] = new Dictionary<int, int>();
-            productStorageInc[starIndex] = new Dictionary<int, int>();
-            productStorage[starIndex][9500] = 0;
             specBuffLevel[starIndex] = new List<int>();
             for (int s = 0; s < slotCount; s++)
             {
@@ -2433,6 +2459,41 @@ namespace MoreMegaStructure
 
             tickEnergyForFullSpeed = (int)(20000.0 / MoreMegaStructure.IASpdFactor.Value);
             if (tickEnergyForFullSpeed <= 0) tickEnergyForFullSpeed = 100000;
+
+            // 内部仓储读取
+            int maxStarIndex = MoreMegaStructure.Support1000Stars.Value ? MoreMegaStructure.MegaArrayLength : 100;
+            for (int starIndex = 0; starIndex < maxStarIndex; starIndex++)
+            {
+                if (MoreMegaStructure.StarMegaStructureType[starIndex] == 4)
+                {
+                    productStorage[starIndex] = new Dictionary<int, int>();
+                    productStorageInc[starIndex] = new Dictionary<int, int>();
+                    productStorage[starIndex][9500] = 0;
+                    productStorageInc[starIndex][9500] = 0;
+                }
+            }
+
+            if (MoreMegaStructure.savedModVersion >= 191)
+            {
+                for (int starIndex = 0; starIndex < maxStarIndex; starIndex++)
+                {
+                    if (MoreMegaStructure.StarMegaStructureType[starIndex] == 4)
+                    {
+                        int dicLenCurStar = r.ReadInt32();
+                        for (int j = 0; j < dicLenCurStar; j++)
+                        {
+                            int itemId = r.ReadInt32();
+                            int itemCount = r.ReadInt32();
+                            int itemInc = r.ReadInt32();
+                            if (itemCount > 0)
+                            {
+                                productStorage[starIndex][itemId] = itemCount;
+                                productStorageInc[starIndex][itemId] = itemInc;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         public static void Export(BinaryWriter w)
@@ -2474,6 +2535,25 @@ namespace MoreMegaStructure
                 for (int j = 0; j < slotCount; j++)
                 {
                     w.Write(productSpeedRequest[i][j]);
+                }
+            }
+            // 内部存储进入存档
+            int maxStarIndex = MoreMegaStructure.Support1000Stars.Value ? MoreMegaStructure.MegaArrayLength : 100;
+            for (int starIndex = 0; starIndex < maxStarIndex; starIndex++)
+            {
+                if (MoreMegaStructure.StarMegaStructureType[starIndex] == 4)
+                {
+                    w.Write(productStorage[starIndex].Count);
+                    Dictionary<int, int> incData = productStorageInc[starIndex];
+                    foreach (var storagePerItemId in productStorage[starIndex])
+                    {
+                        w.Write(storagePerItemId.Key);
+                        w.Write(storagePerItemId.Value);
+                        if (incData.ContainsKey(storagePerItemId.Key))
+                            w.Write(incData[storagePerItemId.Key]);
+                        else
+                            w.Write(0);
+                    }
                 }
             }
         }
