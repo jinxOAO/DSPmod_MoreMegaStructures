@@ -26,13 +26,13 @@ namespace MoreMegaStructure
     [BepInDependency(DSPModSavePlugin.MODGUID)]
     [CommonAPISubmoduleDependency(nameof(ProtoRegistry), nameof(TabSystem), nameof(LocalizationModule))]
     [BepInDependency("starfi5h.plugin.ModFixerOne")]
-    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.9.1")]
+    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.9.3")]
     public class MoreMegaStructure : BaseUnityPlugin, IModCanSave
     {
         /// <summary>
         /// mod版本会进行存档
         /// </summary>
-        public static int modVersion = 191;
+        public static int modVersion = 193;
 
         public static int savedModVersion = 190;
 
@@ -937,6 +937,7 @@ namespace MoreMegaStructure
             ref PowerGeneratorComponent __instance,
             bool useIon,
             bool useCata,
+            bool keyFrame,
             PlanetFactory factory,
             int[] productRegister,
             int[] consumeRegister)
@@ -986,37 +987,52 @@ namespace MoreMegaStructure
             //其他情况不允许接收器生成或输出物质
             if (postWork)
             {
-                if (__instance.catalystPoint > 0)
+                if (useCata)
                 {
-                    int num = __instance.catalystPoint / 3600;
-                    if (useCata)
+                    if (__instance.catalystPoint > 0)
                     {
-                        int num2 = __instance.catalystIncPoint / __instance.catalystPoint;
                         __instance.catalystPoint--;
-                        __instance.catalystIncPoint -= num2;
-                        if (__instance.catalystIncPoint < 0 || __instance.catalystPoint <= 0)
+                    }
+                    else if (__instance.catalystCount > 0)
+                    {
+                        int num = (int)(__instance.catalystInc / __instance.catalystCount);
+                        num = ((num > 0) ? ((num > 10) ? 10 : num) : 0);
+                        __instance.catalystInc -= (short)num;
+                        __instance.catalystIncLevel = (byte)num;
+                        __instance.curCatalystId = __instance.catalystId;
+                        __instance.catalystPoint = 3600;
+                        __instance.catalystPoint--;
+                        __instance.catalystCount -= 1;
+                        int[] obj = consumeRegister;
+                        lock (obj)
                         {
-                            __instance.catalystIncPoint = 0;
+                            consumeRegister[__instance.catalystId]++;
+                        }
+                        if (!__instance.incUsed)
+                        {
+                            __instance.incUsed = (__instance.catalystIncLevel > 0);
+                        }
+                        if (__instance.catalystCount == 0)
+                        {
+                            __instance.catalystId = 0;
+                            __instance.catalystInc = 0;
                         }
                     }
-
-                    int num3 = __instance.catalystPoint / 3600;
-                    int[] obj = consumeRegister;
-                    lock (obj)
+                    else
                     {
-                        consumeRegister[__instance.catalystId] += num - num3;
+                        __instance.curCatalystId = 0;
+                        __instance.catalystIncLevel = 0;
                     }
                 }
-
                 if (__instance.productId > 0 && __instance.productCount < 20f)
                 {
-                    int num4 = (int)__instance.productCount;
+                    int num2 = (int)__instance.productCount;
                     __instance.productCount += (float)(__instance.capacityCurrentTick / (double)__instance.productHeat);
-                    int num5 = (int)__instance.productCount;
+                    int num3 = (int)__instance.productCount;
                     int[] obj = productRegister;
                     lock (obj)
                     {
-                        productRegister[__instance.productId] += num5 - num4;
+                        productRegister[__instance.productId] += num3 - num2;
                     }
 
                     if (__instance.productCount > 20f)
@@ -1028,24 +1044,24 @@ namespace MoreMegaStructure
                 __instance.warmup += __instance.warmupSpeed;
                 __instance.warmup = ((__instance.warmup > 1f) ? 1f : ((__instance.warmup < 0f) ? 0f : __instance.warmup));
                 bool flag2 = __instance.productId > 0 && __instance.productCount >= pilerLvl;
-                bool flag3 = useIon && __instance.catalystPoint < 72000f;
+                bool flag3 = keyFrame && useIon && __instance.catalystCount < 10;
                 if (flag2 || flag3)
                 {
                     bool flag4;
+                    int num4;
+                    int num5;
+                    factory.ReadObjectConn(__instance.entityId, 0, out flag4, out num4, out num5);
+                    bool flag5;
                     int num6;
                     int num7;
-                    factory.ReadObjectConn(__instance.entityId, 0, out flag4, out num6, out num7);
-                    bool flag5;
-                    int num8;
-                    int num9;
-                    factory.ReadObjectConn(__instance.entityId, 1, out flag5, out num8, out num9);
+                    factory.ReadObjectConn(__instance.entityId, 1, out flag5, out num6, out num7);
                     bool flag6;
                     bool flag7;
-                    if (num6 <= 0)
+                    if (num4 <= 0)
                     {
                         flag6 = false;
                         flag7 = false;
-                        num6 = 0;
+                        num4 = 0;
                     }
                     else
                     {
@@ -1055,11 +1071,11 @@ namespace MoreMegaStructure
 
                     bool flag8;
                     bool flag9;
-                    if (num8 <= 0)
+                    if (num6 <= 0)
                     {
                         flag8 = false;
                         flag9 = false;
-                        num8 = 0;
+                        num6 = 0;
                     }
                     else
                     {
@@ -1074,23 +1090,23 @@ namespace MoreMegaStructure
                         {
                             if (__instance.fuelHeat == 0L)
                             {
-                                if (factory.InsertInto(num6, 0, __instance.productId, (byte)pilerLvl, 0, out b) == pilerLvl)
+                                if (factory.InsertInto(num4, 0, __instance.productId, (byte)pilerLvl, 0, out b) == pilerLvl)
                                 {
                                     __instance.productCount -= pilerLvl;
                                     __instance.fuelHeat = 1L;
                                 }
-                                else if (factory.InsertInto(num8, 0, __instance.productId, (byte)pilerLvl, 0, out b) == pilerLvl)
+                                else if (factory.InsertInto(num6, 0, __instance.productId, (byte)pilerLvl, 0, out b) == pilerLvl)
                                 {
                                     __instance.productCount -= pilerLvl;
                                     __instance.fuelHeat = 0L;
                                 }
                             }
-                            else if (factory.InsertInto(num8, 0, __instance.productId, (byte)pilerLvl, 0, out b) == pilerLvl)
+                            else if (factory.InsertInto(num6, 0, __instance.productId, (byte)pilerLvl, 0, out b) == pilerLvl)
                             {
                                 __instance.productCount -= pilerLvl;
                                 __instance.fuelHeat = 0L;
                             }
-                            else if (factory.InsertInto(num6, 0, __instance.productId, (byte)pilerLvl, 0, out b) == pilerLvl)
+                            else if (factory.InsertInto(num4, 0, __instance.productId, (byte)pilerLvl, 0, out b) == pilerLvl)
                             {
                                 __instance.productCount -= pilerLvl;
                                 __instance.fuelHeat = 1L;
@@ -1098,13 +1114,13 @@ namespace MoreMegaStructure
                         }
                         else if (flag6)
                         {
-                            if (factory.InsertInto(num6, 0, __instance.productId, (byte)pilerLvl, 0, out b) == pilerLvl)
+                            if (factory.InsertInto(num4, 0, __instance.productId, (byte)pilerLvl, 0, out b) == pilerLvl)
                             {
                                 __instance.productCount -= pilerLvl;
                                 __instance.fuelHeat = 1L;
                             }
                         }
-                        else if (flag8 && factory.InsertInto(num8, 0, __instance.productId, (byte)pilerLvl, 0, out b) == pilerLvl)
+                        else if (flag8 && factory.InsertInto(num6, 0, __instance.productId, (byte)pilerLvl, 0, out b) == pilerLvl)
                         {
                             __instance.productCount -= pilerLvl;
                             __instance.fuelHeat = 0L;
@@ -1113,18 +1129,64 @@ namespace MoreMegaStructure
 
                     if (flag3)
                     {
-                        byte b2;
-                        byte b3;
-                        if (flag7 && factory.PickFrom(num6, 0, __instance.catalystId, null, out b2, out b3) == __instance.catalystId)
+                        if (flag7)
                         {
-                            __instance.catalystPoint += 3600 * b2;
-                            __instance.catalystIncPoint += 3600 * b3;
+                            if (__instance.catalystCount > 0)
+                            {
+                                byte b2;
+                                byte b3;
+                                if (factory.PickFrom(num4, 0, __instance.catalystId, null, out b2, out b3) == __instance.catalystId)
+                                {
+                                    __instance.catalystCount += (short)b2;
+                                    __instance.catalystInc += (short)b3;
+                                }
+                            }
+                            else
+                            {
+                                int[] array = ItemProto.catalystNeeds[(int)__instance.catalystMask];
+                                if (array != null && array.Length != 0)
+                                {
+                                    byte b2;
+                                    byte b3;
+                                    int num8 = factory.PickFrom(num4, 0, 0, array, out b2, out b3);
+                                    if (num8 > 0)
+                                    {
+                                        __instance.catalystId = num8;
+                                        __instance.catalystCount += (short)b2;
+                                        __instance.catalystInc += (short)b3;
+                                    }
+                                }
+                            }
                         }
-
-                        if (flag9 && factory.PickFrom(num8, 0, __instance.catalystId, null, out b2, out b3) == __instance.catalystId)
+                        if (flag9)
                         {
-                            __instance.catalystPoint += 3600 * b2;
-                            __instance.catalystIncPoint += 3600 * b3;
+                            if (__instance.catalystCount > 0)
+                            {
+                                byte b2;
+                                byte b3;
+                                if (factory.PickFrom(num6, 0, __instance.catalystId, null, out b2, out b3) == __instance.catalystId)
+                                {
+                                    __instance.catalystCount += (short)b2;
+                                    __instance.catalystInc += (short)b3;
+                                    return false;
+                                }
+                            }
+                            else
+                            {
+                                int[] array2 = ItemProto.catalystNeeds[(int)__instance.catalystMask];
+                                if (array2 != null && array2.Length != 0)
+                                {
+                                    byte b2;
+                                    byte b3;
+                                    int num9 = factory.PickFrom(num6, 0, 0, array2, out b2, out b3);
+                                    if (num9 > 0)
+                                    {
+                                        __instance.catalystId = num9;
+                                        __instance.catalystCount += (short)b2;
+                                        __instance.catalystInc += (short)b3;
+                                    }
+                                }
+                            }
                         }
                     }
                 }
