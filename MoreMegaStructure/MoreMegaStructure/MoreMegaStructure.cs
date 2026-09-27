@@ -25,15 +25,16 @@ namespace MoreMegaStructure
     [BepInDependency(CommonAPIPlugin.GUID)]
     [BepInDependency(DSPModSavePlugin.MODGUID)]
     [CommonAPISubmoduleDependency(nameof(ProtoRegistry), nameof(TabSystem), nameof(LocalizationModule))]
-    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.8.4")]
+    [BepInDependency("starfi5h.plugin.ModFixerOne")]
+    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.9.3")]
     public class MoreMegaStructure : BaseUnityPlugin, IModCanSave
     {
         /// <summary>
         /// mod版本会进行存档
         /// </summary>
-        public static int modVersion = 160;
+        public static int modVersion = 193;
 
-        public static int savedModVersion = 160;
+        public static int savedModVersion = 190;
 
         public static bool CompatibilityPatchUnlocked = false;
 
@@ -80,6 +81,7 @@ namespace MoreMegaStructure
         public static ConfigEntry<bool> ShowIAUIWhenOpenDE;
         public static ConfigEntry<bool> IAStatisticPanelEnabled;
         public static ConfigEntry<bool> StarCannonOnly;
+        public static ConfigEntry<bool> EnableLandingProtection;
         // public static ConfigEntry<bool> HideWarpFieldUI;
         public static bool resolutionLower1080 = false;
 
@@ -202,7 +204,9 @@ namespace MoreMegaStructure
         /// <summary>
         /// 下面的数据为游戏运行时的关键数据，且会进行存档
         /// </summary>
-        public static int[] StarMegaStructureType = new int[1000]; //用于存储每个恒星所构建的巨构建筑类型，默认为0则为戴森球，1物质解压器，2科学枢纽，3折跃场，4星际组装厂，5晶体重构器，6恒星炮
+        public const int MegaArrayOldLen = 1000;
+        public const int MegaArrayLength = 1200;
+        public static int[] StarMegaStructureType = new int[MegaArrayLength]; //用于存储每个恒星所构建的巨构建筑类型，默认为0则为戴森球，1物质解压器，2科学枢纽，3折跃场，4星际组装厂，5晶体重构器，6恒星炮
 
         public static int maxAutoReceiveGear = 1000;
         public static long autoReceiveGearProgress;
@@ -247,13 +251,14 @@ namespace MoreMegaStructure
             NonlinearEnergy = Config.Bind("config", "NonlinearEnergyAssignmentAdjust2", true,
                                                 "Turn this to true will let you adjust the energy allocation of the Interstellar Assembly more finely within the range of lower value. 将此项设置为true能够使你在调整星际组装厂配方的能量分配时，在较低分配比例的区间内更加精细地调整。");
             Support1000Stars = Config.Bind("config", "Support1000Stars", false,
-                                                 "Turn this to true will let the Interstellar Assemblies support upto 1000 stars (default is 100), but this might slow down your game or your save/load speed. 将此项设置为true能够使星际组装厂支持最多1000个星系（默认只支持100以下），但这可能使你的游戏速度或存读档速度被拖慢。");
+                                                 "Turn this to true will let the Interstellar Assemblies support upto 1024 stars (default is 100), but this might slow down your game or your save/load speed. 将此项设置为true能够使星际组装厂支持最多1024个星系（默认只支持100以下），但这可能使你的游戏速度或存读档速度被拖慢。");
             NoWasteResources = Config.Bind("config", "NoWasteResources", true,
                                                  "Turn this to false might slightly increase the game speed. But this will cause: if one of the various materials required by a recipe in Interstellar Assembly is insufficient, (its supply cannot meet the speed of full-speed production). Although the actual output will slow down, other sufficient materials may still be consumed at full speed, which means that they may be wasted.  将此项设置为false可能会轻微提升游戏速度，但这会导致：当星际组装厂中的部分原材料不支持满速消耗时，虽然产出速度按照最低供应原材料的速度为准，但其他充足供应的原材料仍被满速消耗而产生浪费。");
             ReverseStarCannonShellAlignDirection = Config.Bind("config", "ReverseStarCannonShellAlignDirection", false, "Turn this to true will reverse the align direction of all the shell of star cannon when firing, which means the south pole (of the shells) will point to the target star rather than the north pole.  将此项设置为true会反转恒星炮开火时壳层的对齐方向，这意味着所有壳层的南极将指向目标恒星开火（而非默认的北极）。如果你的炮口造反了，可以尝试更改此项设置。");
             ShowIAUIWhenOpenDE = Config.Bind("config", "AutoShowDEUI", true, "Set this to true will force to show the Interstellar Assembly's UI when opening/switching its Megastructure Editor Panel. Set to false will maintain the IA UI's last state. 将此项设置为true将在每次打开星际组装厂的巨构编辑器面板时，强制显示UI。设置为false则会维持上次的状态。");
             IAStatisticPanelEnabled = Config.Bind("config", "InterstellarAssemblyStatisticPanelEnabled", true, "If the Interstellar Assembly's production statistics have a excluive page. 星际组装厂的生产数据是否会拥有一个独立的面板页。");
             StarCannonOnly = Config.Bind("config", "StarCannonOnly", false, "Set this to true will disable all mega structures except DysonSphere and StarCannon. 将此项设置为true将禁用除了戴森球和恒星炮以外的任何巨构。");
+            EnableLandingProtection = Config.Bind("config", "EnableLandingProtection", true, "If you've installed the CustomCreateBirthStar or GalacticScale, enabling this option will prevent possible issues with logistics ships being unable to land, but it may cause non-warp speeds of logistics ships to be very fast in the early stages of the game. 若安装遗产mod或GalacticScale，开启此项将防止可能产生的物流船无法降落的问题，但会导致物流船非曲速的速度在游戏初期就很快。");
             UIStatisticsPatcher.enabled = IAStatisticPanelEnabled.Value;
             if (UIStatisticsPatcher.forceBanned) UIStatisticsPatcher.enabled = false;
 
@@ -312,7 +317,7 @@ namespace MoreMegaStructure
             if (UIBuildMenuPatcher.enabled) Harmony.CreateAndPatchAll(typeof(UIBuildMenuPatcher));
             Harmony.CreateAndPatchAll(typeof(UIStarCannon));
             Harmony.CreateAndPatchAll(typeof(UIMechaWindowPatcher));
-            Harmony.CreateAndPatchAll(typeof(PerformanceMonitorPatcher));
+            //Harmony.CreateAndPatchAll(typeof(PerformanceMonitorPatcher));
             Harmony.CreateAndPatchAll(typeof(UIPerformancePanelPatcher));
             Harmony.CreateAndPatchAll(typeof(UIDialogPatch));
             Harmony.CreateAndPatchAll(typeof(UIStationWindowPatcher));
@@ -330,7 +335,7 @@ namespace MoreMegaStructure
             LDBTool.PreAddDataAction += MMSProtos.AddNewItems;
             LDBTool.PreAddDataAction += MMSProtos.AddNewItems2;
             LDBTool.PostAddDataAction += MMSProtos.AddGenesisRecipes;
-            LDBTool.PostAddDataAction += MMSProtos.AddReceivers;
+            LDBTool.PreAddDataAction += MMSProtos.AddReceivers;
             LDBTool.PostAddDataAction += MMSProtos.RefreshInitAll;
             LDBTool.EditDataAction += MMSProtos.EditOriRR;
 
@@ -348,6 +353,7 @@ namespace MoreMegaStructure
 
         public void Start()
         {
+            InitWhenStart();
             GetVanillaUITexts();
             InitMegaSetUI();
             LateInitOtherUI();
@@ -399,6 +405,15 @@ namespace MoreMegaStructure
                 {
                     Utils.Log(DSPGame.globalOption.languageLCID.ToString());
                 }
+            }
+        }
+
+        public static void InitWhenStart()
+        {
+            StarMegaStructureType = new int[MegaArrayLength];
+            for (int i = 0; i < MegaArrayLength; i++)
+            {
+                StarMegaStructureType[i] = 0;
             }
         }
 
@@ -894,7 +909,7 @@ namespace MoreMegaStructure
         public static void UIDEPowerDescUpdateUIPostPatch(ref UIDEPowerDesc __instance)
         {
             int StarIndex = __instance.dysonSphere.starData.index;
-            if (StarIndex < 0 || StarIndex >= 1000)
+            if (StarIndex < 0 || StarIndex >= MegaArrayLength)
                 return;
             if (StarMegaStructureType[StarIndex] == 0)
                 return;
@@ -922,6 +937,7 @@ namespace MoreMegaStructure
             ref PowerGeneratorComponent __instance,
             bool useIon,
             bool useCata,
+            bool keyFrame,
             PlanetFactory factory,
             int[] productRegister,
             int[] consumeRegister)
@@ -931,7 +947,7 @@ namespace MoreMegaStructure
             MMSCPU.BeginSample(ECpuWorkEntryExtended.Receiver);
             int idx = factory.planet.star.id - 1;
             bool postWork = false;
-            if (idx < 0 || idx > 999)
+            if (idx < 0 || idx >= MegaArrayLength)
             {
                 //Debug.LogWarning("GameTick_GammaPatch index out of range. Now return true.");
                 postWork = true;
@@ -971,37 +987,52 @@ namespace MoreMegaStructure
             //其他情况不允许接收器生成或输出物质
             if (postWork)
             {
-                if (__instance.catalystPoint > 0)
+                if (useCata)
                 {
-                    int num = __instance.catalystPoint / 3600;
-                    if (useCata)
+                    if (__instance.catalystPoint > 0)
                     {
-                        int num2 = __instance.catalystIncPoint / __instance.catalystPoint;
                         __instance.catalystPoint--;
-                        __instance.catalystIncPoint -= num2;
-                        if (__instance.catalystIncPoint < 0 || __instance.catalystPoint <= 0)
+                    }
+                    else if (__instance.catalystCount > 0)
+                    {
+                        int num = (int)(__instance.catalystInc / __instance.catalystCount);
+                        num = ((num > 0) ? ((num > 10) ? 10 : num) : 0);
+                        __instance.catalystInc -= (short)num;
+                        __instance.catalystIncLevel = (byte)num;
+                        __instance.curCatalystId = __instance.catalystId;
+                        __instance.catalystPoint = 3600;
+                        __instance.catalystPoint--;
+                        __instance.catalystCount -= 1;
+                        int[] obj = consumeRegister;
+                        lock (obj)
                         {
-                            __instance.catalystIncPoint = 0;
+                            consumeRegister[__instance.catalystId]++;
+                        }
+                        if (!__instance.incUsed)
+                        {
+                            __instance.incUsed = (__instance.catalystIncLevel > 0);
+                        }
+                        if (__instance.catalystCount == 0)
+                        {
+                            __instance.catalystId = 0;
+                            __instance.catalystInc = 0;
                         }
                     }
-
-                    int num3 = __instance.catalystPoint / 3600;
-                    int[] obj = consumeRegister;
-                    lock (obj)
+                    else
                     {
-                        consumeRegister[__instance.catalystId] += num - num3;
+                        __instance.curCatalystId = 0;
+                        __instance.catalystIncLevel = 0;
                     }
                 }
-
                 if (__instance.productId > 0 && __instance.productCount < 20f)
                 {
-                    int num4 = (int)__instance.productCount;
+                    int num2 = (int)__instance.productCount;
                     __instance.productCount += (float)(__instance.capacityCurrentTick / (double)__instance.productHeat);
-                    int num5 = (int)__instance.productCount;
+                    int num3 = (int)__instance.productCount;
                     int[] obj = productRegister;
                     lock (obj)
                     {
-                        productRegister[__instance.productId] += num5 - num4;
+                        productRegister[__instance.productId] += num3 - num2;
                     }
 
                     if (__instance.productCount > 20f)
@@ -1013,24 +1044,24 @@ namespace MoreMegaStructure
                 __instance.warmup += __instance.warmupSpeed;
                 __instance.warmup = ((__instance.warmup > 1f) ? 1f : ((__instance.warmup < 0f) ? 0f : __instance.warmup));
                 bool flag2 = __instance.productId > 0 && __instance.productCount >= pilerLvl;
-                bool flag3 = useIon && __instance.catalystPoint < 72000f;
+                bool flag3 = keyFrame && useIon && __instance.catalystCount < 10;
                 if (flag2 || flag3)
                 {
                     bool flag4;
+                    int num4;
+                    int num5;
+                    factory.ReadObjectConn(__instance.entityId, 0, out flag4, out num4, out num5);
+                    bool flag5;
                     int num6;
                     int num7;
-                    factory.ReadObjectConn(__instance.entityId, 0, out flag4, out num6, out num7);
-                    bool flag5;
-                    int num8;
-                    int num9;
-                    factory.ReadObjectConn(__instance.entityId, 1, out flag5, out num8, out num9);
+                    factory.ReadObjectConn(__instance.entityId, 1, out flag5, out num6, out num7);
                     bool flag6;
                     bool flag7;
-                    if (num6 <= 0)
+                    if (num4 <= 0)
                     {
                         flag6 = false;
                         flag7 = false;
-                        num6 = 0;
+                        num4 = 0;
                     }
                     else
                     {
@@ -1040,11 +1071,11 @@ namespace MoreMegaStructure
 
                     bool flag8;
                     bool flag9;
-                    if (num8 <= 0)
+                    if (num6 <= 0)
                     {
                         flag8 = false;
                         flag9 = false;
-                        num8 = 0;
+                        num6 = 0;
                     }
                     else
                     {
@@ -1059,23 +1090,23 @@ namespace MoreMegaStructure
                         {
                             if (__instance.fuelHeat == 0L)
                             {
-                                if (factory.InsertInto(num6, 0, __instance.productId, (byte)pilerLvl, 0, out b) == pilerLvl)
+                                if (factory.InsertInto(num4, 0, __instance.productId, (byte)pilerLvl, 0, out b) == pilerLvl)
                                 {
                                     __instance.productCount -= pilerLvl;
                                     __instance.fuelHeat = 1L;
                                 }
-                                else if (factory.InsertInto(num8, 0, __instance.productId, (byte)pilerLvl, 0, out b) == pilerLvl)
+                                else if (factory.InsertInto(num6, 0, __instance.productId, (byte)pilerLvl, 0, out b) == pilerLvl)
                                 {
                                     __instance.productCount -= pilerLvl;
                                     __instance.fuelHeat = 0L;
                                 }
                             }
-                            else if (factory.InsertInto(num8, 0, __instance.productId, (byte)pilerLvl, 0, out b) == pilerLvl)
+                            else if (factory.InsertInto(num6, 0, __instance.productId, (byte)pilerLvl, 0, out b) == pilerLvl)
                             {
                                 __instance.productCount -= pilerLvl;
                                 __instance.fuelHeat = 0L;
                             }
-                            else if (factory.InsertInto(num6, 0, __instance.productId, (byte)pilerLvl, 0, out b) == pilerLvl)
+                            else if (factory.InsertInto(num4, 0, __instance.productId, (byte)pilerLvl, 0, out b) == pilerLvl)
                             {
                                 __instance.productCount -= pilerLvl;
                                 __instance.fuelHeat = 1L;
@@ -1083,13 +1114,13 @@ namespace MoreMegaStructure
                         }
                         else if (flag6)
                         {
-                            if (factory.InsertInto(num6, 0, __instance.productId, (byte)pilerLvl, 0, out b) == pilerLvl)
+                            if (factory.InsertInto(num4, 0, __instance.productId, (byte)pilerLvl, 0, out b) == pilerLvl)
                             {
                                 __instance.productCount -= pilerLvl;
                                 __instance.fuelHeat = 1L;
                             }
                         }
-                        else if (flag8 && factory.InsertInto(num8, 0, __instance.productId, (byte)pilerLvl, 0, out b) == pilerLvl)
+                        else if (flag8 && factory.InsertInto(num6, 0, __instance.productId, (byte)pilerLvl, 0, out b) == pilerLvl)
                         {
                             __instance.productCount -= pilerLvl;
                             __instance.fuelHeat = 0L;
@@ -1098,18 +1129,64 @@ namespace MoreMegaStructure
 
                     if (flag3)
                     {
-                        byte b2;
-                        byte b3;
-                        if (flag7 && factory.PickFrom(num6, 0, __instance.catalystId, null, out b2, out b3) == __instance.catalystId)
+                        if (flag7)
                         {
-                            __instance.catalystPoint += 3600 * b2;
-                            __instance.catalystIncPoint += 3600 * b3;
+                            if (__instance.catalystCount > 0)
+                            {
+                                byte b2;
+                                byte b3;
+                                if (factory.PickFrom(num4, 0, __instance.catalystId, null, out b2, out b3) == __instance.catalystId)
+                                {
+                                    __instance.catalystCount += (short)b2;
+                                    __instance.catalystInc += (short)b3;
+                                }
+                            }
+                            else
+                            {
+                                int[] array = ItemProto.catalystNeeds[(int)__instance.catalystMask];
+                                if (array != null && array.Length != 0)
+                                {
+                                    byte b2;
+                                    byte b3;
+                                    int num8 = factory.PickFrom(num4, 0, 0, array, out b2, out b3);
+                                    if (num8 > 0)
+                                    {
+                                        __instance.catalystId = num8;
+                                        __instance.catalystCount += (short)b2;
+                                        __instance.catalystInc += (short)b3;
+                                    }
+                                }
+                            }
                         }
-
-                        if (flag9 && factory.PickFrom(num8, 0, __instance.catalystId, null, out b2, out b3) == __instance.catalystId)
+                        if (flag9)
                         {
-                            __instance.catalystPoint += 3600 * b2;
-                            __instance.catalystIncPoint += 3600 * b3;
+                            if (__instance.catalystCount > 0)
+                            {
+                                byte b2;
+                                byte b3;
+                                if (factory.PickFrom(num6, 0, __instance.catalystId, null, out b2, out b3) == __instance.catalystId)
+                                {
+                                    __instance.catalystCount += (short)b2;
+                                    __instance.catalystInc += (short)b3;
+                                    return false;
+                                }
+                            }
+                            else
+                            {
+                                int[] array2 = ItemProto.catalystNeeds[(int)__instance.catalystMask];
+                                if (array2 != null && array2.Length != 0)
+                                {
+                                    byte b2;
+                                    byte b3;
+                                    int num9 = factory.PickFrom(num6, 0, 0, array2, out b2, out b3);
+                                    if (num9 > 0)
+                                    {
+                                        __instance.catalystId = num9;
+                                        __instance.catalystCount += (short)b2;
+                                        __instance.catalystInc += (short)b3;
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -1125,8 +1202,8 @@ namespace MoreMegaStructure
         /// 游戏每帧判断一下玩家背包里的多功能组件是否低于目标，如果低于则开启自动接收
         /// </summary>
         [HarmonyPostfix]
-        [HarmonyPatch(typeof(GameData), "GameTick")]
-        public static void GameTickPostPatch(long time)
+        [HarmonyPatch(typeof(ThreadManager), "ProcessFrame")]
+        public static void GameTickPostPatch(long frameCounter)
         {
             MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
             MMSCPU.BeginSample(ECpuWorkEntryExtended.MainLogic);
@@ -1165,7 +1242,7 @@ namespace MoreMegaStructure
             }
             hashGenByAllSN = 0;
             MMSCPU.BeginSample(ECpuWorkEntryExtended.StarAssembly);
-            StarAssembly.UIFrameUpdate(time);
+            StarAssembly.UIFrameUpdate(frameCounter);
             MMSCPU.EndSample(ECpuWorkEntryExtended.StarAssembly);
             MMSCPU.BeginSample(ECpuWorkEntryExtended.StarCannon);
             StarCannon.RefreshStarCannonProperties();
@@ -1186,7 +1263,7 @@ namespace MoreMegaStructure
             MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
             MMSCPU.BeginSample(ECpuWorkEntryExtended.MainLogic);
             int idx = __instance.starData.id - 1;
-            if (idx < 0 || idx > 999)
+            if (idx < 0 || idx >= MegaArrayLength)
             {
                 return;
             }
@@ -1342,7 +1419,7 @@ namespace MoreMegaStructure
             int gmProtoId = factory.entityPool[__instance.entityId].protoId;
             if (gmProtoId != 2312) return; //只修改原始火箭发射器
 
-            if (starIndex < 0 || starIndex > 999)
+            if (starIndex < 0 || starIndex >= MegaArrayLength)
             {
                 //Debug.LogWarning("SiloInternalUpdate Patch Error because starIndex out of range.");
                 return;
@@ -1422,7 +1499,7 @@ namespace MoreMegaStructure
             int gmProtoId = factory.entityPool[__instance.entityId].protoId;
             if (gmProtoId != 2311) return; //只修改原始弹射器
 
-            if (starIndex < 0 || starIndex > 999)
+            if (starIndex < 0 || starIndex >= MegaArrayLength)
             {
                 return;
             }
@@ -1557,7 +1634,7 @@ namespace MoreMegaStructure
                 if (star == null) return;
                 curStar = star;
                 int idx = star.id - 1;
-                idx = idx < 0 ? 0 : (idx > 999 ? 999 : idx);
+                idx = idx < 0 ? 0 : (idx >= MegaArrayLength ? MegaArrayLength - 1 : idx);
 
                 StarAssembly.RefreshUI(forceShowUI);
 
@@ -1742,9 +1819,9 @@ namespace MoreMegaStructure
             try
             {
                 int idx = curStar.id - 1;
-                if (idx > 999)
+                if (idx >= MegaArrayLength)
                 {
-                    UIRealtimeTip.Popup("警告巨构不支持恒星系数量大于1000个".Translate());
+                    UIRealtimeTip.Popup("警告巨构不支持恒星系数量大于1200个".Translate());
                     return;
                 }
 
@@ -1833,7 +1910,8 @@ namespace MoreMegaStructure
                 if (type == 4)
                 {
                     StarAssembly.ResetArchiveDataByStarIndex(idx);
-                    StarAssembly.CalcInGameDataByStarIndex(idx);
+                    StarAssembly.ResetInGameDataByStarIndex(idx);
+                    StarAssembly.ForceResetIncDataCache();
                     RefreshUILabels(curStar, true);
                 }
                 else
@@ -1928,7 +2006,7 @@ namespace MoreMegaStructure
 
         public static int GetStarCannonBuiltIndex()
         {
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < MegaArrayLength; i++)
             {
                 if (StarMegaStructureType[i] == 6) return i;
             }
@@ -2025,9 +2103,17 @@ namespace MoreMegaStructure
             curStar = null;
             curDysonSphere = null;
             savedModVersion = r.ReadInt32();
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < MegaArrayOldLen; i++)
             {
                 StarMegaStructureType[i] = r.ReadInt32();
+            }
+
+            if(savedModVersion >= 190)
+            {
+                for (int i = MegaArrayOldLen; i < MegaArrayLength; i++)
+                {
+                    StarMegaStructureType[i] = r.ReadInt32();
+                }
             }
 
             if (savedModVersion >= 101)
@@ -2052,13 +2138,13 @@ namespace MoreMegaStructure
             if (savedModVersion >= 110)
             {
                 StarAssembly.Import(r);
-                StarAssembly.InitInGameData();
+                StarAssembly.CalcInGameData();
                 //StarAssembly.ResetUIBtnTransitions();
             }
             else
             {
                 StarAssembly.ResetAndInitArchiveData();
-                StarAssembly.InitInGameData();
+                StarAssembly.CalcInGameData();
                 //StarAssembly.ResetUIBtnTransitions();
             }
             
@@ -2089,7 +2175,7 @@ namespace MoreMegaStructure
         public void Export(BinaryWriter w)
         {
             w.Write(modVersion);
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < MegaArrayLength; i++)
             {
                 w.Write(StarMegaStructureType[i]);
             }
@@ -2108,7 +2194,7 @@ namespace MoreMegaStructure
 
         public void IntoOtherSave()
         {
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < MegaArrayLength; i++)
             {
                 StarMegaStructureType[i] = 0;
             }
@@ -2124,6 +2210,7 @@ namespace MoreMegaStructure
             InitResolutionWhenLoad();
             //EffectRenderer.InitAll();
             UIBuildMenuPatcher.InitDataWhenLoad();
+            StarAssembly.IntoOtherSave();
             StarCannon.IntoOtherSave();
             WarpArray.IntoOtherSave();
             UIWarpArray.IntoOtherSave();

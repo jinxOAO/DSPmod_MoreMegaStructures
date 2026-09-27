@@ -29,6 +29,7 @@ namespace MoreMegaStructure
         public const float warpSpeedInWarpField = 250 * 60 * 40000;
         public const float sailSpeedInWarpField = 400 * 500;
         public const float fixedSailSpeedInOtherMods = 400 * 100;
+        public static bool fixSailSpeed = false;
 
         // 运行时更新系数 无需存档
         public static List<WarpArrayData> arrays;
@@ -45,17 +46,23 @@ namespace MoreMegaStructure
                 tripEnergyCostRatioByStarIndex[i] = 1;
                 starIsInWhichWarpArray[i] = -1;
             }
+
+
+            if (MoreMegaStructure.EnableLandingProtection.Value && (CustomCreateBirthStarCompat.enabled || GalacticScaleCompat.enabled))
+                fixSailSpeed = true;
+            else
+                fixSailSpeed = false;
         }
 
         [HarmonyPostfix]
-        [HarmonyPatch(typeof(GameData), "GameTick")]
-        public static void WarpArrayLogicUpdate(long time)
+        [HarmonyPatch(typeof(ThreadManager), "ProcessFrame")]
+        public static void WarpArrayLogicUpdate(long frameCounter)
         {
-            UpdateSectorTripCostRatio(time); // 每帧更新一部分星系，一秒全部更新一次
+            UpdateSectorTripCostRatio(frameCounter); // 每帧更新一部分星系，一秒全部更新一次
 
-            if (time % 60 == 44)
+            if (frameCounter % 60 == 44)
                 UpdateWarpArrayDatas();
-            if (time % 3600 == 45)
+            if (frameCounter % 3600 == 45)
                 SortWarpArray();
 
         }
@@ -66,7 +73,7 @@ namespace MoreMegaStructure
             lock (obj)
             {
                 arrays.Clear();
-                for (int starIndex = 0; starIndex < GameMain.galaxy.starCount && starIndex < 1000; starIndex++)
+                for (int starIndex = 0; starIndex < GameMain.galaxy.starCount && starIndex < MoreMegaStructure.MegaArrayLength; starIndex++)
                 {
                     if (MoreMegaStructure.StarMegaStructureType[starIndex] == 3)
                     {
@@ -96,7 +103,7 @@ namespace MoreMegaStructure
                 for (int i = 0; i < arrays.Count; i++)
                 {
                     int starIndex = arrays[i].starIndex;
-                    if (starIndex >= 0 && starIndex < 1000 && MoreMegaStructure.StarMegaStructureType[starIndex] == 3)
+                    if (starIndex >= 0 && starIndex < MoreMegaStructure.MegaArrayLength && MoreMegaStructure.StarMegaStructureType[starIndex] == 3)
                     {
                         if (GameMain.data.dysonSpheres[starIndex] != null)
                         {
@@ -170,7 +177,7 @@ namespace MoreMegaStructure
         {
             //------------------------------------------------------------------------------
             float oriShipWarpSpeed = shipWarpSpeed;
-            if(CustomCreateBirthStarCompat.enabled || GalacticScaleCompat.enabled)
+            if(fixSailSpeed)
             {
                 shipSailSpeed = fixedSailSpeedInOtherMods > shipSailSpeed ? fixedSailSpeedInOtherMods : shipSailSpeed;
             }

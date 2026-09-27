@@ -320,7 +320,7 @@ namespace MoreMegaStructure
             if (MoreMegaStructure.curDysonSphere!=null)
             {
                 int starIndex = MoreMegaStructure.curDysonSphere.starData.index;
-                if (starIndex > 1000)
+                if (starIndex >= MoreMegaStructure.MegaArrayLength)
                 {
                     StarCannonStateUIObj.SetActive(false);
                     return;
