@@ -18,6 +18,8 @@ namespace MoreMegaStructure
         private static Text applyAllButtonText;
         private static Text applyAllButtonText0;
 
+        public const int RayReceiverProtoId = 2208;
+
         public static GameObject oriMode1ButtonObj;
         public static GameObject oriMode2ButtonObj;
         public static GameObject productSetParentObj;
@@ -458,21 +460,24 @@ namespace MoreMegaStructure
                 {
                     if (factory.entityPool[i].id == i && factory.entityPool[i].powerGenId > 0)
                     {
-                        int powerGenId = factory.entityPool[i].powerGenId;
-                        int oriProductId = powerSystem.genPool[powerGenId].productId;
-                        int oriProductCount = (int)powerSystem.genPool[powerGenId].productCount;
-                        if (oriProductId != targetProductId)
+                        if (factory.entityPool[i].protoId == RayReceiverProtoId)
                         {
-                            if (oriProductId != 0 && oriProductCount > 0)
+                            int powerGenId = factory.entityPool[i].powerGenId;
+                            int oriProductId = powerSystem.genPool[powerGenId].productId;
+                            int oriProductCount = (int)powerSystem.genPool[powerGenId].productCount;
+                            if (oriProductId != targetProductId)
                             {
-                                int upCount = GameMain.mainPlayer.TryAddItemToPackage(oriProductId, oriProductCount, 0, true, 0, false);
-                                UIItemup.Up(oriProductId, upCount);
+                                if (oriProductId != 0 && oriProductCount > 0)
+                                {
+                                    int upCount = GameMain.mainPlayer.TryAddItemToPackage(oriProductId, oriProductCount, 0, true, 0, false);
+                                    UIItemup.Up(oriProductId, upCount);
+                                }
+                                window.powerSystem.genPool[powerGenId].productId = targetProductId;
+                                window.powerSystem.genPool[powerGenId].productCount = 0f;
+                                window.powerSystem.genPool[powerGenId].productHeat = productHeat;
                             }
-                            window.powerSystem.genPool[powerGenId].productId = targetProductId;
-                            window.powerSystem.genPool[powerGenId].productCount = 0f;
-                            window.powerSystem.genPool[powerGenId].productHeat = productHeat;
+                            count++;
                         }
-                        count++;
                     }
                 }
                 UIRealtimeTip.Popup(string.Format("成功应用数量提示".Translate(), count));
