@@ -103,6 +103,7 @@
     <Compile Include="StarAssembly.cs" />
     <Compile Include="StarAssemblyBlueprintData.cs" />
     <Compile Include="StarCannon.cs" />
+    <Compile Include="StarCannonLaserRenderer.cs" />
     <Compile Include="UIDialogPatch.cs" />
     <Compile Include="UIMechaWindowPatcher.cs" />
     <Compile Include="UIPerformancePanelPatcher.cs" />

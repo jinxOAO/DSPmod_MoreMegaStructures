@@ -852,101 +852,24 @@ namespace MoreMegaStructure
                                 spaceSector.skillSystem.DamageObject((int)(damagePerTick * ratio), damageSlice, ref target, ref caster);
                             }
                         }
-                        // 为了让星图模式也显示恒星到敌人的攻击的激光，当玩家查看星图时，设置激光
-                        if (UIGame.viewMode == EViewMode.Starmap && UIRoot.instance.uiGame.starmap.viewStarSystem == GameMain.galaxy.StarById(currentTargetStarIndex + 1)) 
-                        {
-                            DysonSwarm swarm = GameMain.data.dysonSpheres[currentTargetStarIndex]?.swarm;
-                            if(swarm != null)
-                            {
-                                int bulletIndex = swarm.AddBullet(new SailBullet
-                                {
-                                    maxt = 0.3f,
-                                    lBegin = Vector3.zero,
-                                    uEndVel = ((Vector3)enemyUPos - centerStarUPos)*3,
-                                    uBegin = centerStarUPos,
-                                    uEnd = enemyUPos,
-                                }, 0);
-                                swarm.bulletPool[bulletIndex].state = 0;
-                            }
-                        }
+                        // 恒星 -> 单个敌人 的攻击激光：交给独立渲染器，三种视图都能看到，且不经过 DysonSwarm（隐藏戴森云也可见）
+                        StarCannonLaserRenderer.AddBeam(1000 + i, centerStarUPos, enemyUPos,
+                            StarCannonLaserRenderer.DefaultColor,
+                            StarCannonLaserRenderer.baseBulletCount,
+                            StarCannonLaserRenderer.defaultMuzzleRadius * 0.5f,
+                            StarCannonLaserRenderer.defaultImpactRadius * 0.5f);
                     }
 
-                    // 为了让星图模式也显示恒星到恒星的激光激光，用深空来敌老套路创建太阳帆发射轨迹
-                    StarData starData = __instance.starData;
-                    int nearPoint = 400000;
-                    if (__instance.starData.type == EStarType.GiantStar)
-                        nearPoint = 1000000;
-                    if (currentTargetStarIndex < GameMain.data.dysonSpheres.Length)
-                    {
-                        DysonSwarm targetSwarm = GameMain.data.dysonSpheres[currentTargetStarIndex]?.swarm;
-                        DysonSwarm casterSwarm = __instance.swarm;
-                        int lessBulletRatio = 1;
-                        if (casterSwarm != null)
-                        {
-                            //VectorLF3 direction = targetUPos - starData.uPosition;
-                            for (int i = 0; i < laserBulletNum / lessBulletRatio || i == 0; i++)
-                            {
-                                int bulletIndex = casterSwarm.AddBullet(new SailBullet
-                                {
-                                    maxt = 0.3f,
-                                    lBegin = __instance.starData.uPosition,
-                                    uEndVel = targetUPos,
-                                    uBegin = __instance.starData.uPosition + Utils.RandPosDelta() * laserBulletPosDelta,
-                                    uEnd = ((i == 0) ? (targetUPos + Utils.RandPosDelta() * laserBulletEndPosDelta) : ((targetUPos - __instance.starData.uPosition).normalized * nearPoint * (1+ Utils.RandF() * 3)) + __instance.starData.uPosition),
-                                }, 0);
-                                casterSwarm.bulletPool[bulletIndex].state = 0;
-                                if (i >= 1)
-                                {
-                                    //noExplodeBullets.AddOrUpdate(bulletIndex, 1, (x, y) => 1);
-                                }
-                            }
-                        }
-
-                        //不在同星系，本星系内光会很细，增加一段短光
-                        int dec = 5;
-                        if (renderLevel >= 3) dec = 2;
-                        if (casterSwarm != null)
-                        {
-                            for (int i = 0; i < laserBulletNum / dec || i == 0; i++)
-                            {
-                                int bulletIndex = __instance.swarm.AddBullet(new SailBullet
-                                {
-                                    maxt = 0.3f,
-                                    lBegin = __instance.starData.uPosition,
-                                    uEndVel = targetUPos,
-                                    uBegin = __instance.starData.uPosition + Utils.RandPosDelta() * laserBulletEndPosDelta / dec,
-                                    uEnd = (targetUPos - __instance.starData.uPosition).normalized * nearPoint + __instance.starData.uPosition + Utils.RandPosDelta() * laserBulletEndPosDelta / dec
-                                }, 0);
-                                __instance.swarm.bulletPool[bulletIndex].state = 0;
-
-                                //noExplodeBullets.AddOrUpdate(bulletIndex, 1, (x, y) => 1);
-                            }
-                        }
-
-                        //如果不在同星系，接收星系需要同样生成光束（由于发射星系的光束不会在观察目标星系时渲染），此部分是必须的
-                        //但是减小了光线粗细和粒子数量
-                        if (targetSwarm != null && targetSwarm.starData.index != __instance.starData.index)
-                        {
-                            //无需改变生成点和终点
-                            for (int i = 0; i < laserBulletNum / dec || i == 0; i++)
-                            {
-                                int bulletIndex = targetSwarm.AddBullet(new SailBullet
-                                {
-                                    maxt = 0.3f,
-                                    lBegin = __instance.starData.uPosition,
-                                    uEndVel = targetUPos,
-                                    uBegin = __instance.starData.uPosition + Utils.RandPosDelta() * (laserBulletPosDelta / dec),
-                                    uEnd = targetUPos + Utils.RandPosDelta() * (laserBulletEndPosDelta / dec * 2)
-                                }, 0);
-                                targetSwarm.bulletPool[bulletIndex].state = 0;
-                                if (i >= 1)
-                                {
-                                    //noExplodeBullets.AddOrUpdate(bulletIndex, 1, (x, y) => 1);
-                                }
-                            }
-                        }
-
-                    }
+                    // 恒星 -> 恒星 主光束：交给独立渲染器（自带三视图坐标换算 + 自持 DrawProceduralNow，
+                    // 不再往任何 DysonSwarm 灌太阳帆，因此隐藏戴森云渲染、或正在查看别的星系时都能显示，且大幅省性能）
+                    StarCannonLaserRenderer.EnsureHost();
+                    int beamLevel = Mathf.Max(1, renderLevel);
+                    StarCannonLaserRenderer.AddBeam(1, __instance.starData.uPosition, targetUPos,
+                        StarCannonLaserRenderer.DefaultColor,
+                        StarCannonLaserRenderer.baseBulletCount * beamLevel,
+                        StarCannonLaserRenderer.defaultMuzzleRadius * beamLevel,
+                        StarCannonLaserRenderer.defaultImpactRadius * beamLevel,
+                        0.35f, 1f, 3 + beamLevel);
                 }
             }
 
@@ -1056,6 +979,10 @@ namespace MoreMegaStructure
 
             int activeFrameNum = 0;
             int maxBarNum = 12;
+            // 聚能阶段亮度：预热时 laserIntensity 从 0 涨到 maxSideLaserIntensity，归一化后驱动光束逐渐变亮
+            float focusIntensity = maxSideLaserIntensity > 0
+                ? Mathf.Clamp01((float)laserIntensity / (float)maxSideLaserIntensity)
+                : 1f;
             DysonSphereLayer layer = __instance.layersIdBased[1];
             if (layer == null) return;
             eff3EndPos = layer.starData.uPosition + (VectorLF3)Maths.QRotate(layer.currentRotation, normDirection * focusDistance * 0.95 * reverseDirection);
@@ -1065,24 +992,12 @@ namespace MoreMegaStructure
                     break;
                 if (layer.nodePool[i] == null)
                     continue;
-                for (int j = 0; j < laserIntensity; j++)
-                {
-                    int bulletIndex = __instance.swarm.AddBullet(new SailBullet
-                    {
-                        maxt = sideLaserBulletLifeTime,
-                        lBegin = __instance.starData.uPosition,
-                        uEndVel = targetUPos,
-                        uBegin = layer.NodeUPos(layer.nodePool[i]),
-                        uEnd = eff3EndPos
-                    }, 0);
-                    __instance.swarm.bulletPool[bulletIndex].state = 0;
-                    if (j >= 0)
-                    {
-                        //noExplodeBullets.AddOrUpdate(bulletIndex, 1, (x, y) => 1);
-                    }
-                }
+                // 集束侧激光：从壳层 node 汇聚到炮口前方，交给独立渲染器（不再向 swarm 灌子弹）
+                StarCannonLaserRenderer.AddBeam(2000 + i, layer.NodeUPos(layer.nodePool[i]), eff3EndPos,
+                    StarCannonLaserRenderer.DefaultColor,
+                    2 + laserIntensity,
+                    24f, 12f, 0.2f, focusIntensity);
                 activeFrameNum += 1;
-                //AddNewLaser(layer.NodeUPos(layer.nodePool[i]), eff3EndPos, 0, laserIntensity);
             }
             for (; activeFrameNum < maxBarNum; activeFrameNum++)
             {
