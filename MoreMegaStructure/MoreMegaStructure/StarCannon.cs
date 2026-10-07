@@ -239,6 +239,7 @@ namespace MoreMegaStructure
                         currentTargetStarIndex = 0;
                         return;
                     }
+                    ForceRealizeHivesInStar(currentTargetStarIndex); // 远程开火前强制实例化目标星系全部巢穴，必须在寻敌之前
                     SkillTarget currentTarget = SearchNextTarget();
                     priorTargetHiveOriAstroId = currentTarget.astroId;
                     currentTargetIds = new List<int>();
@@ -258,6 +259,7 @@ namespace MoreMegaStructure
                         return;
                     }
                     priorTargetHiveOriAstroId = starmap.focusHive.hive.hiveAstroId;
+                    ForceRealizeHivesInStar(currentTargetStarIndex); // 远程开火前强制实例化目标星系全部巢穴，必须在寻敌之前
                     SkillTarget currentTarget = SearchNextTarget();
                     currentTargetIds = new List<int>();
                     if (CheckAndSearchAllTargets())
@@ -277,6 +279,7 @@ namespace MoreMegaStructure
                         currentTargetStarIndex = 0;
                         return;
                     }
+                    ForceRealizeHivesInStar(currentTargetStarIndex); // 远程开火前强制实例化目标星系全部巢穴，必须在寻敌之前
                     SkillTarget currentTarget = SearchNextTarget();
                     priorTargetHiveOriAstroId = currentTarget.astroId;
                     currentTargetIds = new List<int>();
@@ -296,6 +299,7 @@ namespace MoreMegaStructure
                         return;
                     }
                     priorTargetHiveOriAstroId = starmap.mouseHoverHive.hive.hiveAstroId;
+                    ForceRealizeHivesInStar(currentTargetStarIndex); // 远程开火前强制实例化目标星系全部巢穴，必须在寻敌之前
                     currentTargetIds = new List<int>();
                     if (CheckAndSearchAllTargets())
                         canFire = true;
@@ -418,14 +422,37 @@ namespace MoreMegaStructure
             if (ptr0.id <= 0) // 目标已不存在
                 return false;
 
-            if(ptr0.dfRelayId > 0)
+            if (ptr0.dfRelayId > 0)
             {
                 return CheckRelay(ref ptr0);
             }
-
+        
             return true;
         }
 
+
+        /// <summary>
+        /// 强制实例化目标星系中所有尚未realized的黑雾巢穴，效果等同于玩家亲自进入过该星系（原版进入星系范围时就是全星系巢穴一起realize）。
+        /// Realize()是同步的，调用当下就会通过InstantiateEnemies把巢穴建筑实体灌入enemyPool，因此必须在SearchNextTarget/CheckAndSearchAllTargets之前调用。
+        /// 遍历整条nextSibling链而不是只realize被选中的巢穴，是为了维持原版"同星系全链同态"的隐含不变量，
+        /// 避免UIStarmap.SetHivePreviewInStar的while(!realized)循环在混合链上提前终止，导致同星系其他巢穴的星图预览失灵。
+        /// isEmpty的巢穴必须跳过：Realize()对空巢会把空槽位推进realized分支的AI逻辑，没有必要。
+        /// </summary>
+        /// <param name="starIndex">目标星系索引</param>
+        public static void ForceRealizeHivesInStar(int starIndex)
+        {
+            if (spaceSector == null || spaceSector.dfHives == null)
+                return;
+            if (starIndex < 0 || starIndex >= GameMain.galaxy.starCount)
+                return;
+            EnemyDFHiveSystem hive = spaceSector.dfHives[starIndex];
+            while (hive != null)
+            {
+                if (!hive.realized && !hive.isEmpty)
+                    hive.Realize();
+                hive = hive.nextSibling;
+            }
+        }
 
         /// <summary>
         /// 为避免击杀一个未实例化的行星上的中继站，导致行星Init一个Factory同时，错误地保持了planet.modData为null，从而使得存档时报错，因此阻止恒星炮锁定或攻击所在行星的factory为null的中继站
