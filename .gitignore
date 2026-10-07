@@ -62,6 +62,13 @@ bld/
 # JetBrains Rider
 *.sln.iml
 
+# Game source reference (decompiled DSP Assembly-CSharp, local only)
+_ref/
+_ref
+
+# Local decompilation tools & output (not part of the mod)
+.qtools/
+
 MoreMegaStructure/.idea/
 MoreMegaStructure/.vs/
 MoreMegaStructure/MoreMegaStructure/[Oo]bj/
