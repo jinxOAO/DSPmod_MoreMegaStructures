@@ -22,7 +22,7 @@ Shader "MMS/StarCannonLaser"
         _NoiseTile ("Noise Tile (x:沿长 y:时间流速)", Vector) = (3, 0.6, 0, 0)
         _PulseParams ("流动脉冲 x:空间频率(越小越拉长) y:速度 z:锐度(越小越圆滑) w:对比", Vector) = (2, 1.5, 1, 0.6)
         _FlowRand ("流动间隔随机度(0=均匀,越大越随机)", Float) = 0.7
-        _MMSVersion ("Version(勿改, 仅供日志校验; 5=外辉saturate修复)", Float) = 5
+        _MMSVersion ("Version(勿改, 仅供日志校验; 9=主光束细分+去末端渐隐)", Float) = 9
     }
 
     CGINCLUDE
@@ -90,8 +90,10 @@ Shader "MMS/StarCannonLaser"
         float3 camPos = _WorldSpaceCameraPos;
         float3 p      = lerp(s.beginPos, s.endPos, along);
 
-        // 垂直于“光束方向 且 朝向相机”的方向；当光束几乎正对/背对相机时 cross 会接近 0，需回退
-        float3 cr   = cross(dir, camPos - p);
+        // sideV 用整段中点算一次、两端共用：否则 sideV 沿单条超长 quad 旋转/翻折(bowtie 自交四边形)，
+        // 会让亮芯从光晕中心随距离越偏越远、并在远端发淡——表现为“一条线+单侧片状光晕”。
+        float3 mid  = (s.beginPos + s.endPos) * 0.5;
+        float3 cr   = cross(dir, camPos - mid);
         float  crl  = length(cr);
         float3 sideV;
         if (crl > 1e-3)
@@ -135,25 +137,22 @@ Shader "MMS/StarCannonLaser"
     fixed4 FragCore(v2f i)
     {
         float t = _Time.y;
-        float nz = (tex2D(_NoiseTex, float2(i.uv.x * _NoiseTile.x - t * _NoiseTile.y, i.uv.y)).r - 0.5) * _NoiseAmp;
-        // 更低频率与速度：粗细/抖动变化更慢
-        float jag = sin(i.along * 28.0 + t * 12.0) * 0.07 + sin(i.along * 60.0 - t * 18.0) * 0.03;
+        float ga = lerp(i.cap.x, i.cap.y, i.along);   // 全局沿长(0..1)：细分后各段共用同一坐标，流动不逐段重复
+        // 噪声只沿光束长度变化、横向取固定 y：否则两侧不同 -> 不对称
+        float nz = (tex2D(_NoiseTex, float2(ga * _NoiseTile.x - t * _NoiseTile.y, 0.5)).r - 0.5) * _NoiseAmp;
+        float jag = sin(ga * 28.0 + t * 12.0) * 0.07 + sin(ga * 60.0 - t * 18.0) * 0.03;
         float edge = saturate(abs(i.sideUV - jag - nz));
         float glow = pow(1.0 - edge, 1.6);
         float filament = pow(1.0 - edge, 8.0);
-        float4 lt = tex2D(_LaserTex, float2(i.uv.x * _LaserTile.x - t * _LaserTile.y, i.uv.y));
-        // 降低贴图滞动带来的“一颗颗球”：把 _LaserTex 只当很淡的丝光叠加，主体亮度靠 glow+filament
-        float profile = glow * (0.8 + 0.4 * lt.a) + filament * 1.0;
+        // 主体亮度只靠 glow+filament；流动感交给下方低频 pulse（不再用 _LaserTex，避免一颗颗小球）
+        float profile = glow + filament;
 
-        // 沿整条光束的低频流动脉冲：低对比+圆滑 => 不再是离散的球，而是整条在向前流动
-        float phase = i.along * _PulseParams.x - t * _PulseParams.y;
-        phase += (tex2D(_NoiseTex, float2(i.along * 0.7 - t * 0.15, 0.33)).r - 0.5) * _FlowRand; // 间隔随机化
+        float phase = ga * _PulseParams.x - t * _PulseParams.y;
+        phase += (tex2D(_NoiseTex, float2(ga * 0.7 - t * 0.15, 0.33)).r - 0.5) * _FlowRand;
         float pulse = pow(0.5 + 0.5 * sin(phase * 6.2831853), _PulseParams.z);
-        // 压低脉冲对比(原 1-w+2w*pulse)，避免亮度随时间形成离散的移动亮球；保留轻微流动
         float amt = profile * (1.0 - _PulseParams.w * 0.5 + _PulseParams.w * pulse);
 
-        amt *= lerp(1.0, saturate(i.along * 24.0), i.cap.x) * lerp(1.0, saturate((1.0 - i.along) * 24.0), i.cap.y);
-        return i.col * amt;
+        return i.col * amt;   // 末端不再按百分比渐隐(起点可藏在恒星里)
     }
 
     fixed4 FragGlow(v2f i)
@@ -167,14 +166,14 @@ Shader "MMS/StarCannonLaser"
         }
         else if (i.kind < 1.5)   // 外辉：纯平滑光晕，无锐利芯丝(消除星图并排双线)
         {
-            float edge = saturate(abs(i.sideUV));   // 必须 saturate：否则外辉外缘 edge 略超过1 -> (1-edge)<0 -> pow(负,2.2)=NaN -> 加法下显为黑边且随镜头闪烁
+            float ga = lerp(i.cap.x, i.cap.y, i.along);   // 全局沿长：细分后流动不逐段重复
+            float edge = saturate(abs(i.sideUV));   // 必须 saturate：否则 pow(负,2.2)=NaN -> 黑边
             float glow = pow(1.0 - edge, 2.2);
-            float phase = i.along * _PulseParams.x - t * _PulseParams.y;
-            phase += (tex2D(_NoiseTex, float2(i.along * 0.7 - t * 0.15, 0.33)).r - 0.5) * _FlowRand;
+            float phase = ga * _PulseParams.x - t * _PulseParams.y;
+            phase += (tex2D(_NoiseTex, float2(ga * 0.7 - t * 0.15, 0.33)).r - 0.5) * _FlowRand;
             float pulse = pow(0.5 + 0.5 * sin(phase * 6.2831853), _PulseParams.z);
             float amt = glow * (1.0 - _PulseParams.w * 0.6 + _PulseParams.w * 1.2 * pulse);
-            amt *= lerp(1.0, saturate(i.along * 24.0), i.cap.x) * lerp(1.0, saturate((1.0 - i.along) * 24.0), i.cap.y);
-            result = i.col * amt;
+            result = i.col * amt;   // 末端不再按百分比渐隐
         }
         else   // 螺旋丝(kind==2)：细丝 + 电弧条纹
         {

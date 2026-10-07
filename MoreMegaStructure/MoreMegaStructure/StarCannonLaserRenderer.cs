@@ -48,6 +48,15 @@ namespace MoreMegaStructure
         public static float defaultMinPixelsCore = 6f;    // 核心光束的屏幕最小半宽(像素)——“远了也粗也可见”的关键，调大即整体变粗
         public static float haloWidthScale = 2.8f;        // 外辉半宽 = 核心半宽 * 此系数
         public static float haloIntensity = 0.28f;        // 外辉亮度 = 亮度 * 此系数
+        // 子光束/集束侧光(非主光束)的防糊团控制：大量子光束重叠会糊成白球，这里变细+去辉+距离衰减
+        public static float subWidthScale = 0.5f;         // 子/侧光束相对其粗细档的额外变细(1=不额外变细)
+        public static float subIntensityScale = 0.35f;    // 子/侧光束亮度整体缩放(<1 让主光束压过成团的子光束)
+        public static bool  subNoHalo = true;             // 子/侧光束不画外辉(消除大量重叠糊成白球)
+        public static float focusMuzzleMax = 100f;        // muzzleRadius<=此值视为“预热/集束充能光束”：保留渐亮与光晕，不做糊团压制
+        public static float distAttenStrength = 0.85f;    // 子/侧光束距离衰减强度(0=不衰减,1=最强)
+        public static float distAttenFloor = 0.1f;       // 衰减到底时保留的亮度/粗细(>0 保证仍隐约可见)
+        public static float distAttenRef = 0f;            // >0=用固定参考距离(视图单位); 0=自动用相机远裁剪面归一
+        public static int ribbonSubdiv = 48;              // 主光束(跨星系超长)细分段数：每段独立算 sideV，修复长 quad 把亮芯挤到一侧
         // 螺旋能量丝(仅主视图、主光束起点附近)
         public static float strandLenFactor = 3.0f;       // 丝长 = muzzleRadius * 此系数(下限 1200m)
         public static float strandRadiusFactor = 0.9f;    // 起始环绕半径 = muzzleRadius * 此系数
@@ -58,9 +67,9 @@ namespace MoreMegaStructure
         public static float flareSizeFactor = 2.2f;       // Flare 半径 = muzzleRadius * 此系数(世界)
         public static float flareIntensity = 0.9f;        // Flare 亮度 = intensity * 此系数
         // 诊断/功能开关(位掩码)：bit0=核心 bit1=外辉 bit2=螺旋丝 bit3=炮口Flare。
-        // 当前默认 1 = 只画核心（立即干净、无需重打包）。外辉/丝/Flare 暂关：它们因 pow(负)->NaN 会出黑边/白球，
-        // 已在 shader v5 用 saturate 修复外辉；下次重打包后可把此值改回 3(核心+外辉) 安全地拿回光晕。
-        public static int debugKinds = 1;
+        // 当前默认 3 = 核心+外辉（拿回光晕）。前提：bundle 里必须是 v5 及以后(外辉已 saturate 修复)，否则会重现 pow(负)->NaN 黑边。
+        // 丝/Flare 仍关(bit2/bit3=0)；若未重打包 v5 先回到 1 只画核心。只改此值需重编 DLL。
+        public static int debugKinds = 3;
         // bundle / 材质名匹配（打进 mmstabicon 后按此名查找）
         public static string bundleHint = "mmstabicon";
         public static string matHint = "laser";
@@ -345,41 +354,40 @@ namespace MoreMegaStructure
                     ve = ClampMag(ve, farR);
                 }
 
-                float inten = p.intensity;
-                if (inten <= 0f) continue;
                 // 世界半宽只在主视图给(近处更粗)；星图/编辑器下坐标被 *0.00025 缩放，世界宽会给 0，纯用屏幕像素宽避免变成巨大宽面
                 bool universe = DysonSphere.renderPlace == ERenderPlace.Universe;
-                float hw = universe ? Mathf.Max(1f, p.muzzleRadius) : 0f;
+
+                // 按 muzzleRadius 归一的粗细档 + 角色分类
+                float widthScale = p.muzzleRadius / defaultMuzzleRadius;
+                bool isMain = widthScale >= 0.999f;                         // 主光束(星→星)
+                bool isFocus = !isMain && p.muzzleRadius <= focusMuzzleMax; // 预热/集束充能光束(近炮口、数量少、需要看到渐亮)
+                bool isBlob = !isMain && !isFocus;                          // 目标侧子光束(数量多、会糊团、需压制)
+
+                // 距离衰减：只压目标侧成团子光束；主光束与预热光束不衰减(预热光束要保留由暗到亮的过程)
+                float atten = 1f;
+                if (isBlob)
+                {
+                    float D = (vb + ve).magnitude * 0.5f;
+                    float refD = distAttenRef > 0f ? distAttenRef : Mathf.Max(1f, cur.farClipPlane);
+                    float rel = Mathf.Clamp01(D / refD);
+                    atten = Mathf.Lerp(1f, Mathf.Max(1f - rel, distAttenFloor), distAttenStrength);
+                }
+
+                float inten = p.intensity * atten * (isBlob ? subIntensityScale : 1f);
+                if (inten <= 0f) continue;
+                float hw = universe ? Mathf.Max(1f, p.muzzleRadius) * atten : 0f;
+                float pxScale = Mathf.Max(widthScale, 0.3f) * (isBlob ? subWidthScale : 1f);
+                float coreMinPx = Mathf.Max(defaultMinPixelsCore * pxScale * atten, 1.2f);
                 Vector4 c = p.color;
 
-                // 核心光柱（实心、等宽；屏幕像素下限保证远处也粗也可见）
+                // 主光束跨星系超长：细分成多段 ribbon，每段用各自中点算 sideV，避免单条超长 quad 把亮芯挤到一侧
+                int n = isMain ? Mathf.Max(1, ribbonSubdiv) : 1;
+                // 核心光柱（子/侧光束更细更暗，远处再衰减，避免大量重叠糊成白球）
                 if ((debugKinds & 1) != 0)
-                segs.Add(new LaserSeg
-                {
-                    beginPos = vb,
-                    intensity = inten,
-                    endPos = ve,
-                    halfWidth = hw,
-                    color = c,
-                    minPx = defaultMinPixelsCore,
-                    capStart = 1f,
-                    capEnd = 1f,
-                    kind = 0f,
-                });
-                // 外辉（更宽更暗，制造发光感）——仅主视图；星图/编辑器下坐标被缩放，外辉像素宽会爆炸成白球，所以只在 universe 画
-                if (universe && (debugKinds & 2) != 0)
-                segs.Add(new LaserSeg
-                {
-                    beginPos = vb,
-                    intensity = inten * haloIntensity,
-                    endPos = ve,
-                    halfWidth = hw * haloWidthScale,
-                    color = c,
-                    minPx = defaultMinPixelsCore * haloWidthScale,
-                    capStart = 1f,
-                    capEnd = 1f,
-                    kind = 1f,
-                });
+                    AddRibbon(vb, ve, inten, hw, c, coreMinPx, 0f, n);
+                // 外辉——仅主视图；主光束与预热光束都给外辉(预热要看到聚能发光)，目标侧子光束默认不给(subNoHalo)以消除重叠白球
+                if (universe && (debugKinds & 2) != 0 && (isMain || isFocus || !subNoHalo))
+                    AddRibbon(vb, ve, inten * haloIntensity, hw * haloWidthScale, c, coreMinPx * haloWidthScale, 1f, n);
 
                 // 起点环绕的螺旋能量丝 + 炮口 Flare（仅主视图、主光束）
                 if (universe && p.strandCount > 0)
@@ -400,6 +408,29 @@ namespace MoreMegaStructure
                         kind = 3f,
                     });
                 }
+            }
+        }
+
+        // 把一条 vb->ve 的光束细分成 n 段 ribbon quad；capStart/capEnd 复用为“全局沿长”(0..1)，供 shader 连续流动
+        private static void AddRibbon(Vector3 vb, Vector3 ve, float inten, float hw, Vector4 c, float minPx, float kind, int n)
+        {
+            if (n < 1) n = 1;
+            for (int i = 0; i < n; i++)
+            {
+                float t0 = (float)i / n;
+                float t1 = (float)(i + 1) / n;
+                segs.Add(new LaserSeg
+                {
+                    beginPos = Vector3.Lerp(vb, ve, t0),
+                    endPos = Vector3.Lerp(vb, ve, t1),
+                    intensity = inten,
+                    halfWidth = hw,
+                    color = c,
+                    minPx = minPx,
+                    capStart = t0,
+                    capEnd = t1,
+                    kind = kind,
+                });
             }
         }
 

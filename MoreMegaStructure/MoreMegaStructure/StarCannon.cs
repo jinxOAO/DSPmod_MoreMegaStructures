@@ -42,6 +42,7 @@ namespace MoreMegaStructure
         public static int laserBulletEndPosDelta = 75; // 主激光命中处随机偏移（激光命中处半径）
         //public static int laserAttackPosDelta = 1000; // 次级攻击激光发射处随机偏移
         public static int maxSideLaserIntensity = 5; //12束集束激光子弹数
+        public static int focusBeamMaxBar = 100;      // 预热/集束汇聚激光最多发射的根数(受第1层已建 node 数限制; 可试 100)
         public static float sideLaserBulletLifeTime = 0.1f;
         public static VectorLF3 normDirection = new VectorLF3(0, 1, 0);
         public static int reverseDirection = 1; //只能是1或者-1，1是北极为炮口，-1则是南极。相当于设计恒星炮时所有层级南北极互换
@@ -978,10 +979,11 @@ namespace MoreMegaStructure
 
 
             int activeFrameNum = 0;
-            int maxBarNum = 12;
+            int maxBarNum = focusBeamMaxBar;
             // 聚能阶段亮度：预热时 laserIntensity 从 0 涨到 maxSideLaserIntensity，归一化后驱动光束逐渐变亮
+            // 从 0.15 起步(而非 0)：保证预热一开始就有“较暗但可见”的汇聚激光，随后每秒变亮直到开火
             float focusIntensity = maxSideLaserIntensity > 0
-                ? Mathf.Clamp01((float)laserIntensity / (float)maxSideLaserIntensity)
+                ? Mathf.Clamp01(0.15f + 0.85f * (float)laserIntensity / (float)maxSideLaserIntensity)
                 : 1f;
             DysonSphereLayer layer = __instance.layersIdBased[1];
             if (layer == null) return;
