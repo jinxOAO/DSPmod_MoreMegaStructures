@@ -475,7 +475,7 @@ namespace MoreMegaStructure
 
 
 
-        public static bool CheckAndSearchAllTargets()
+        public static bool CheckAndSearchAllTargets(long gameTick = -1)
         {
             MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
             MMSCPU.BeginSample(ECpuWorkEntryExtended.EnemySearch);
@@ -517,9 +517,92 @@ namespace MoreMegaStructure
                     break;
                 }
             }
+            // 方案1: 由 GameTick 驱动且已处于预热/开火阶段时, 目标打不满/打光就尝试激活未激活敌舰(幂等, 无未激活舰则 no-op)
+            if (gameTick >= 0 && (int)state >= 2)
+            {
+                TryActivateDormantShips(gameTick);
+            }
             MMSCPU.EndSample(ECpuWorkEntryExtended.EnemySearch);
             MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
             return currentTargetIds.Count > 0;
+        }
+
+        /// <summary>
+        /// 方案1(激活未激活敌舰): 由 GameTick 驱动且已处于预热/开火阶段时, 若本星系"打不满/打光"合法目标,
+        /// 用官方 EnemyDFHiveSystem.ActivateUnit 把巢穴"待命编队"里 units[port]==1 的悬停舰(星图中白色, 此时不在 enemyPool)实例化为真实敌舰, 并直接加入 currentTargetIds,
+        /// 复用现有校验/伤害/渲染管线。全程只读 forms 槽位并调用官方激活接口, 不触碰 pbuilders/数组结构 => 存档安全; ActivateUnit 内部以 units[port]==1 为前置 => 不会重复激活同一槽。
+        /// 触发: 目标数==0(即将停火, 无需tick门槛) 或 (目标数<上限 且 gameTick%30==19)。单次上限 n = maxAimCount*2, 且不超过剩余未激活舰数。
+        /// 控制流(与需求一致): 先判情景B(有优先巢穴时优先激活"优先巢穴"的舰), 一旦成功激活(>=1)即置标志跳过情景A;
+        /// B 未成功(条件不满足或优先巢穴无未激活舰)则继续走情景A(激活全星系的舰)。情景A 不以"没有优先巢穴"为前提。
+        /// 决策"直接加入列表"而非"等下帧重寻": 现有 SearchNextTarget 仅在降级到 -2 时才搜索舰船, 有优先巢穴时新激活的舰不会被自动锁定,
+        /// 故必须主动加入; 加入后下一帧仍会被 CheckTarget 校验并按 maxAimCount 裁剪, 安全。
+        /// </summary>
+        public static void TryActivateDormantShips(long gameTick)
+        {
+            int legalCount = currentTargetIds.Count;                 // 校验+补寻之后的合法目标数(含正在攻击的)
+            bool noTargets = legalCount == 0;                        // 完全没目标, 即将停止开火
+            bool lowTargets = legalCount < maxAimCount;              // 目标未满, 有激光空转/即将转火
+            bool tickGate = gameTick % 30 == 19;                     // 低频批量激活时机
+            bool trigger = noTargets || (lowTargets && tickGate);     // 情景A/B 共用的触发条件
+            if (!trigger)
+                return;
+            if (maxAimCount <= 0 || spaceSector == null || spaceSector.dfHives == null)
+                return;
+            if (currentTargetStarIndex < 0 || currentTargetStarIndex >= GameMain.galaxy.starCount)
+                return;
+
+            int n = maxAimCount * 2;                                 // 本次尝试激活数量上限
+
+            // 情景B: 有优先巢穴时, 先尝试只激活"优先巢穴"的未激活舰; 成功激活>=1 即置标志返回, 跳过情景A
+            if (priorTargetHiveOriAstroId >= 0)
+            {
+                EnemyDFHiveSystem priorityHive = spaceSector.GetHiveByAstroId(priorTargetHiveOriAstroId);
+                if (priorityHive != null && ActivateHiveShips(priorityHive, n, gameTick) > 0)
+                    return;                                          // 标志: 情景B成功激活 => 跳过情景A
+            }
+
+            // 情景A(或情景B未成功时): 激活目标星系各巢穴的未激活舰, 直到达到 n 或全部激活; 情景A不限制有没有优先巢穴
+            EnemyDFHiveSystem hive = spaceSector.dfHives[currentTargetStarIndex];
+            int activated = 0;
+            while (hive != null && activated < n)
+            {
+                activated += ActivateHiveShips(hive, n - activated, gameTick);
+                hive = hive.nextSibling;
+            }
+        }
+
+        /// <summary>
+        /// 激活指定巢穴至多 quota 个"待命(未激活)敌舰": 遍历巢穴三个编队 hive.forms[formId](formId 0/1/2 对应 protoId 8113/8112/8111),
+        /// 找 units[port]==1 的悬停槽(星图中白色、此刻尚未进入 enemyPool), 调官方 EnemyDFHiveSystem.ActivateUnit(formId, port, gameTick)
+        /// 将其实例化为真实 localized 敌舰, 再把对应的 enemyId 去重加入 currentTargetIds。
+        /// 只读 forms 槽位并调用官方激活接口, 不碰 pbuilders/数组结构 => 存档安全; ActivateUnit 以 units[port]==1 为前置, 已激活/空槽返回0 => 幂等。
+        /// 返回实际激活数量。
+        /// </summary>
+        public static int ActivateHiveShips(EnemyDFHiveSystem hive, int quota, long gameTick)
+        {
+            if (hive == null || hive.forms == null || hive.units == null || hive.units.buffer == null || quota <= 0 || spaceSector == null || currentTargetIds == null)
+                return 0;
+            int done = 0;
+            for (int formId = 0; formId < hive.forms.Length && done < quota; formId++)
+            {
+                EnemyFormation form = hive.forms[formId];
+                if (form == null || form.units == null)
+                    continue;
+                for (int port = 1; port < form.units.Length && done < quota; port++)
+                {
+                    if (form.units[port] != 1)                     // 只激活"待命"槽: 0=空位, 2=激活中, 3=出击中; 1=待命
+                        continue;
+                    int unitId = hive.ActivateUnit(formId, port, gameTick);   // 官方实例化: 生成真实 localized 敌舰
+                    if (unitId > 0 && unitId < hive.units.buffer.Length)
+                    {
+                        int enemyId = hive.units.buffer[unitId].enemyId;   // EnemyUnitComponent 是结构体, 直接取 enemyId(与官方 DeactivateUnit 一致)
+                        if (enemyId > 0 && !currentTargetIds.Contains(enemyId))
+                            currentTargetIds.Add(enemyId);
+                        done++;
+                    }
+                }
+            }
+            return done;
         }
 
       
@@ -721,7 +804,7 @@ namespace MoreMegaStructure
             {
                 if(state == EStarCannonState.Align || state == EStarCannonState.Heat)
                 {
-                    if (!CheckAndSearchAllTargets())
+                    if (!CheckAndSearchAllTargets(gameTick))
                     {
                         UIRealtimeTip.Popup("目标无法定位警告".Translate());
                         StopFiring();
@@ -729,7 +812,7 @@ namespace MoreMegaStructure
                 }
                 else if(state == EStarCannonState.Fire || state == EStarCannonState.Aim || state == EStarCannonState.Switch)
                 {
-                    if (!CheckAndSearchAllTargets())
+                    if (!CheckAndSearchAllTargets(gameTick))
                         StopFiring();                    
                 }
 
