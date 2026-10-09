@@ -22,7 +22,11 @@ Shader "MMS/StarCannonLaser"
         _NoiseTile ("Noise Tile (x:沿长 y:时间流速)", Vector) = (3, 0.6, 0, 0)
         _PulseParams ("流动脉冲 x:空间频率(越小越拉长) y:速度 z:锐度(越小越圆滑) w:对比", Vector) = (2, 1.5, 1, 0.6)
         _FlowRand ("流动间隔随机度(0=均匀,越大越随机)", Float) = 0.7
-        _MMSVersion ("Version(勿改, 仅供日志校验; 9=主光束细分+去末端渐隐)", Float) = 9
+        _HaloEndFade ("外辉首尾渐变长度(占全长比例)", Float) = 0.06
+        _ClipFar ("外辉远端深度渐隐-相机远裁剪半径(视图单位)", Float) = 1000000000
+        _HaloFadeFrac ("外辉远端深度渐隐起点(占裁剪半径比例)", Float) = 0.4
+        _ZTestMode ("深度测试(0=Disable 2=Less 3=Equal 4=LessEqual 5=Greater 7=GreaterEqual 8=Always)", Int) = 8
+        _MMSVersion ("Version(勿改, 仅供日志校验; 14=暴露_ZTestMode供遮挡诊断)", Float) = 14
     }
 
     CGINCLUDE
@@ -45,6 +49,10 @@ Shader "MMS/StarCannonLaser"
     float  _NoiseAmp;
     float4 _PulseParams;
     float  _FlowRand;
+    float  _HaloEndFade;   // 外辉首尾渐变长度(占全长比例)，由 C# SetFloat 覆盖
+    float  _ClipFar;       // 相机远裁剪半径(视图单位)；外辉按到相机距离接近它时淡出
+    float  _HaloFadeFrac;  // 从该比例的裁剪半径处开始深度渐隐
+    int    _ZTestMode;     // 深度测试模式(渲染状态用, 见 Properties)：遮挡诊断期间由 C# SetInt 覆盖
     float  _MMSVersion;   // 版本指纹，不参与渲染，仅供 C# 日志校验 bundle 里是不是最新 shader
 
     struct appdata { uint id : SV_VertexID; };
@@ -105,13 +113,33 @@ Shader "MMS/StarCannonLaser"
         }
 
         float D      = distance(camPos, p);
-        float halfW  = max(s.halfWidth, s.minPx * D / max(_ProjFactor, 1e-3));
+        // 像素下限(minPx*D/proj)让光束在屏幕上保持恒定 ~minPx 宽——这对"核心"和"星图(世界宽=0)"是必要的(远处可见)。
+        // 但现实视角的外辉本身有世界宽度, 套用像素下限会在远处把光晕强行撑成一根 ~minPx 的厚条, 一直粗到灭点再被 quad 末端截断
+        // = 你看到的"整齐切口"。所以: 现实视角的外辉(kind==1 且有世界宽度)只用世界宽度, 随透视自然收敛到灭点, 不再被切断。
+        float floorW = s.minPx * D / max(_ProjFactor, 1e-3);
+        float halfW  = (s.kind > 0.5 && s.kind < 1.5 && s.halfWidth > 1e-3)
+                     ? s.halfWidth
+                     : max(s.halfWidth, floorW);
+        // 外辉(kind==1)在整条光束真正的首尾两端把"宽度"也收敛到尖端：宽光晕(尤其现实视角世界宽度)抵达星球处的
+        // 整齐切口本质是矩形平直末端, 仅靠亮度淡不够 -> 这里让几何宽度也收成点。用全局沿长 ga 判定, 细分主光束只有首尾段受影响。
+        if (s.kind > 0.5 && s.kind < 1.5)
+        {
+            float gae = lerp(s.capStart, s.capEnd, along);
+            float ef  = max(_HaloEndFade, 1e-3);
+            halfW *= smoothstep(0.0, ef, gae) * smoothstep(0.0, ef, 1.0 - gae);
+        }
         float3 pos   = p + sideV * (side * halfW);
         o.vertex  = mul(UNITY_MATRIX_VP, float4(pos, 1.0));
         o.sideUV  = side;
         o.along   = along;
         o.uv      = float2(along, side * 0.5 + 0.5);
-        o.col     = (fixed4)(s.color * s.intensity);
+        // 外辉按"相机深度"在远端渐隐：现实视角(透视)光束一直延伸到远裁剪面，末端被 GPU/钳制造成硬切——
+        // 这里让亮度随到相机距离接近裁剪半径而淡出，末端在抵达裁剪面之前就化入远处。
+        // 星图/编辑器是均匀缩放视图, 视图坐标很小 -> D 远小于 _ClipFar -> dfade≈1, 此淡出不生效, 仍由上面的长度渐变负责首尾。
+        float dfade = 1.0;
+        if (s.kind > 0.5 && s.kind < 1.5)
+            dfade = saturate((_ClipFar - D) / max(_ClipFar * (1.0 - _HaloFadeFrac), 1e-2));
+        o.col     = (fixed4)(s.color * s.intensity * dfade);
         o.cap     = float2(s.capStart, s.capEnd);
         o.kind    = s.kind;
         return o;
@@ -173,7 +201,12 @@ Shader "MMS/StarCannonLaser"
             phase += (tex2D(_NoiseTex, float2(ga * 0.7 - t * 0.15, 0.33)).r - 0.5) * _FlowRand;
             float pulse = pow(0.5 + 0.5 * sin(phase * 6.2831853), _PulseParams.z);
             float amt = glow * (1.0 - _PulseParams.w * 0.6 + _PulseParams.w * 1.2 * pulse);
-            result = i.col * amt;   // 末端不再按百分比渐隐
+            // 仅对"外辉"在整条光束真正的首尾两端做渐变收敛(ga≈0 / ga≈1)，消除抵达目标恒星处的整齐切口。
+            // 用全局沿长 ga 判定：主光束细分后只有最首/最尾几段受影响，中段不渐隐；核心光束(FragCore)完全不受影响。
+            float ef = max(_HaloEndFade, 1e-3);
+            float endFade = smoothstep(0.0, ef, ga) * smoothstep(0.0, ef, 1.0 - ga);
+            amt *= endFade;
+            result = i.col * amt;   // 首尾平滑收敛，中段与核心维持无渐变
         }
         else   // 螺旋丝(kind==2)：细丝 + 电弧条纹
         {
@@ -203,7 +236,7 @@ Shader "MMS/StarCannonLaser"
             Blend One One
             ZWrite Off
             Cull Off
-            ZTest LEqual
+            ZTest [_ZTestMode]
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag

@@ -1005,6 +1005,9 @@ namespace MoreMegaStructure
             {
                 //AddNewLaser(layer.starData.uPosition, layer.starData.uPosition, 0, 0);
             }
+            // 预热阶段主光束还未出现，此处必须主动创建渲染宿主，否则汇聚光束只会写进字典而没有任何 OnRenderObject 来绘制，
+            // 表现为“汇聚光束和主光束同时才出现”。EnsureHost 幂等，beams 为空时不会创建。
+            StarCannonLaserRenderer.EnsureHost();
             //Compensate12LaserDamage();
         }
 
