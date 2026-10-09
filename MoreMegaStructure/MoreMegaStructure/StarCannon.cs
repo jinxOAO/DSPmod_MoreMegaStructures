@@ -747,7 +747,6 @@ namespace MoreMegaStructure
                 if (direction.z != 0)
                     vert = new VectorLF3(1, 1, (-direction.x - direction.y) / direction.z);
                 Quaternion final = Quaternion.LookRotation(vert, direction);
-
                 // 操作每一个壳层的旋转、瞄准等
                 for (int i = 0; i < __instance.layersIdBased.Length; i++)
                 {
@@ -761,7 +760,7 @@ namespace MoreMegaStructure
                             layer.orbitAngularSpeed = reAimAngularSpeed;
                             layer.InitOrbitRotation(layer.orbitRotation, final); //每个戴森壳层开始轨道旋转、对齐瞄准
                             float aimTimeNeed = Quaternion.Angle(layer.orbitRotation, final) / layer.orbitAngularSpeed * 60f;
-                            endAimTime = Mathf.Max(time + endAimTime, time + (int)aimTimeNeed); //保存瞄准完成所需的最大时间
+                            endAimTime = Mathf.Max(endAimTime, time + (int)aimTimeNeed); //保存瞄准完成所需的最大时间
                             layer.orbitAngularSpeed = originAngularSpeed;
                         }
 
@@ -820,6 +819,16 @@ namespace MoreMegaStructure
                     if (currentTargetStarIndex >= 0 && currentTargetStarIndex < GameMain.galaxy.starCount)
                         centerStarUPos = GameMain.galaxy.StarById(currentTargetStarIndex + 1).uPosition;
                     int count = Mathf.Min(maxAimCount, currentTargetIds.Count);
+                    // 记录恒星身份 index, 交给独立渲染器在现实视角按"当前星系(localStar)"直接比对来叠加同源 bullet(遮挡正确); 全程空判断防报错
+                    int fireStarIdx = (__instance.starData != null) ? __instance.starData.index : -1;
+                    int targetStarIdx = (currentTargetStarIndex >= 0 && currentTargetStarIndex < GameMain.galaxy.starCount
+                        && GameMain.galaxy.stars[currentTargetStarIndex] != null)
+                        ? GameMain.galaxy.stars[currentTargetStarIndex].index : -1;
+                    // 主光束近端渲染长度 L = 2×该端恒星"最大戴森壳半径"。源码最大壳半径 = dysonRadius*40000*2 (UIStatisticsDysonDetailPanel/DysonSphereStatPlan), 故 L = dysonRadius*160000。各星系各算各的, 交由渲染器在绘制前现场裁剪
+                    float fireShellLen = (__instance.starData != null) ? __instance.starData.dysonRadius * 160000f : 0f;
+                    float targetShellLen = (currentTargetStarIndex >= 0 && currentTargetStarIndex < GameMain.galaxy.starCount
+                        && GameMain.galaxy.stars[currentTargetStarIndex] != null)
+                        ? GameMain.galaxy.stars[currentTargetStarIndex].dysonRadius * 160000f : 0f;
                     float ratio = 1.0f;
                     if(damageReductionPerLy > 0)
                     {
@@ -858,7 +867,9 @@ namespace MoreMegaStructure
                             StarCannonLaserRenderer.DefaultColor,
                             StarCannonLaserRenderer.baseBulletCount,
                             StarCannonLaserRenderer.defaultMuzzleRadius * 0.5f,
-                            StarCannonLaserRenderer.defaultImpactRadius * 0.5f);
+                            StarCannonLaserRenderer.defaultImpactRadius * 0.5f,
+                            beginStarIdx: targetStarIdx,
+                            endStarIdx: targetStarIdx);
                     }
 
                     // 恒星 -> 恒星 主光束：交给独立渲染器（自带三视图坐标换算 + 自持 DrawProceduralNow，
@@ -870,7 +881,11 @@ namespace MoreMegaStructure
                         StarCannonLaserRenderer.baseBulletCount * beamLevel,
                         StarCannonLaserRenderer.defaultMuzzleRadius * beamLevel,
                         StarCannonLaserRenderer.defaultImpactRadius * beamLevel,
-                        0.35f, 1f, 3 + beamLevel);
+                        0.35f, 1f, 3 + beamLevel,
+                        beginStarIdx: fireStarIdx,
+                        endStarIdx: targetStarIdx,
+                        beginShellLen: fireShellLen,
+                        endShellLen: targetShellLen);
                 }
             }
 
@@ -995,10 +1010,13 @@ namespace MoreMegaStructure
                 if (layer.nodePool[i] == null)
                     continue;
                 // 集束侧激光：从壳层 node 汇聚到炮口前方，交给独立渲染器（不再向 swarm 灌子弹）
+                // beginStarIdx/endStarIdx = 发射恒星 index（汇聚束两段都在发射星壳层附近），供现实视角叠加层按当前星系身份门控
                 StarCannonLaserRenderer.AddBeam(2000 + i, layer.NodeUPos(layer.nodePool[i]), eff3EndPos,
                     StarCannonLaserRenderer.DefaultColor,
                     2 + laserIntensity,
-                    24f, 12f, 0.2f, focusIntensity);
+                    24f, 12f, 0.2f, focusIntensity,
+                    beginStarIdx: (__instance.starData != null ? __instance.starData.index : -1),
+                    endStarIdx: (__instance.starData != null ? __instance.starData.index : -1));
                 activeFrameNum += 1;
             }
             for (; activeFrameNum < maxBarNum; activeFrameNum++)

@@ -36,6 +36,10 @@ namespace MoreMegaStructure
             public float strandTurns;    // 螺旋在丝长内的缠绕圈数
             public float strandSpeed;    // 螺旋旋转/流动速度
             public float expireAt;       // 光束存活截止(Time.unscaledTime)
+            public int beginStarIdx;     // begin 端点所属恒星的 StarData.index(-1=未知)。用于现实视角叠加层按"当前星系"直接比对, 不用距离阈值
+            public int endStarIdx;       // end 端点所属恒星的 StarData.index(-1=未知)
+            public float beginShellLen;  // 主光束: begin 端恒星的"近端渲染长度"L(=2×最大戴森壳半径=dysonRadius*40000*4); 玩家在 begin 系时只渲染 begin 起算 L 的这段(<=0=不裁剪)
+            public float endShellLen;    // 主光束: end 端恒星的近端渲染长度 L2; 玩家在 end 系时只渲染 end 回算 L2 的这段
         }
 
         // 默认外观参数
@@ -57,6 +61,9 @@ namespace MoreMegaStructure
         public static float haloEndFade = 0.06f;          // 外辉首尾渐变长度(占全长比例): 消除抵达星球处的整齐切口; 核心不渐隐. 传给 shader _HaloEndFade
         public static float haloFadeFrac = 0.15f;          // 外辉"相机深度"远端渐隐起点(占本视图最远光束终点距离, 0..1): 从该比例处开始淡, 到光束终点淡到0; 越小淡得越早越长。核心不淡。注意 _ClipFar 已改为光束实际终点距离(非远裁剪面), 故此参数现在真正生效
         public static int ztestMode = 4;                 // 近景分组(壳内)深度测试: 4=LEqual(真实前后遮挡, 默认)。远景分组(壳外)固定用 8=Always 保证永不消失, 不受此值影响。
+        // 汇聚置顶(segsFront, ZTest Always): 盖过戴森壳(无玻璃遮挡), 但会连星球也盖住 => 用 CPU 射线-球 手动剔除"被载入星系某星球真正挡在前方"的那段光束。只跳过绘制不写深度 => 无黑边风险。
+        public static bool  focusRespectPlanets = true;  // true=置顶汇聚光束仍被星球遮挡(仅跳过被挡段); false=纯 Always 盖一切
+        public static float planetOccludeScale = 1.15f;  // 星球遮挡半径系数(略放大以含大气层边缘, 1.0=按 realRadius)
         public static float clampFarScale = 0.9f;         // 原始(永不消失)方案生效系数: 端点以相机为球心钳制半径 farR = farClipPlane * 此值。只缩短不丢弃 => 光束在所有视角可见(遮挡可能偏保守)。
         public static float farKeep = 0.98f;              // 尊重深度方案的裁剪系数: 把光束线段沿相机前向深度裁到 [nearClipPlane, farClipPlane*farKeep] 之间, 保留真实位置/真实深度参与遮挡, 丢弃视锥外部分。因 D<=far 宽度不再爆炸(无玻璃), 且不伪钉深度(消除"远端被钳到固定深度->连后壳也误挡")。越接近1保留越长。
         public static float distAttenStrength = 0.85f;    // 子/侧光束距离衰减强度(0=不衰减,1=最强)
@@ -76,6 +83,23 @@ namespace MoreMegaStructure
         // 当前默认 3 = 核心+外辉（拿回光晕）。前提：bundle 里必须是 v5 及以后(外辉已 saturate 修复)，否则会重现 pow(负)->NaN 黑边。
         // 丝/Flare 仍关(bit2/bit3=0)；若未重打包 v5 先回到 1 只画核心。只改此值需重编 DLL。
         public static int debugKinds = 3;
+        // 诊断日志总开关: 关闭后不再打印周期性/信息性诊断日志(遮挡诊断/叠加诊断/shader 信息); 需要排查时置 true。材质初始化失败等一次性错误日志不受影响仍会打印。
+        public static bool diagLog = false;
+        // 诊断开关: false=只显示现实视角叠加的原生 sailBullet 层(单独验证叠加); true=同时渲染我们自研的 ribbon shader 激光。现已恢复 ribbon 以看整体效果
+        public static bool debugShowRibbon = true;
+        // ===== 叠加层(sailBullet)外观调参 =====
+        // 教训: 每颗 SailBullet 是"跨自身 rBegin->rEnd 的精灵"。沿长度分段 => 每颗变短 => 短精灵按固定宽度显得比光束粗, 且相位恒定 => 冻在原地 = 一段一段静止的集束;
+        //       汇聚/攻击的"静止小子弹条"同理是恒定相位(不流动)的整跨短股。现方案: 不分段, 多条整跨平行股 + 相位随时间流动(head=now/flowLife+phase)。
+        public static float overlaySizeMain   = 4.0f;     // 主光束 _Size 倍数(实测材质 _Size 对宽度无效, 保留无害; 粗细靠半径倍数+股数)
+        // 现实视角"叠加的原生 sailBullet 主激光"开关: 用户反馈效果一般 => 暂时永久隐藏(false), 主激光改由 ribbon 单独呈现。攻击叠加不受影响。
+        public static bool  overlayShowMain   = false;
+        public static float overlaySizeFocus  = 2.5f;     // 汇聚 _Size 倍数
+        public static float overlaySizeSub    = 1.6f;     // 攻击 _Size 倍数
+        // 粗细 = 横截面圆盘铺开半径(muzzle/impact, 主光束再 ×overlayMainRadiusMul) × 股数密度
+        public static float overlayMainRadiusMul = 1.2f;  // 主光束整体粗细倍数(原 2.0 收到 ≈60% => 1.2; 粗细靠它, 密度/亮度靠股数)
+        public static int   overlayStrandsMain  = 60;     // 主光束整跨流动股数(粗细收缩后加股数, 强化密度与亮度)
+        public static int   overlayStrandsFocus = 5;      // 汇聚流动股数(整跨不冻头 => 不再静止短条; 汇聚半径本就小, 数条自动并成束)
+        public static int   overlayStrandsSub   = 5;      // 攻击流动股数
         // bundle / 材质名匹配（打进 mmstabicon 后按此名查找）
         public static string bundleHint = "mmstabicon";
         public static string matHint = "laser";
@@ -105,15 +129,26 @@ namespace MoreMegaStructure
 
         // 回退路径(子弹)
         private static readonly List<SailBullet> pool = new List<SailBullet>(1024);
+        // 现实视角叠加层: 按角色分桶的 beam key, 各桶用不同亮度分别绘制
+        private static readonly List<int> mainKeys = new List<int>();
+        private static readonly List<int> focusKeys = new List<int>();
+        private static readonly List<int> blobKeys = new List<int>();
         private static ComputeBuffer buffer;
         private static int capacity;
         private static Material mat;
         private static bool matFailed;
+        private static bool matHasSize;         // 原生 bullet 材质是否有 _Size 属性(用于增粗)
+        private static float matSizeDefault = 1f;
 
         // 主路径(shader)
         private static readonly List<LaserSeg> segs = new List<LaserSeg>(256);
         // 远景分组(壳外/跨星系): 与近景分开渲染。近景用真实深度 + ZTest LEqual => 与戴森壳正确前后遮挡; 远景钳制到相机远球 + ZTest Always => 永不消失(壳外本无遮挡物)。
         private static readonly List<LaserSeg> segsFar = new List<LaserSeg>(256);
+        // 置顶分组(仅汇聚 ribbon): ZTest Always => 覆盖所有戴森壳, 维持"汇聚无玻璃遮挡"特性; 主光束 ribbon 仍走 segs(LEqual)被壳遮挡。
+        private static readonly List<LaserSeg> segsFront = new List<LaserSeg>(256);
+        // 星球遮挡体(视图空间, xyz=球心 w=半径): 每帧由 BuildRibbonSegs 用载入星系行星重建, 供置顶汇聚段做 CPU 遮挡剔除
+        private static readonly List<Vector4> occluders = new List<Vector4>(32);
+        private static Vector3 occCam;
         // 逐帧路由参数(BuildRibbonSegs 设置, RouteQuad 使用)
         private static Vector3 s_camPos;   // 相机(相对帧)位置
         private static float s_nearR;      // 近景球半径 = 载入星系最大戴森壳半径(dysonRadius*40000) * 冗余; 壳心 = 相对帧原点 = 本星系恒星(发射或接收端被载入者)
@@ -130,7 +165,8 @@ namespace MoreMegaStructure
         /// <summary>登记 / 刷新一条光束。用相同的 key 每帧重复调用可维持其存活；停止调用后到期自动消失。</summary>
         public static void AddBeam(int key, VectorLF3 begin, VectorLF3 end, Color? color = null,
             int bulletCount = 0, float muzzleRadius = -1f, float impactRadius = -1f, float holdSeconds = 0.35f,
-            float intensity = 1f, int strandCount = 0, float strandTurns = 3.5f, float strandSpeed = 1.4f)
+            float intensity = 1f, int strandCount = 0, float strandTurns = 3.5f, float strandSpeed = 1.4f,
+            int beginStarIdx = -1, int endStarIdx = -1, float beginShellLen = 0f, float endShellLen = 0f)
         {
             if (begin == end) return; // 退化光束
             if (muzzleRadius < 0f) muzzleRadius = defaultMuzzleRadius;
@@ -144,6 +180,10 @@ namespace MoreMegaStructure
                 p.begin = begin;
                 p.end = end;
                 p.intensity = intensity;
+                p.beginStarIdx = beginStarIdx;
+                p.endStarIdx = endStarIdx;
+                p.beginShellLen = beginShellLen;
+                p.endShellLen = endShellLen;
                 p.expireAt = Time.unscaledTime + holdSeconds;
                 beams[key] = p;
             }
@@ -165,6 +205,10 @@ namespace MoreMegaStructure
                     strandTurns = strandTurns,
                     strandSpeed = strandSpeed,
                     expireAt = Time.unscaledTime + holdSeconds,
+                    beginStarIdx = beginStarIdx,
+                    endStarIdx = endStarIdx,
+                    beginShellLen = beginShellLen,
+                    endShellLen = endShellLen,
                 };
                 beams[key] = p;
             }
@@ -248,15 +292,27 @@ namespace MoreMegaStructure
             // 主路径：自定义 shader ribbon
             if (TryInitLaserMaterial(cur))
             {
-                BuildRibbonSegs(gd, viewStar, cur);
-                UploadAndDrawRibbon();
+                if (debugShowRibbon)
+                {
+                    BuildRibbonSegs(gd, viewStar, cur);
+                    UploadAndDrawRibbon();
+                }
+
+                // 额外(仅现实视角): 用游戏【原生太阳帆 bullet 通道】再叠一层同源激光。该通道深度/遮挡关系正确,
+                // 覆盖到本应被戴森壳部分遮挡的那段上, 提供正确的"前后遮挡"观感; ribbon 继续负责"永不消失"。
+                // 门控: 主光束(1)=发射系或目标系; 汇聚(>=2000)=发射系; 攻击子激光(1000..1999)=目标系; 其它星系不叠。
+                // 并按角色分桶绘制, 让叠加层的亮度也匹配 ribbon(主=满亮度, 汇聚=随预热渐亮, 攻击=压暗), 粗细本已随 muzzleRadius 对齐。
+                if (DysonSphere.renderPlace == ERenderPlace.Universe)
+                {
+                    DrawOverlayBullets(gd, viewStar);
+                }
                 return;
             }
-
-            // 回退路径：sailBullet 粒子（bundle 未重打时保证激光不消失）
+            
+            // 回退路径：sailBullet 粒子（bundle 未重打包时保证激光不消失）
             if (!TryInitMaterial()) return;
             BuildBulletPool(gd, viewStar);
-            UploadAndDraw();
+            UploadAndDraw(DefaultColor);
         }
 
         // ---------- 主路径 (shader) ----------
@@ -322,6 +378,7 @@ namespace MoreMegaStructure
                 bool laserTex = m != null && m.HasProperty("_LaserTex");
                 bool hasVer = m != null && m.HasProperty("_MMSVersion");
                 float ver = hasVer ? m.GetFloat("_MMSVersion") : -1f;
+                if (diagLog)
                 Utils.Log("[StarCannonLaser] " + how + ": " + n + " | shader='" + sname + "' passCount=" + pc +
                           " _MMSVersion=" + ver + (hasVer ? "" : "(无此属性=旧shader!)") +
                           " _PulseParams=" + pulse + " _FlowRand=" + flow + " _FlareTex=" + flare + " _LaserTex=" + laserTex +
@@ -347,6 +404,7 @@ namespace MoreMegaStructure
         {
             segs.Clear();
             segsFar.Clear();
+            segsFront.Clear();
             cur_MaxViewDist = 0f;   // 逐帧重算本视图最远可绘制端点(用作外辉深度渐隐参考)
             cur_MinViewDist = 1e30f; // 诊断: 最近端点眼距离
             cur_RawNearMin = 1e30f;   // 诊断: 钳制前真实最近端点
@@ -360,6 +418,27 @@ namespace MoreMegaStructure
             Quaternion relativeRot = gd.relativeRot;
             VectorLF3 viewTarget = UIStarmap.viewTargetStatic;
             VectorLF3 starPos = viewStar.uPosition;
+
+            // 置顶汇聚光束用 ZTest Always 会盖住星球, 这里重建"载入星系行星"的视图空间球体列表, 供被星球真挡在前方时跳过该段(不写深度=>无黑边)。非宇宙视图不剔除。
+            occluders.Clear();
+            occCam = cur.transform.position;
+            if (DysonSphere.renderPlace == ERenderPlace.Universe && focusRespectPlanets && viewStar != null)
+            {
+                PlanetData[] planets = viewStar.planets;
+                int planetCount = viewStar.planetCount;
+                if (planets != null)
+                {
+                    for (int i = 0; i < planetCount && i < planets.Length; i++)
+                    {
+                        PlanetData pd = planets[i];
+                        if (pd == null) continue;                     // 只处理玩家当前(载入)星系的行星
+                        double rr = pd.realRadius * (double)planetOccludeScale;
+                        if (rr <= 1e-3) continue;
+                        Vector3 c = (Vector3)Maths.QInvRotateLF(relativeRot, pd.uPosition - relativePos); // 与 vb/ve 同一视图坐标系
+                        occluders.Add(new Vector4(c.x, c.y, c.z, (float)rr));
+                    }
+                }
+            }
 
             // 分开渲染(用户方案): 以"载入星系最大戴森壳半径"为界。壳内(近景)用真实深度 + ZTest LEqual => 与壳正确前后遮挡;
             // 壳外(远景, 多为跨星系段)钳制到相机远球 + ZTest Always => 永不消失(壳外本无遮挡物)。
@@ -426,12 +505,15 @@ namespace MoreMegaStructure
 
                 // 主光束跨星系超长：细分成多段 ribbon，每段用各自中点算 sideV，避免单条超长 quad 把亮芯挤到一侧
                 int n = isMain ? Mathf.Max(1, ribbonSubdiv) : 1;
+                // 汇聚 ribbon 置顶(用户要求): 仅【现实视角(Universe)】把 isFocus 段进 segsFront(ZTest Always, 覆盖所有戴森壳, 无玻璃遮挡);
+                // 星图/戴森壳地图不改(仍进 segs 走常规 ztestMode), 保持原有表现。主/子光束任何视图都进 segs(被壳遮挡)。
+                List<LaserSeg> grp = (isFocus && universe) ? segsFront : segs;
                 // 核心光柱（子/侧光束更细更暗，远处再衰减，避免大量重叠糊成白球）
                 if ((debugKinds & 1) != 0)
-                    AddRibbon(vb, ve, inten, hw, c, coreMinPx, 0f, n);
+                    AddRibbon(vb, ve, inten, hw, c, coreMinPx, 0f, n, grp);
                 // 外辉——仅主视图；主光束与预热光束都给外辉(预热要看到聚能发光)，目标侧子光束默认不给(subNoHalo)以消除重叠白球
                 if (universe && (debugKinds & 2) != 0 && (isMain || isFocus || !subNoHalo))
-                    AddRibbon(vb, ve, inten * haloIntensity, hw * haloWidthScale, c, coreMinPx * haloWidthScale, 1f, n);
+                    AddRibbon(vb, ve, inten * haloIntensity, hw * haloWidthScale, c, coreMinPx * haloWidthScale, 1f, n, grp);
 
                 // 起点环绕的螺旋能量丝 + 炮口 Flare（仅主视图、主光束）
                 if (universe && p.strandCount > 0)
@@ -441,7 +523,7 @@ namespace MoreMegaStructure
                     if ((debugKinds & 8) != 0)
                     {
                         Vector3 fa = vb, fb = vb;
-                        RouteQuad(ref fa, ref fb).Add(new LaserSeg
+                        RouteQuad(ref fa, ref fb, segs).Add(new LaserSeg
                         {
                             beginPos = fa,
                             intensity = inten * flareIntensity,
@@ -460,7 +542,7 @@ namespace MoreMegaStructure
             // [遮挡诊断] 宇宙视角排查: 打印相机 near/far、钳制半径 farR、本帧最远光束端点距离。
             // 判据: 若 maxViewDist/farR 落在 far 附近(极大), 说明远端挤进低深度精度区 -> 后被的戴森壳在数值深度上"更近" -> 过遮挡(前后都挡)。
             // 星图坐标被 *0.00025 缩放故不受影响(与现象一致)。据此再决定: 动态近/远平面 vs 缩小 clampFarScale vs 对齐原版绘制相位。
-            if (DysonSphere.renderPlace == ERenderPlace.Universe)
+            if (diagLog && DysonSphere.renderPlace == ERenderPlace.Universe)
             {
                 occlDiagTick++;
                 if (occlDiagTick % 30 == 1)
@@ -482,7 +564,7 @@ namespace MoreMegaStructure
         }
 
         // 把一条 vb->ve 的光束细分成 n 段 ribbon quad；capStart/capEnd 复用为“全局沿长”(0..1)，供 shader 连续流动
-        private static void AddRibbon(Vector3 vb, Vector3 ve, float inten, float hw, Vector4 c, float minPx, float kind, int n)
+        private static void AddRibbon(Vector3 vb, Vector3 ve, float inten, float hw, Vector4 c, float minPx, float kind, int n, List<LaserSeg> group)
         {
             if (n < 1) n = 1;
             for (int i = 0; i < n; i++)
@@ -491,7 +573,10 @@ namespace MoreMegaStructure
                 float t1 = (float)(i + 1) / n;
                 Vector3 q0 = Vector3.Lerp(vb, ve, t0);
                 Vector3 q1 = Vector3.Lerp(vb, ve, t1);
-                RouteQuad(ref q0, ref q1).Add(new LaserSeg
+                // 置顶汇聚组: ZTest Always 会盖住星球, 故对该段中点做星球遮挡剔除(被挡则整段跳过, 只跳过绘制不写深度 => 无黑边)
+                if (group == segsFront && focusRespectPlanets && IsOccludedByPlanet((q0 + q1) * 0.5f))
+                    continue;
+                RouteQuad(ref q0, ref q1, group).Add(new LaserSeg
                 {
                     beginPos = q0,
                     endPos = q1,
@@ -506,13 +591,36 @@ namespace MoreMegaStructure
             }
         }
 
-        // 稳定基线方案(按用户要求回退): 暂不做近/远分组。每段仅以相机为球心钳制到 s_clampR, 统一进单分组 segs, 由 ztestMode(=LEqual) 一次绘制。
-        // (分组逻辑保留在代码里但不启用; segsFar 恒空 => 远景 Always 那一步自动跳过。)
-        private static List<LaserSeg> RouteQuad(ref Vector3 q0, ref Vector3 q1)
+        // 视图空间点 mid 是否被某颗星球挡在相机前方(相机->mid 射线命中星球球体, 且命中点比 mid 更近)。mid 与各 occluder 同处视图坐标系(相对渲染帧), 单位一致。
+        private static bool IsOccludedByPlanet(Vector3 mid)
+        {
+            if (occluders.Count == 0) return false;
+            for (int i = 0; i < occluders.Count; i++)
+            {
+                Vector4 o = occluders[i];
+                Vector3 to = new Vector3(o.x, o.y, o.z) - occCam;   // 相机->球心
+                Vector3 dir = mid - occCam;                          // 相机->光束点
+                float L = dir.magnitude;
+                if (L < 1e-3f) continue;
+                dir /= L;
+                float tca = Vector3.Dot(to, dir);
+                if (tca <= 0f) continue;                             // 球在相机背后
+                float r = o.w;
+                float d2 = to.sqrMagnitude - tca * tca;              // 射线到球心垂直距离^2
+                if (d2 > r * r) continue;                            // 射线错过球
+                float thc = Mathf.Sqrt(r * r - d2);
+                float t0 = tca - thc;                                // 首次命中距离
+                if (t0 > 0f && t0 < L) return true;                  // 球在光束点之前 => 遮挡
+            }
+            return false;
+        }
+
+        // 稳定基线方案(按用户要求回退): 暂不做近/远分组。每段仅以相机为球心钳制到 s_clampR, 统一进调用方指定分组(主光束=segs; 汇聚=segsFront 置顶), 由对应 ztestMode 绘制。
+        private static List<LaserSeg> RouteQuad(ref Vector3 q0, ref Vector3 q1, List<LaserSeg> group)
         {
             q0 = CamClamp(q0, s_camPos, s_clampR);
             q1 = CamClamp(q1, s_camPos, s_clampR);
-            return segs;
+            return group;
         }
 
         // 生成起点附近环绕主光束旋转/收敛的螺旋能量丝
@@ -552,7 +660,7 @@ namespace MoreMegaStructure
                     float si = inten * (0.35f + 0.65f * flow) * (1f - u0 * 0.6f);
                     if (si <= 0f) continue;
 
-                    RouteQuad(ref a, ref b).Add(new LaserSeg
+                    RouteQuad(ref a, ref b, segs).Add(new LaserSeg
                     {
                         beginPos = a,
                         intensity = si,
@@ -634,8 +742,9 @@ namespace MoreMegaStructure
             float clipFar = cur_MaxViewDist;
             if (clipFar <= 1f) clipFar = 1e9f;               // 没有有效光束端点 -> 关掉深度渐隐
 
-            DrawRibbonGroup(segs, ztestMode, projFactor, clipFar);   // 近景分组: LEqual(默认4)
+            DrawRibbonGroup(segs, ztestMode, projFactor, clipFar);   // 近景分组: LEqual(默认4), 含主光束(维持被戴森壳遮挡)
             DrawRibbonGroup(segsFar, 8, projFactor, clipFar);        // 远景分组: Always(8), 保证壳外/跨星系段不被任何深度挡掉
+            DrawRibbonGroup(segsFront, 8, projFactor, clipFar);      // 置顶分组: Always(8), 仅汇聚 ribbon => 覆盖所有戴森壳(无玻璃遮挡), 最后绘制确保在最前
         }
 
         // 上传并即时绘制一个分组。每组各自 SetBuffer+SetData+SetPass(0)+Draw(重设 buffer 绑定, 避免二次 Draw 读到脏 buffer)。
@@ -695,6 +804,10 @@ namespace MoreMegaStructure
                     return false;
                 mat = UnityEngine.Object.Instantiate(Configs.builtin.sailBulletMaterial);
                 mat.hideFlags = HideFlags.HideAndDontSave;
+                // 记录原生 bullet 材质的默认 _Size(宽度), 供叠加层按角色乘倍数增粗; 材质若无此属性则跳过
+                matHasSize = mat.HasProperty("_Size");
+                matSizeDefault = matHasSize ? mat.GetFloat("_Size") : 1f;
+                if (matHasSize && matSizeDefault <= 0f) matSizeDefault = 1f;
             }
             catch (Exception e)
             {
@@ -717,6 +830,124 @@ namespace MoreMegaStructure
                 BeamProfile p = kv.Value;
                 GenBeam(p, relativePos, relativeRot, viewTarget, starPos);
             }
+        }
+
+        // 现实视角额外叠加: 仅收录"与玩家当前星系相关"的光束, 用原生 bullet 通道重画(遮挡正确)。
+        // 身份门控(直接比对 viewStar.index, 不用距离): 主光束(1) 任一系; 汇聚(>=2000) 发射系; 攻击(1000..1999) 目标系。
+        // 按角色分桶各画一次, 让叠加层亮度对齐 ribbon: 主=满亮度(粗细已随 muzzleRadius 与 ribbon 核心同宽),
+        // 汇聚=随预热渐亮(p.intensity=focusIntensity 逐帧上升)* focusIntensityScale, 攻击= subIntensityScale 压暗防糊团。
+        private static void DrawOverlayBullets(GameData gd, StarData viewStar)
+        {
+            if (viewStar == null) return;                 // 现实视角 viewStar = gd.localStar; 为空则不叠加, 避免报错
+            if (!TryInitMaterial()) return;               // 原生 bullet 材质不可用则整体跳过叠加(ribbon 仍负责显示)
+            int localIdx = viewStar.index;                // 玩家当前星系身份(直接比对, 不再算距离)
+            VectorLF3 relativePos = gd.relativePos;
+            Quaternion relativeRot = gd.relativeRot;
+            VectorLF3 viewTarget = UIStarmap.viewTargetStatic;
+            VectorLF3 starPos = viewStar.uPosition;
+
+            mainKeys.Clear(); focusKeys.Clear(); blobKeys.Clear();
+            float focusBright = 0f;                       // 汇聚桶代表亮度: 取组内 p.intensity 最大(同帧各汇聚束 focusIntensity 相同)
+            foreach (var kv in beams)
+            {
+                BeamProfile p = kv.Value;
+                bool beginLocal = p.beginStarIdx >= 0 && p.beginStarIdx == localIdx;
+                bool endLocal = p.endStarIdx >= 0 && p.endStarIdx == localIdx;
+                if (kv.Key == 1)
+                {
+                    if (beginLocal || endLocal) mainKeys.Add(kv.Key);
+                }
+                else if (kv.Key >= 1000 && kv.Key < 2000)
+                {
+                    if (endLocal) blobKeys.Add(kv.Key);   // 攻击子激光: 仅目标系
+                }
+                else if (kv.Key >= 2000)
+                {
+                    if (beginLocal || endLocal)           // 汇聚: 发射系(begin=end=发射星)
+                    {
+                        focusKeys.Add(kv.Key);
+                        if (p.intensity > focusBright) focusBright = p.intensity;
+                    }
+                }
+            }
+
+            // 诊断(节流): 确认三种角色是否各自进入叠加桶, 尤其问题3"汇聚看不见"是门控没命中还是纯粗细/亮度问题
+            if (diagLog && Time.frameCount % 45 == 0)
+                Utils.Log("[MMS overlay] localIdx=" + localIdx + " beams=" + beams.Count +
+                          " main=" + mainKeys.Count + " focus=" + focusKeys.Count + " blob=" + blobKeys.Count +
+                          " focusBright=" + focusBright.ToString("F3") +
+                          " sizeProp=" + matHasSize + " sizeDefault=" + matSizeDefault);
+
+            // 主光束(反思修复): 只渲染"玩家所在那一端"的近端段 L=2×该端恒星最大戴森壳半径。
+            //   之前整根 begin->end 都渲染, 玩家站在发射星时目标端离相机几百万单位→精灵只有几像素→"接收端还是很细"。
+            //   现只画贴近相机的那一段(近=>粗且遮挡正确), 远端细线直接不渲染; 玩家在目标系则画目标端那一段。
+            //   overlayShowMain=false(用户反馈叠加主激光效果一般) => 暂时永久隐藏叠加层主激光, 主激光只由 ribbon 呈现。
+            if (overlayShowMain)
+            {
+                pool.Clear();
+                foreach (int k in mainKeys)
+                {
+                    BeamProfile p;
+                    if (beams.TryGetValue(k, out p)) BuildMainNearPool(p, localIdx, relativePos, relativeRot, viewTarget, starPos);
+                }
+                if (pool.Count > 0) UploadAndDraw(DefaultColor, overlaySizeMain);
+            }
+            // 汇聚叠加层: 用户要求"额外渲染的汇聚光线直接不要了" => 不再用 sailBullet 叠加汇聚(改由 ribbon 置顶通道负责, 见下)
+            // 攻击子激光: 整跨流动股(不分段/不冻头), 压暗避免大量重叠糊成白球
+            Color bc = DefaultColor; bc *= subIntensityScale;
+            DrawOverlayGroup(blobKeys, relativePos, relativeRot, viewTarget, starPos, bc, overlaySizeSub, overlayStrandsSub);
+        }
+
+        // 主光束近端裁剪: 依玩家在 begin 端还是 end 端, 生成从该端恒星算起长度 L(=begin/endShellLen) 的那一段(沿原锥度取半径), 交给 GenBeamOverlay 铺实心股
+        private static void BuildMainNearPool(in BeamProfile p, int localIdx, VectorLF3 relativePos, Quaternion relativeRot,
+            VectorLF3 viewTarget, VectorLF3 starPos)
+        {
+            VectorLF3 axis = p.end - p.begin;
+            double len = axis.magnitude;
+            if (len < 1e-3) return;
+            VectorLF3 dir = axis / len;
+            bool beginLocal = p.beginStarIdx >= 0 && p.beginStarIdx == localIdx;
+            bool endLocal = p.endStarIdx >= 0 && p.endStarIdx == localIdx;
+            BeamProfile q = p;
+            if (beginLocal)
+            {
+                double d = (p.beginShellLen > 0f) ? Math.Min((double)p.beginShellLen, len) : len;
+                double frac = d / len;
+                q.begin = p.begin;
+                q.end = p.begin + dir * d;
+                q.muzzleRadius = p.muzzleRadius;                                              // 恒星处=炮口半径(粗)
+                q.impactRadius = (float)(p.muzzleRadius + (p.impactRadius - p.muzzleRadius) * frac); // 裁剪末端沿原锥度过渡
+            }
+            else if (endLocal)
+            {
+                double d = (p.endShellLen > 0f) ? Math.Min((double)p.endShellLen, len) : len;
+                double frac0 = 1.0 - d / len;
+                q.end = p.end;
+                q.begin = p.end - dir * d;
+                q.muzzleRadius = (float)(p.muzzleRadius + (p.impactRadius - p.muzzleRadius) * frac0);
+                q.impactRadius = p.impactRadius;                                              // 目标恒星处=落点半径
+            }
+            else return;
+            // 主光束加粗一倍(用户要求): 把圆盘铺开半径整体放大 overlayMainRadiusMul 倍, 实心束随之变粗
+            q.muzzleRadius *= overlayMainRadiusMul;
+            q.impactRadius *= overlayMainRadiusMul;
+            GenBeamOverlay(q, relativePos, relativeRot, viewTarget, starPos, overlayStrandsMain);
+        }
+
+        // 收集指定角色的光束生成子弹(整跨流动股), 用给定颜色(含亮度)/_Size 倍数/股数一次性绘制该组
+        private static void DrawOverlayGroup(List<int> keys, VectorLF3 relativePos, Quaternion relativeRot,
+            VectorLF3 viewTarget, VectorLF3 starPos, Color color, float sizeMul, int strands)
+        {
+            if (keys.Count == 0) return;
+            pool.Clear();
+            foreach (int k in keys)
+            {
+                BeamProfile p;
+                if (beams.TryGetValue(k, out p))
+                    GenBeamOverlay(p, relativePos, relativeRot, viewTarget, starPos, strands);
+            }
+            if (pool.Count == 0) return;
+            UploadAndDraw(color, sizeMul);
         }
 
         // 由一条光束配方生成其固定的一批子弹
@@ -763,13 +994,20 @@ namespace MoreMegaStructure
         private static void AddOne(in BeamProfile p, VectorLF3 offB, VectorLF3 offE, float head,
             VectorLF3 relativePos, Quaternion relativeRot, VectorLF3 viewTarget, VectorLF3 starPos)
         {
+            AddSpan(p, p.begin, p.end, offB, offE, head, relativePos, relativeRot, viewTarget, starPos);
+        }
+
+        // 追加一颗"任意起终点"的子弹（用于把一条光束沿长度切成多段重叠绘制, 修复每段首尾彗尾淡出）
+        private static void AddSpan(in BeamProfile p, VectorLF3 ubBegin, VectorLF3 ubEnd, VectorLF3 offB, VectorLF3 offE, float head,
+            VectorLF3 relativePos, Quaternion relativeRot, VectorLF3 viewTarget, VectorLF3 starPos)
+        {
             SailBullet b = new SailBullet();
             b.id = pool.Count + 1;
             b.maxt = 0.3f;
             b.t = head * 0.3f;               // 与 maxt 配合，驱动 shader 的流动/明暗
             b.state = 0;                     // 0 => 永不生成真正的太阳帆（关键：不污染戴森云）
-            b.uBegin = p.begin + offB;
-            b.uEnd = p.end + offE;
+            b.uBegin = ubBegin + offB;
+            b.uEnd = ubEnd + offE;
             b.uEndVel = VectorLF3.zero;
             b.lBegin = (Vector3)p.begin;
 
@@ -791,7 +1029,40 @@ namespace MoreMegaStructure
             pool.Add(b);
         }
 
-        private static void UploadAndDraw()
+        // 叠加层专用生成器: 横截面圆盘铺 count 条"整跨 begin->end"的平行光股, 每条的明暗相位 head 随时间推进 => 连续流动的能量束。
+        // 关键(反思): 不再沿长度分段——分段会让每颗精灵变短 => 短精灵按固定宽度显得比光束更粗, 且 head 恒定 => 每段一颗彗星冻在同一位置=一段一段静止的集束。
+        // 厚度靠: (1)半径倍数(调用方对主光束已 ×overlayMainRadiusMul) 撑开圆盘铺开半径; (2)股数 count 的密度。_Size 实测无效, 不用它。
+        private static void GenBeamOverlay(in BeamProfile p, VectorLF3 relativePos, Quaternion relativeRot,
+            VectorLF3 viewTarget, VectorLF3 starPos, int count)
+        {
+            VectorLF3 axis = p.end - p.begin;
+            double len = axis.magnitude;
+            if (len < 1e-3) return;
+            VectorLF3 dir = axis / len;
+
+            VectorLF3 up = new VectorLF3(0, 0, 1);
+            if (Math.Abs(VectorLF3.Dot(dir, up)) > 0.98) up = new VectorLF3(0, 1, 0);
+            VectorLF3 perp1 = VectorLF3.Cross(dir, up).normalized;
+            VectorLF3 perp2 = VectorLF3.Cross(dir, perp1).normalized;
+
+            int NS = Mathf.Max(1, count);
+            float now = Time.unscaledTime;
+            const float golden = 2.39996323f;
+            for (int s = 0; s < NS; s++)
+            {
+                float rf, ang;
+                if (s == 0) { rf = 0f; ang = 0f; }                            // 中心股, 恒在轴上(最亮实芯)
+                else { rf = Mathf.Sqrt((s + 0.5f) / NS); ang = s * golden; }  // 均匀铺满圆盘(低差异, 横截面稳定不闪)
+                VectorLF3 radial = perp1 * Mathf.Cos(ang) + perp2 * Mathf.Sin(ang);
+                VectorLF3 offB = radial * (p.muzzleRadius * rf);
+                VectorLF3 offE = radial * (p.impactRadius * rf);
+                // head 随时间流动(每股相位用种子打散) => 能量沿光束流动, 不再是冻在原地的静止团
+                float head = (now / Mathf.Max(0.05f, p.flowLife) + Hash01(p.seed, s)) % 1f;
+                AddSpan(p, p.begin, p.end, offB, offE, head, relativePos, relativeRot, viewTarget, starPos);
+            }
+        }
+
+        private static void UploadAndDraw(Color color, float sizeMul = 1f)
         {
             int count = pool.Count;
             if (count == 0) return;
@@ -809,7 +1080,8 @@ namespace MoreMegaStructure
             pool.CopyTo(0, arr, 0, count);
             buffer.SetData(arr);
 
-            mat.SetColor("_Color0", DefaultColor);
+            mat.SetColor("_Color0", color);
+            if (matHasSize) mat.SetFloat("_Size", matSizeDefault * sizeMul);   // 问题1/3: 按角色增粗子弹精灵宽度(材质支持时)
             Shader.SetGlobalInt("_Global_DS_RenderPlace", (int)DysonSphere.renderPlace);
 
             mat.SetBuffer("_BulletBuffer", buffer);
