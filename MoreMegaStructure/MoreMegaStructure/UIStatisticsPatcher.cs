@@ -592,6 +592,18 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(ProductionStatistics), "RefreshItemsStorageCount")]
         public static void RefreshItemsStorageCountPostPatch(ref ProductionStatistics __instance, int astroFilter)
         {
+            RefreshAllIAStorage();
+        }
+
+        /// <summary>
+        /// 刷新所有星际组装厂借用槽的内部仓储(storageCount + detailedStorageCounts)。真实工厂的仓储分类由
+        /// ProductionExtraInfoCalculator 周期刷新，但 IA 借用槽不在其处理范围内，且面板正常浏览星系/全星区时
+        /// 并不会调用 RefreshItemsStorageCount(它主要服务于 GoalTools/成就)，所以星系/全星区的 IA 仓储需要由
+        /// RefreshProductionExtraInfo 这条与真实工厂同频的刷新路径主动补齐。
+        /// </summary>
+        public static void RefreshAllIAStorage()
+        {
+            if (GameMain.galaxy == null) return;
             int maxStar = Math.Min(GameMain.galaxy.starCount, MoreMegaStructure.StarMegaStructureType.Length);
             for (int starIndex = 0; starIndex < maxStar; starIndex++)
             {
@@ -617,11 +629,89 @@ namespace MoreMegaStructure
             FactoryProductionStat fps = pool[idx];
             if (fps == null) return;
             fps.ResetStorageCount();
+            fps.ResetDetailedStorageCount();
             foreach (KeyValuePair<int, int> kv in StarAssembly.productStorage[starIndex])
             {
                 if (kv.Value > 0)
+                {
                     fps.AddStorageCount(kv.Key, kv.Value);
+                    // 与原生 ProductionExtraInfoCalculator 配对写法一致：巨构内部仓储归入"其他设施"子分类
+                    // (EDetailedStorageCountType.Other)，供 UIStorageCountTip 悬停子标签页读取。
+                    fps.AddDetailedStorageCount(kv.Key, EDetailedStorageCountType.Other, kv.Value);
+                }
             }
+        }
+
+        /// <summary>
+        /// 仓储数量悬停子标签页(UIStorageCountTip.Refresh)只会累加真实工厂 [0,factoryCount) 或本星系行星工厂的
+        /// detailedStorageCounts，星际组装厂借用的尾部槽位不在这个遍历范围内，导致其内部仓储不会出现在任何子分类中。
+        /// 这里在原生 Refresh 之后，按当前 astroFilter 把对应范围的巨构尾部槽 detailedStorageCounts(仅"其他设施"Other 会非零)
+        /// 追加进 entryDatas，再复刻原生末尾的渲染段刷新各分类数值/显隐/总计，使 IA 内部仓储与真实工厂一样计入"其他设施"，
+        /// 覆盖 全星区(astroFilter==0)、所在星系(%100==0)、IA 虚行星页 三种视图；只看单个真实行星时不会混入 IA。
+        /// </summary>
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(UIStorageCountTip), "Refresh")]
+        public static void UIStorageCountTipRefreshPostPatch(ref UIStorageCountTip __instance)
+        {
+            if (!enabled) return;
+            if (__instance == null) return;
+            GameData data = GameMain.data;
+            if (data == null || data.statistics == null || data.statistics.production == null) return;
+            if (__instance.entryDatas == null || __instance.entries == null || __instance.entries.Length == 0) return;
+            FactoryProductionStat[] pool = data.statistics.production.factoryStatPool;
+            if (pool == null) return;
+
+            int astroFilter = __instance.astroFilter;
+            int itemId = __instance.itemId;
+            long added = 0L;
+            int maxStar = Math.Min(data.galaxy.starCount, MoreMegaStructure.StarMegaStructureType.Length);
+            for (int starIndex = 0; starIndex < maxStar; starIndex++)
+            {
+                if (MoreMegaStructure.StarMegaStructureType[starIndex] != 4) continue;
+                bool include;
+                if (astroFilter == 0) include = true; // 全星区
+                else if (astroFilter % 100 == 0) include = (starIndex == astroFilter / 100 - 1); // 所在星系
+                else include = IsStarAssemblyAstroFilter(astroFilter) && starIndex == astroFilter / 100 - 1; // IA 虚行星页
+                if (!include) continue;
+
+                int idx = StarIndex2FactoryIndex(starIndex);
+                if (idx < data.factories.Length || idx >= pool.Length) continue;
+                FactoryProductionStat fps = pool[idx];
+                if (fps == null || fps.productIndices == null || fps.productPool == null) continue;
+                if (itemId < 0 || itemId >= fps.productIndices.Length) continue;
+                int num = fps.productIndices[itemId];
+                if (num <= 0 || num >= fps.productPool.Length) continue;
+                long[] detailed = fps.productPool[num].detailedStorageCounts;
+                if (detailed == null) continue;
+                for (int j = 0; j < __instance.entryDatas.Length && j < detailed.Length; j++)
+                {
+                    if (detailed[j] != 0L)
+                    {
+                        __instance.entryDatas[j] += detailed[j];
+                        added += detailed[j];
+                    }
+                }
+            }
+            if (added == 0L) return; // 无巨构贡献则完全保持原生显示
+
+            // 复刻原生 Refresh 末尾渲染段：按更新后的 entryDatas 重新计算显隐/数值/总计
+            GameHistoryData history = data.history;
+            long total = 0L;
+            float y = __instance.entries[0].rectTrans.anchoredPosition.y;
+            for (int k = 0; k < __instance.entries.Length; k++)
+            {
+                if ((k == 4 && __instance.entryDatas[k] == 0L) || (k == 1 && history != null && !history.logisticsSystemUnlocked && __instance.entryDatas[k] == 0L))
+                {
+                    __instance.entries[k].gameObject.SetActive(false);
+                }
+                else
+                {
+                    __instance.entries[k].Refresh(__instance.entryDatas[k], ref y);
+                    total += __instance.entryDatas[k];
+                }
+            }
+            __instance.rectTrans.sizeDelta = new Vector2(276f, -y + 12f);
+            __instance.totalCountText.text = total.ToString("#,##0");
         }
 
         /// <summary>
@@ -641,6 +731,14 @@ namespace MoreMegaStructure
             if (__instance == null) return true;
             if (!__instance.isProductionTab || __instance.astroFilter < -1) return true;
             int astroFilter = __instance.astroFilter;
+            // 全星系(-1)/星系(%100==0)视图下，原生用 extraInfoCalculator 持续刷新真实工厂的仓储数量与分类，
+            // 但 IA 借用槽不在其处理范围内；而面板正常浏览这些视图时并不会调用 RefreshItemsStorageCount，
+            // 导致星系/全星区里来自星际组装厂的仓储数据不刷新(只有进入 IA 页面才更新)。这里顺带补齐所有 IA 的内部仓储。
+            if (astroFilter == -1 || astroFilter % 100 == 0)
+            {
+                try { RefreshAllIAStorage(); }
+                catch (Exception) { }
+            }
             // 仅当原方法会走 else 分支（非 -1、非 %100==0）且真实行星查不到时，才认定为巨构虚行星并跳过。
             int iaFactoryIndex;
             if (astroFilter != -1 && astroFilter % 100 != 0 && TryGetIAFactoryIndex(astroFilter, out iaFactoryIndex))
@@ -1232,7 +1330,12 @@ namespace MoreMegaStructure
                     bool flagFilterIsThisStarSystem = __instance.astroFilter % 100 == 0 && i == __instance.astroFilter / 100 - 1;
                     bool flagFilterIsThisStarAssembly = IsStarAssemblyAstroFilter(__instance.astroFilter) && i == __instance.astroFilter / 100 - 1;
                     bool flagStarIsStarAssembly = i < MoreMegaStructure.StarMegaStructureType.Length && MoreMegaStructure.StarMegaStructureType[i] == (int)EMegaType.InterstellarAssembly;
-                    if ( flagIsHoveringStarAssembly && flagStarIsStarAssembly && (flagFilterIsTotalGalaxyData || flagFilterIsThisStarSystem || flagFilterIsThisStarAssembly))
+                    // 全星区视图会枚举所有建了星际组装厂的恒星；仅当该组装厂对本次悬停物品确有贡献
+                    // (子条目数据已按 astroId 填充)时才列出，否则会出现名称"???"、数量 x0、占比 0% 的空条目。
+                    // 与下方原生对行星子条目的过滤条件(loadedSubTipDatas[astroId].astroId == astroId)保持一致。
+                    int iaSubAstroId = DefineStarAssemblyAstroId(i);
+                    bool flagIAHasSubData = __instance.loadedSubTipDatas != null && iaSubAstroId >= 0 && iaSubAstroId < __instance.loadedSubTipDatas.Length && __instance.loadedSubTipDatas[iaSubAstroId].astroId == iaSubAstroId;
+                    if ( flagIsHoveringStarAssembly && flagStarIsStarAssembly && flagIAHasSubData && (flagFilterIsTotalGalaxyData || flagFilterIsThisStarSystem || flagFilterIsThisStarAssembly))
                     {
                         idx++;
                         if (idx >= minIndexInCurPage && idx <= maxIndexInCurPage)

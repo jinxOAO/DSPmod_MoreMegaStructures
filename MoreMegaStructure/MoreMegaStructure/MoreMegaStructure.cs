@@ -32,9 +32,9 @@ namespace MoreMegaStructure
         /// <summary>
         /// mod版本会进行存档
         /// </summary>
-        public static int modVersion = 193;
+        public static int modVersion = 200;
 
-        public static int savedModVersion = 190;
+        public static int savedModVersion = 193;
 
         public static bool CompatibilityPatchUnlocked = false;
 
