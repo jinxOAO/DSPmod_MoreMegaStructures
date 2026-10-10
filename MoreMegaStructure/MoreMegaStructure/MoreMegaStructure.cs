@@ -26,7 +26,7 @@ namespace MoreMegaStructure
     [BepInDependency(DSPModSavePlugin.MODGUID)]
     [CommonAPISubmoduleDependency(nameof(ProtoRegistry), nameof(TabSystem), nameof(LocalizationModule))]
     [BepInDependency("starfi5h.plugin.ModFixerOne")]
-    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.9.4")]
+    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "2.0.0")]
     public class MoreMegaStructure : BaseUnityPlugin, IModCanSave
     {
         /// <summary>
@@ -317,7 +317,7 @@ namespace MoreMegaStructure
             if (UIBuildMenuPatcher.enabled) Harmony.CreateAndPatchAll(typeof(UIBuildMenuPatcher));
             Harmony.CreateAndPatchAll(typeof(UIStarCannon));
             Harmony.CreateAndPatchAll(typeof(UIMechaWindowPatcher));
-            //Harmony.CreateAndPatchAll(typeof(PerformanceMonitorPatcher));
+            Harmony.CreateAndPatchAll(typeof(PerformanceMonitorPatcher));
             Harmony.CreateAndPatchAll(typeof(UIPerformancePanelPatcher));
             Harmony.CreateAndPatchAll(typeof(UIDialogPatch));
             Harmony.CreateAndPatchAll(typeof(UIStationWindowPatcher));
@@ -943,7 +943,6 @@ namespace MoreMegaStructure
             int[] consumeRegister)
         {
             MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.MainLogic);
             MMSCPU.BeginSample(ECpuWorkEntryExtended.Receiver);
             int idx = factory.planet.star.id - 1;
             bool postWork = false;
@@ -1193,7 +1192,6 @@ namespace MoreMegaStructure
             }
 
             MMSCPU.EndSample(ECpuWorkEntryExtended.Receiver);
-            MMSCPU.EndSample(ECpuWorkEntryExtended.MainLogic);
             MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
             return false;
         }
@@ -1206,7 +1204,6 @@ namespace MoreMegaStructure
         public static void GameTickPostPatch(long frameCounter)
         {
             MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.MainLogic);
             isRemoteReceiveingGear = false;
             if ((GameMain.mainPlayer.package.GetItemCount(9500) < maxAutoReceiveGear || maxAutoReceiveGear >= 3000)) isRemoteReceiveingGear = true;
 
@@ -1247,7 +1244,6 @@ namespace MoreMegaStructure
             MMSCPU.BeginSample(ECpuWorkEntryExtended.StarCannon);
             StarCannon.RefreshStarCannonProperties();
             MMSCPU.EndSample(ECpuWorkEntryExtended.StarCannon);
-            MMSCPU.EndSample(ECpuWorkEntryExtended.MainLogic);
             MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
             //UIStatisticsPatcher.UpdateLag();
         }
@@ -1261,7 +1257,6 @@ namespace MoreMegaStructure
         public static void DysonSphereGameTickPostPatch(ref DysonSphere __instance)
         {
             MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.MainLogic);
             int idx = __instance.starData.id - 1;
             if (idx < 0 || idx >= MegaArrayLength)
             {
@@ -1399,7 +1394,6 @@ namespace MoreMegaStructure
                 */
                 MMSCPU.EndSample(ECpuWorkEntryExtended.StarAssembly);
             }
-            MMSCPU.EndSample(ECpuWorkEntryExtended.MainLogic);
             MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
         }
 

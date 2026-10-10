@@ -1260,6 +1260,7 @@ namespace MoreMegaStructure
                 }
             }
             // 再从地表拿
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.CargoTransport);
             if (result < itemCount)
             {
                 int planetCount = GameMain.galaxy.stars[starIndex].planetCount;
@@ -1319,6 +1320,7 @@ namespace MoreMegaStructure
                 }
             }
 
+            MMSCPU.EndSample(ECpuWorkEntryExtended.CargoTransport);
             return result;
         }
 
@@ -1328,6 +1330,7 @@ namespace MoreMegaStructure
         /// <param name="starIndex"></param>
         public static void SendProductToGround(int starIndex)
         {
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.CargoTransport);
             int planetCount = GameMain.galaxy.stars[starIndex].planetCount;
             for (int i = 0; i < planetCount; i++)
             {
@@ -1382,6 +1385,7 @@ namespace MoreMegaStructure
                     }
                 }
             }
+            MMSCPU.EndSample(ECpuWorkEntryExtended.CargoTransport);
         }
 
         // 返回每帧理想的基础消耗产出系数：这是已被各种特化的加速效果加成过的结果，但还未被增产效果加成

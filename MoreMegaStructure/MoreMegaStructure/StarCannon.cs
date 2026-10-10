@@ -477,8 +477,6 @@ namespace MoreMegaStructure
 
         public static bool CheckAndSearchAllTargets(long gameTick = -1)
         {
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.EnemySearch);
             if (maxAimCount <= 0)
                 return false;
             int count = Mathf.Min(currentTargetIds.Count, maxAimCount);
@@ -522,8 +520,6 @@ namespace MoreMegaStructure
             {
                 TryActivateDormantShips(gameTick);
             }
-            MMSCPU.EndSample(ECpuWorkEntryExtended.EnemySearch);
-            MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
             return currentTargetIds.Count > 0;
         }
 
@@ -613,8 +609,6 @@ namespace MoreMegaStructure
         /// <returns></returns>
         public static SkillTarget SearchNextTarget()
         {
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.EnemySearch);
             SkillTarget skillTarget = default(SkillTarget);
             if (currentTargetStarIndex < 0 || currentTargetStarIndex >= GameMain.galaxy.starCount)
                 return skillTarget;
@@ -708,8 +702,6 @@ namespace MoreMegaStructure
                 skillTarget = SearchNextTarget();
             }
 
-            MMSCPU.EndSample(ECpuWorkEntryExtended.EnemySearch);
-            MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
             return skillTarget;
         }
 
@@ -802,7 +794,8 @@ namespace MoreMegaStructure
 
             if(state != EStarCannonState.Recharge)
             {
-                if(state == EStarCannonState.Align || state == EStarCannonState.Heat)
+                MMSCPU.BeginSample(ECpuWorkEntryExtended.EnemySearch);
+                if (state == EStarCannonState.Align || state == EStarCannonState.Heat)
                 {
                     if (!CheckAndSearchAllTargets(gameTick))
                     {
@@ -815,8 +808,9 @@ namespace MoreMegaStructure
                     if (!CheckAndSearchAllTargets(gameTick))
                         StopFiring();                    
                 }
-
+                MMSCPU.EndSample(ECpuWorkEntryExtended.EnemySearch);
                 // 根据目标恒星位置计算锁定方向信息
+                MMSCPU.BeginSample(ECpuWorkEntryExtended.AttackLogic);
                 VectorLF3 targetUPos;
                 if(currentTargetStarIndex < 0 || currentTargetStarIndex >= GameMain.galaxy.starCount)
                 {
@@ -970,6 +964,7 @@ namespace MoreMegaStructure
                         beginShellLen: fireShellLen,
                         endShellLen: targetShellLen);
                 }
+                MMSCPU.EndSample(ECpuWorkEntryExtended.AttackLogic);
             }
 
             // 状态计时结算与转换

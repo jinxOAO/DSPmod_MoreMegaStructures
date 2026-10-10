@@ -1971,14 +1971,18 @@ namespace MoreMegaStructure
             LocalizationModule.RegisterTranslation("组装厂速度规范化2标题", "Normalize to final speed (based on fully proliferated state)", "规范化为最终速度(按满级喷涂计)", "");
             LocalizationModule.RegisterTranslation("组装厂速度规范化2描述", "Calculate and modify the expected speed so that the final production speed, <color=#FD965ECC>considering the current specialization and full-level proliferator effect</color>, is equal to the original input expected speed.\n<color=#FD965ECC>Note: This effect is only modified once when the button is clicked.</color> If there are changes in the specialization or proliferator effect later, it will not be recalculated and modified.", "计算并修改目标生产速度，使得考虑了<color=#FD965ECC>当前的特化和满级增产效果</color>后的生产速度等于原先输入的目标生产速度。\n<color=#FD965ECC>注意：此效果只在点击按钮时修改一次</color>，如果后续的特化或增产效果发生改变，不会自动重新计算并修改。", "");
 
-            LocalizationModule.RegisterTranslation("PF巨构", "MoreMegaStructure", "更多巨构", "");
-            LocalizationModule.RegisterTranslation("PF巨构主要逻辑", "MainLogic (MMS)", "主要逻辑（巨构）", "");
+            LocalizationModule.RegisterTranslation("PF巨构总览", "MoreMegaStructure", "更多巨构", "");
+            LocalizationModule.RegisterTranslation("PF主要逻辑", "MainLogic (MMS)", "主要逻辑（巨构）", "");
             LocalizationModule.RegisterTranslation("PF接收器", "Receivers", "接收器", "");
             LocalizationModule.RegisterTranslation("PF星际组装厂", "Star Assembly", "星际组装厂", "");
+            LocalizationModule.RegisterTranslation("PF货物生产", "Produce", "生产", "");
+            LocalizationModule.RegisterTranslation("PF货物输送", "Cargo Transport", "货物输送", "");
             LocalizationModule.RegisterTranslation("PF恒星炮", "Star Cannon", "恒星炮", "");
+            LocalizationModule.RegisterTranslation("PF攻击逻辑", "Attack Logic", "攻击逻辑", "");
             LocalizationModule.RegisterTranslation("PF寻敌逻辑", "Enemy Search", "寻敌逻辑", "");
+            LocalizationModule.RegisterTranslation("PF折跃场", "Warp Array", "折跃场", "");
             LocalizationModule.RegisterTranslation("PF巨构数据统计", "Statistics (MMS)", "数据统计（巨构）", "");
-            LocalizationModule.RegisterTranslation("PFOtherPatches", "Other Patch", "其他 Patch", "");
+            LocalizationModule.RegisterTranslation("PF其他补丁", "Other Patch", "其他补丁", "");
         }
 
         /// <summary>

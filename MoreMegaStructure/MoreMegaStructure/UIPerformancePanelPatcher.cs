@@ -1,112 +1,113 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 using HarmonyLib;
 using UnityEngine;
 
 namespace MoreMegaStructure
 {
+    /// <summary>
+    /// 在普通性能统计面板的 CPU 列表末尾追加本模组的自定义层级统计。
+    /// 不涉及深度性能分析面板，也不修改游戏的任何数组，仅在 UIPerformancePanel.RefreshCpuStatTexts
+    /// 执行完毕后把额外的行拼接到已有的文本上，并重算内容高度。
+    /// </summary>
     public class UIPerformancePanelPatcher
     {
         [HarmonyPostfix]
         [HarmonyPatch(typeof(UIPerformancePanel), "RefreshCpuStatTexts")]
-        public static void Refresh(ref UIPerformancePanel __instance)
+        public static void Refresh(UIPerformancePanel __instance)
         {
-            //StringBuilder stringBuilder = new StringBuilder(__instance.cpuLabelText.text, 600 + PerformanceMonitorPatcher.cpuExtendedLength * 10);
-            //StringBuilder stringBuilder2 = new StringBuilder(__instance.cpuValueText1.text, 600 + PerformanceMonitorPatcher.cpuExtendedLength * 10);
-            //StringBuilder stringBuilder3 = new StringBuilder(__instance.cpuValueText2.text, 600 + PerformanceMonitorPatcher.cpuExtendedLength * 10);
+            if (__instance == null || __instance.cpuLabelText == null)
+            {
+                return;
+            }
+            if (MMSCPU.Count == 0)
+            {
+                return;
+            }
+            // 与游戏本体保持一致：预热未完成（aveFrame <= -7）时数据尚未就绪，不显示自定义项。
+            if (PerformanceMonitor.aveFrame <= -7L)
+            {
+                return;
+            }
 
-            ////AppendCpuStatEntry(ECpuWorkEntryExtended.MoreMegaStructure, stringBuilder, stringBuilder2, stringBuilder3);
-            ////AppendCpuStatEntry(ECpuWorkEntryExtended.MainLogic, stringBuilder, stringBuilder2, stringBuilder3);
-            ////AppendCpuStatEntry(ECpuWorkEntryExtended.Receiver, stringBuilder, stringBuilder2, stringBuilder3);
-            ////AppendCpuStatEntry(ECpuWorkEntryExtended.StarAssembly, stringBuilder, stringBuilder2, stringBuilder3);
-            ////AppendCpuStatEntry(ECpuWorkEntryExtended.StarCannon, stringBuilder, stringBuilder2, stringBuilder3);
-            ////AppendCpuStatEntry(ECpuWorkEntryExtended.EnemySearch, stringBuilder, stringBuilder2, stringBuilder3);
-            ////AppendCpuStatEntry(ECpuWorkEntryExtended.Statistics, stringBuilder, stringBuilder2, stringBuilder3);
-            ////AppendCpuStatEntry(ECpuWorkEntryExtended.Patch, stringBuilder, stringBuilder2, stringBuilder3);
+            StringBuilder label = new StringBuilder(__instance.cpuLabelText.text ?? string.Empty, 1024);
+            StringBuilder value1 = new StringBuilder(__instance.cpuValueText1.text ?? string.Empty, 1024);
+            StringBuilder value2 = new StringBuilder(__instance.cpuValueText2.text ?? string.Empty, 1024);
 
-            //for (int i = 44; i < PerformanceMonitorPatcher.cpuExtendedLength; i++)
-            //{
-            //    AppendCpuStatEntry(i, stringBuilder, stringBuilder2, stringBuilder3);
-            //}
+            // 分隔空行，使自定义区块与原生统计之间留出呼吸空间。
+            label.AppendLine();
+            value1.AppendLine();
+            value2.AppendLine();
 
-            //__instance.cpuLabelText.text = stringBuilder.ToString();
-            //__instance.cpuValueText1.text = stringBuilder2.ToString();
-            //__instance.cpuValueText2.text = stringBuilder3.ToString();
-            //__instance.cpuContentTrans.sizeDelta = new Vector2(__instance.cpuContentTrans.sizeDelta.x, __instance.cpuLabelText.preferredHeight - 10f);
+            double total = PerformanceMonitor.showCompleteEngineCost
+                ? PerformanceMonitor.totalTimeCostsShowingComplete
+                : PerformanceMonitor.totalTimeCostsShowing;
+
+            AppendCustomEntries(label, value1, value2, total);
+
+            __instance.cpuLabelText.text = label.ToString();
+            __instance.cpuValueText1.text = value1.ToString();
+            __instance.cpuValueText2.text = value2.ToString();
+            __instance.cpuContentTrans.sizeDelta = new Vector2(
+                __instance.cpuContentTrans.sizeDelta.x,
+                __instance.cpuLabelText.preferredHeight - 10f);
         }
 
-
-        public static void AppendCpuStatEntry(int entry, StringBuilder label, StringBuilder value1, StringBuilder value2)
+        /// <summary>
+        /// 逐条追加自定义统计项。缩进风格与游戏原生 AppendCpuStatEntry 对齐：
+        /// level 0 顶格，level 1 用 "  · "，level 2 用 "    - "，更深一级多两个空格。
+        /// 每个统计项恰好向三列各写入一行，保证列之间行数一致。
+        /// </summary>
+        private static void AppendCustomEntries(StringBuilder label, StringBuilder value1, StringBuilder value2, double total)
         {
-            double num = PerformanceMonitor.timeCostsShowing[(int)entry];
-            if (num > -1.0)
+            int count = MMSCPU.Count;
+            for (int i = 0; i < count; i++)
             {
-                int num2 = PerformanceMonitor.cpuWorkLevels[(int)entry];
-                if (num2 < 0)
+                int level = MMSCPU.GetLevel(i);
+                label.Append(GetIndent(level));
+                label.AppendLine(MMSCPU.GetName(i));
+
+                double seconds = MMSCPU.GetShowingSeconds(i);
+                if (seconds >= 2.5E-07)
                 {
-                    int num3 = (int)PerformanceMonitor.cpuWorkParents[entry];
-                    if (num3 > 0)
-                    {
-                        num2 = PerformanceMonitor.cpuWorkLevels[num3] + 1;
-                    }
-                }
-                if (num2 != 2)
-                {
-                    if (num2 != 3)
-                    {
-                        label.AppendLine(PerformanceMonitor.cpuWorkNames[(int)entry].Translate());
-                    }
-                    else
-                    {
-                        label.AppendLine("    - " + PerformanceMonitor.cpuWorkNames[(int)entry].Translate());
-                    }
+                    value1.AppendFormat("{0:0.000} ms\r\n", seconds * 1000.0);
                 }
                 else
                 {
-                    label.AppendLine("  > " + PerformanceMonitor.cpuWorkNames[(int)entry].Translate());
+                    value1.AppendLine("-");
                 }
-                double num4 = PerformanceMonitor.timeCostsShowing[1];
-                value1.AppendFormat("{0:0.000} ms\r\n", num * 1000.0);
-                if (num4 < 1E-08)
+
+                if (seconds < 2.5E-07 || total < 1E-08)
                 {
-                    value2.AppendLine("0.0 %");
-                    return;
+                    value2.AppendLine("");
                 }
-                value2.AppendFormat("{0:0.0} %\r\n", num / num4 * 100.0);
+                else
+                {
+                    value2.AppendFormat("{0:0.00} %\r\n", seconds / total * 100.0);
+                }
             }
         }
 
+        private static string GetIndent(int level)
+        {
+            switch (level)
+            {
+                case 1:
+                    return "  · ";
+                case 2:
+                    return "    - ";
+                case 3:
+                    return "      - ";
+                default:
+                    return level > 3 ? "        - " : string.Empty;
+            }
+        }
 
+        // 以下 UISectorGraph 相关补丁为历史遗留，当前版本不需要，保留注释以备查阅。
         //[HarmonyPrefix]
         //[HarmonyPatch(typeof(UISectorGraph), "_OnOpen")]
         //public static bool UISectorGraphOnOpenPrePatch(ref UISectorGraph __instance)
         //{
-        //    for (int i = 0; i < __instance.fanCount; i++)
-        //    {
-        //        if (__instance.fanDatas[i].level == -1)
-        //        {
-        //            if (__instance.fans[i] != null)
-        //            {
-        //                __instance.fans[i].gameObject.SetActive(false);
-        //            }
-        //        }
-        //        else
-        //        {
-        //            UISectorFan uisectorFan = __instance.fans[i];
-        //            if (uisectorFan == null)
-        //            {
-        //                uisectorFan = UnityEngine.Object.Instantiate<UISectorFan>(__instance.fanPrefab, __instance.levelGroups[__instance.fanDatas[i].level]);
-        //            }
-        //            uisectorFan.fanImage.sprite = __instance.levelSprites[__instance.fanDatas[i].level];
-        //            uisectorFan.fanImage.color = __instance.colors[i % __instance.colors.Length];
-        //            uisectorFan.gameObject.SetActive(true);
-        //            __instance.fans[i] = uisectorFan;
-        //        }
-        //    }
-        //    return false;
+        //    return true;
         //}
     }
 }

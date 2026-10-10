@@ -58,13 +58,14 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(ThreadManager), "ProcessFrame")]
         public static void WarpArrayLogicUpdate(long frameCounter)
         {
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.WarpField);
             UpdateSectorTripCostRatio(frameCounter); // 每帧更新一部分星系，一秒全部更新一次
 
             if (frameCounter % 60 == 44)
                 UpdateWarpArrayDatas();
             if (frameCounter % 3600 == 45)
                 SortWarpArray();
-
+            MMSCPU.EndSample(ECpuWorkEntryExtended.WarpField);
         }
 
         public static void CheckSectorWarpArrays()
@@ -175,6 +176,7 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(StationComponent), "InternalTickRemote")]
         public static bool StationShipUpdatesPrePatch(ref StationComponent __instance, PlanetFactory factory, int timeGene, float shipSailSpeed, float shipWarpSpeed, int shipCarries, StationComponent[] gStationPool, AstroData[] astroPoses, ref VectorLF3 relativePos, ref Quaternion relativeRot, bool starmap, int[] consumeRegister)
         {
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.WarpField);
             //------------------------------------------------------------------------------
             float oriShipWarpSpeed = shipWarpSpeed;
             if(fixSailSpeed)
@@ -1183,6 +1185,8 @@ namespace MoreMegaStructure
                     }
                 }
             }
+
+            MMSCPU.EndSample(ECpuWorkEntryExtended.WarpField);
             return false;
         }
 
