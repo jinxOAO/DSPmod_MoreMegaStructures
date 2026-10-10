@@ -153,7 +153,7 @@ namespace MoreMegaStructure
         public static string GetName(int index)
         {
             CpuEntry e = GetEntry(index);
-            return e != null ? e.Name : "";
+            return e != null ? e.Name.Translate() : "";
         }
 
         public static int GetLevel(int index)
@@ -495,23 +495,23 @@ namespace MoreMegaStructure
         public static void AddMMSSamples()
         {
             // 顶层：所有巨构相关逻辑的合计。
-            int root = MMSCPU.AddEntry("PF巨构总览".Translate(), 0);
+            int root = MMSCPU.AddEntry("PF巨构总览", 0);
             MMSCPU.MapEnum(ECpuWorkEntryExtended.MoreMegaStructure, root);
 
             // 主要子项
             //MMSCPU.MapEnum(ECpuWorkEntryExtended.MainLogic, MMSCPU.AddEntry("PF主要逻辑", 1));
-            MMSCPU.MapEnum(ECpuWorkEntryExtended.Receiver, MMSCPU.AddEntry("PF接收器".Translate(), 1));
-            MMSCPU.MapEnum(ECpuWorkEntryExtended.StarAssembly, MMSCPU.AddEntry("PF星际组装厂".Translate(), 1));
-            //MMSCPU.MapEnum(ECpuWorkEntryExtended.CargoProduce, MMSCPU.AddEntry("PF货物生产".Translate(), 2));
-            MMSCPU.MapEnum(ECpuWorkEntryExtended.CargoTransport, MMSCPU.AddEntry("PF货物输送".Translate(), 2));
-            MMSCPU.MapEnum(ECpuWorkEntryExtended.StarCannon, MMSCPU.AddEntry("PF恒星炮".Translate(), 1));
-            MMSCPU.MapEnum(ECpuWorkEntryExtended.AttackLogic, MMSCPU.AddEntry("PF攻击逻辑".Translate(), 2));
-            MMSCPU.MapEnum(ECpuWorkEntryExtended.EnemySearch, MMSCPU.AddEntry("PF寻敌逻辑".Translate(), 2));
-            MMSCPU.MapEnum(ECpuWorkEntryExtended.WarpField, MMSCPU.AddEntry("PF折跃场".Translate(), 1));
+            MMSCPU.MapEnum(ECpuWorkEntryExtended.Receiver, MMSCPU.AddEntry("PF接收器", 1));
+            MMSCPU.MapEnum(ECpuWorkEntryExtended.StarAssembly, MMSCPU.AddEntry("PF星际组装厂", 1));
+            //MMSCPU.MapEnum(ECpuWorkEntryExtended.CargoProduce, MMSCPU.AddEntry("PF货物生产", 2));
+            MMSCPU.MapEnum(ECpuWorkEntryExtended.CargoTransport, MMSCPU.AddEntry("PF货物输送", 2));
+            MMSCPU.MapEnum(ECpuWorkEntryExtended.StarCannon, MMSCPU.AddEntry("PF恒星炮", 1));
+            MMSCPU.MapEnum(ECpuWorkEntryExtended.AttackLogic, MMSCPU.AddEntry("PF攻击逻辑", 2));
+            MMSCPU.MapEnum(ECpuWorkEntryExtended.EnemySearch, MMSCPU.AddEntry("PF寻敌逻辑", 2));
+            MMSCPU.MapEnum(ECpuWorkEntryExtended.WarpField, MMSCPU.AddEntry("PF折跃场", 1));
 
             // 其他统计项
-            MMSCPU.MapEnum(ECpuWorkEntryExtended.Statistics, MMSCPU.AddEntry("PF巨构数据统计".Translate(), 1));
-            MMSCPU.MapEnum(ECpuWorkEntryExtended.Patch, MMSCPU.AddEntry("PF其他补丁".Translate(), 1));
+            MMSCPU.MapEnum(ECpuWorkEntryExtended.Statistics, MMSCPU.AddEntry("PF巨构数据统计", 1));
+            MMSCPU.MapEnum(ECpuWorkEntryExtended.Patch, MMSCPU.AddEntry("PF其他补丁", 1));
         }
     }
 }

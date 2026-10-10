@@ -2176,28 +2176,68 @@ namespace MoreMegaStructure
         }
 
 
+        /// <summary>
+        /// 原封不动模仿游戏本体：本体对每个真实工厂调用 FactoryProductionStat.Export 存整套多时间窗滚动历史
+        /// (powerPool 6x3600、每个 productPool 项 count[7200]、productIndices[12000] 等)。这里把借给巨构的
+        /// 尾部槽位(factoryStatPool 中索引 &gt;= factories.Length 的部分)"一视同仁"地全部导出，不按
+        /// StarMegaStructureType 过滤——正如本体对所有工厂一视同仁。这样当玩家中途切换某星系巨构类型
+        /// (科学枢纽&lt;-&gt;星际组装厂等)，同一槽里研究历史/生产历史出现"有的全 0、有的混杂"时，也只是原样搬运
+        /// 该槽字节，绝不会因类型判断而漏读/错位/报错。写入数量 = 尾部槽数，与 Import 端严格对称。
+        /// </summary>
         public static void Export(BinaryWriter w)
         {
-            //w.Write(0);
-            //w.Write(GameMain.statistics.production.factoryStatPool.Length - GameMain.data.factories.Length);
-            //for (int i = GameMain.data.factories.Length; i < GameMain.statistics.production.factoryStatPool.Length; i++)
-            //{
-            //    GameMain.statistics.production.factoryStatPool[i].Export(w.BaseStream, w);
-            //}
+            RearrangeStatisticLists(); // 幂等：保证尾部槽已扩容且非 null
+            FactoryProductionStat[] pool = GameMain.statistics.production.factoryStatPool;
+            int start = GameMain.data.factories.Length;
+            int tail = (pool != null) ? pool.Length - start : 0;
+            if (tail < 0) tail = 0;
+            w.Write(0);    // 结构版本标识 tag(当前为 0，供将来 blob 内部格式演进时区分)
+            w.Write(tail); // 本次写入的巨构尾部槽数量
+            for (int i = start; i < start + tail; i++)
+            {
+                FactoryProductionStat st = pool[i];
+                if (st == null) // 防御性补建，确保写入槽数恒等于 tail，避免读档错位
+                {
+                    st = new FactoryProductionStat();
+                    st.Init();
+                    pool[i] = st;
+                }
+                st.Export(w.BaseStream, w);
+            }
         }
 
+        /// <summary>
+        /// 读取由 Export 写入的巨构统计 blob。仅对 savedModVersion &gt;= 200 的存档读取：
+        /// 200 是本 blob 正式启用读写、且由当前游戏版本 FactoryProductionStat 结构写出的起点。
+        /// 200 之前(含历史曾写过但结构/字节布局存疑的 119-134、以及导出被注释的 135-199)一律不读取——
+        /// 统计数据是按 tick 重建的可重算数据，老存档回 0 无副作用，绝不为赌老格式一致性而读出垃圾数值。
+        /// 因本 blob 严格位于 mod 存档段最末且自描述，200 之前不读 = 尾部多余字节被存档框架按段长忽略，绝对安全。
+        /// 夹取到当前池长度以兼容星系数量变化；全程 try/catch 兜底，任何异常都不影响读档流程本身。
+        /// </summary>
         public static void Import(BinaryReader r)
         {
             RearrangeStatisticLists();
-            if (MoreMegaStructure.savedModVersion >= 119 && MoreMegaStructure.savedModVersion<=134)
+            if (MoreMegaStructure.savedModVersion < 200) return; // 200 之前(含 119-134/135-199)一律不读
+            try
             {
-                r.ReadInt32();
-                int num = r.ReadInt32();
-                int count = Math.Min(GameMain.statistics.production.factoryStatPool.Length, GameMain.data.factories.Length + num);
-                for (int i = GameMain.data.factories.Length; i < count; i++)
+                r.ReadInt32(); // 结构版本标识 tag
+                int num = r.ReadInt32(); // 保存时的尾部槽数量
+                FactoryProductionStat[] pool = GameMain.statistics.production.factoryStatPool;
+                int start = GameMain.data.factories.Length;
+                int count = Math.Min(pool.Length, start + num); // 夹取到当前池长度
+                for (int i = start; i < count; i++)
                 {
-                    GameMain.statistics.production.factoryStatPool[i].Import(r.BaseStream, r);
+                    if (pool[i] == null) // 保证仍逐槽 Import，维持与写入端字节对齐
+                    {
+                        pool[i] = new FactoryProductionStat();
+                        pool[i].Init();
+                    }
+                    pool[i].Import(r.BaseStream, r);
                 }
+            }
+            catch (Exception)
+            {
+                // 读档安全兜底：任何异常都不让游戏崩溃；最坏情况统计历史回 0 并随 tick 自然重建。
             }
         }
 
