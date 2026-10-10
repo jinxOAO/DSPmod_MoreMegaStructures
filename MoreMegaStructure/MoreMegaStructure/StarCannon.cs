@@ -929,13 +929,13 @@ namespace MoreMegaStructure
                         Vector3 vec;
                         spaceSector.skillSystem.GetObjectUPositionAndVelocity(ref target, out enemyUPos, out vec);
                         enemyUPos += (VectorLF3)vec * 0.016666667f;
-                        AddNewLaser(centerStarUPos, enemyUPos, target.id, 1, 30);
+                        //AddNewLaser(centerStarUPos, enemyUPos, target.id, 1, 30);
                         spaceSector.skillSystem.DamageObject((int)(damagePerTick * ratio), damageSlice, ref target, ref caster);
                         if (maxAimCount - count > 0 && i == count - 1) // 如果目标过少，少于可以同时射击的最大数量，溢出的可射击的激光将同时射击最后一个合法目标
                         {
                             for (int j = 0; j < maxAimCount - count; j++)
                             {
-                                AddNewLaser(centerStarUPos, enemyUPos, target.id, 1, 10);
+                                //AddNewLaser(centerStarUPos, enemyUPos, target.id, 1, 10);
                                 spaceSector.skillSystem.DamageObject((int)(damagePerTick * ratio), damageSlice, ref target, ref caster);
                             }
                         }

@@ -11,6 +11,17 @@ namespace MoreMegaStructure
     /// </summary>
     public class UIPerformancePanelPatcher
     {
+        /// <summary>
+        /// 在面板初始化最前（_OnInit 内 cpuGraph._Init 读取 timeCostsShowing 之前）把自定义项并入
+        /// 饼图所需的原生数组尾部。这样扇形图会为本模组的每一项建立对应扇区，并按 level/parent 正确嵌套。
+        /// </summary>
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(UIPerformancePanel), "_OnInit")]
+        public static void BeforeInit()
+        {
+            MMSCPU.RebuildChartArrays();
+        }
+
         [HarmonyPostfix]
         [HarmonyPatch(typeof(UIPerformancePanel), "RefreshCpuStatTexts")]
         public static void Refresh(UIPerformancePanel __instance)

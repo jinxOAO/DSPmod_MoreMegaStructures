@@ -8,8 +8,8 @@ namespace MoreMegaStructure
 {
     /// <summary>
     /// 自定义性能统计项的标识。这些值仅作为本模组内部的采样点编号使用，
-    /// 与游戏的 <see cref="ECpuWorkEntry"/> 无关，也不会写入游戏的任何数组，
-    /// 因此游戏更新调整原生数组长度时不会与本模组冲突。
+    /// 与游戏的 <see cref="ECpuWorkEntry"/> 的取值无关。文本列表按注册顺序显示；
+    /// 饼图在面板初始化时会把这些项并入游戏原生数组尾部（详见 MMSCPU.RebuildChartArrays）。
     /// </summary>
     public enum ECpuWorkEntryExtended
     {
@@ -61,6 +61,8 @@ namespace MoreMegaStructure
     ///   也可以在工厂逻辑的工作线程（如 PowerGeneratorComponent.GameTick_Gamma 前置）使用。
     /// - 只有当游戏 CPU 分析处于开启状态时才真正采样，关闭时 Begin/End 近乎零开销。
     /// - 允许 Begin/End 因提前 return 而不配对，也不会造成数据损坏或异常。
+    /// - 饼图集成：在面板初始化时把各项并入游戏原生数组尾部（RebuildChartArrays），
+    ///   父子关系由 level + 注册顺序自动推导；level 0 项挂在饼图根(Total)下，因此不会虚增总计。
     /// </summary>
     public static class MMSCPU
     {
@@ -84,6 +86,18 @@ namespace MoreMegaStructure
         private static long[] threadStartTicks;
 
         private static long frequency = 0L;
+
+        // ------- 饼图集成状态（仅在主线程、面板初始化时写入） -------
+        // 自定义项被并入原生数组尾部后，第 i 个自定义项对应的绝对下标为 ChartBase + i。
+        // ChartBase < 0 表示当前尚未并入（例如面板从未打开过）。
+        private static int ChartBase = -1;
+        private static int ChartCount = -1;
+
+        // 原生（未被本模组扩展过的）数组快照，首次扩展时捕获，之后每次重建都以此为基准，
+        // 避免把上一轮自己写入的尾部误当成原生数据而不断累加。
+        private static string[] pristineNames;
+        private static int[] pristineLevels;
+        private static ECpuWorkEntry[] pristineParents;
 
         /// <summary>
         /// 注册一个自定义统计项，返回其内部索引。请在 Awake 阶段（游戏逻辑开始前）调用。
@@ -269,6 +283,136 @@ namespace MoreMegaStructure
         // ---------------- 逐帧维护 ----------------
 
         /// <summary>
+        /// 在性能面板初始化（_OnInit）之前于主线程调用：把本模组的自定义项并入饼图所需的
+        /// 原生数组尾部（cpuWorkNames / cpuWorkLevels / cpuWorkParents / timeCostsAve / timeCostsShowing）。
+        /// 之后饼图 _Init 读取到更长的 timeCostsShowing，便会为每一项建立对应扇区。
+        ///
+        /// 父子关系完全由 level + 注册顺序自动推导，无需显式指定 parent：
+        /// - level 0：挂在饼图根 Total 之下，与游戏原生顶层项并列（不计入总计，避免虚增）。
+        /// - level 1：挂在最近一个 level 0 项之下。
+        /// - level 2：挂在最近一个 level 1 项之下（若不存在则退到最近的 level 0）。
+        /// 因此只要在 MMSPF.AddMMSSamples 里按“父项在前、子项紧随其后”的顺序注册即可。
+        /// 重复调用是安全的：以首次捕获的原生快照为基准重建，不会累加。
+        /// </summary>
+        public static void RebuildChartArrays()
+        {
+            string[] names = PerformanceMonitor.cpuWorkNames;
+            int[] levels = PerformanceMonitor.cpuWorkLevels;
+            ECpuWorkEntry[] parents = PerformanceMonitor.cpuWorkParents;
+            if (names == null || levels == null || parents == null)
+            {
+                return;
+            }
+
+            // 首次（尚未扩展过时）捕获原生快照作为恒定基准。
+            if (pristineNames == null)
+            {
+                if (ChartBase >= 0)
+                {
+                    // 已扩展过却丢失快照，属异常状态，保守放弃重建。
+                    return;
+                }
+                pristineNames = (string[])names.Clone();
+                pristineLevels = (int[])levels.Clone();
+                pristineParents = (ECpuWorkEntry[])parents.Clone();
+            }
+
+            int baseLen = pristineNames.Length;
+            int n = entries.Count;
+            if (n == 0)
+            {
+                ChartBase = baseLen;
+                ChartCount = 0;
+                return;
+            }
+            int totalLen = baseLen + n;
+            ChartBase = baseLen;
+            ChartCount = n;
+
+            string[] newNames = new string[totalLen];
+            int[] newLevels = new int[totalLen];
+            ECpuWorkEntry[] newParents = new ECpuWorkEntry[totalLen];
+            Array.Copy(pristineNames, 0, newNames, 0, baseLen);
+            Array.Copy(pristineLevels, 0, newLevels, 0, baseLen);
+            Array.Copy(pristineParents, 0, newParents, 0, baseLen);
+
+            int totalIndex = (int)ECpuWorkEntry.Total;
+            // 环数由游戏预制体决定（levelSprites/levelGroups 的数量）。取原生最大层级为上限，
+            // 避免自定义项指定了不存在的环层导致越界崩溃。
+            int maxLevel = 0;
+            for (int i = 0; i < baseLen; i++)
+            {
+                if (pristineLevels[i] > maxLevel)
+                {
+                    maxLevel = pristineLevels[i];
+                }
+            }
+
+            int lastLevel0 = -1;
+            int lastLevel1 = -1;
+            for (int i = 0; i < n; i++)
+            {
+                CpuEntry e = entries[i];
+                int idx = baseLen + i;
+                newNames[idx] = e.Name;
+
+                int lvl = e.Level < 0 ? 0 : (e.Level > maxLevel ? maxLevel : e.Level);
+                int parent;
+                if (lvl == 0)
+                {
+                    parent = totalIndex;
+                    lastLevel0 = idx;
+                    lastLevel1 = -1;
+                }
+                else if (lvl == 1)
+                {
+                    parent = lastLevel0 >= 0 ? lastLevel0 : totalIndex;
+                    lastLevel1 = idx;
+                }
+                else
+                {
+                    // level >= 2：优先挂在最近的 level 1 下，其次 level 0，最后 Total。
+                    if (lastLevel1 >= 0)
+                    {
+                        parent = lastLevel1;
+                    }
+                    else if (lastLevel0 >= 0)
+                    {
+                        parent = lastLevel0;
+                    }
+                    else
+                    {
+                        parent = totalIndex;
+                    }
+                }
+                newLevels[idx] = lvl;
+                newParents[idx] = (ECpuWorkEntry)parent;
+            }
+
+            PerformanceMonitor.cpuWorkNames = newNames;
+            PerformanceMonitor.cpuWorkLevels = newLevels;
+            PerformanceMonitor.cpuWorkParents = newParents;
+
+            GrowTimeArray(ref PerformanceMonitor.timeCostsAve, baseLen, totalLen);
+            GrowTimeArray(ref PerformanceMonitor.timeCostsShowing, baseLen, totalLen);
+            // 注意：timeCostsFrame 为 private 且游戏只在 [0,48) 内使用，无需（也无法）扩展。
+        }
+
+        private static void GrowTimeArray(ref double[] arr, int baseLen, int totalLen)
+        {
+            double[] na = new double[totalLen];
+            if (arr != null)
+            {
+                int c = Math.Min(arr.Length, baseLen);
+                if (c > 0)
+                {
+                    Array.Copy(arr, 0, na, 0, c);
+                }
+            }
+            arr = na;
+        }
+
+        /// <summary>
         /// 每逻辑帧调用一次：把本帧累计的刻度换算为秒并做滑动平均，然后清零帧累加。
         /// 平滑系数与游戏 SlideAverage 采用的窗口保持一致，观感与原生统计项同步。
         /// </summary>
@@ -284,6 +428,11 @@ namespace MoreMegaStructure
             double factor = aveFrame > 1L ? 1.0 / aveFrame : 1.0;
             double freqInv = 1.0 / frequency;
 
+            // 若饼图已并入（面板打开过），把自定义值同步写回原生数组尾部供扇区读取。
+            double[] showArr = PerformanceMonitor.timeCostsShowing;
+            double[] aveArr = PerformanceMonitor.timeCostsAve;
+            bool pushToChart = ChartBase >= 0;
+
             for (int i = 0; i < entries.Count; i++)
             {
                 CpuEntry e = entries[i];
@@ -291,18 +440,48 @@ namespace MoreMegaStructure
                 double frameSeconds = ticks > 0L ? ticks * freqInv : 0.0;
                 e.Average = e.Average * (1.0 - factor) + frameSeconds * factor;
                 e.Showing = e.Average;
+
+                if (pushToChart)
+                {
+                    int ci = ChartBase + i;
+                    if (showArr != null && ci < showArr.Length)
+                    {
+                        showArr[ci] = e.Showing;
+                    }
+                    if (aveArr != null && ci < aveArr.Length)
+                    {
+                        aveArr[ci] = e.Average;
+                    }
+                }
             }
         }
 
         /// <summary>清空所有累计与平均数据（面板打开/关闭时随游戏一同复位）。</summary>
         public static void Reset()
         {
+            double[] showArr = PerformanceMonitor.timeCostsShowing;
+            double[] aveArr = PerformanceMonitor.timeCostsAve;
+            bool pushToChart = ChartBase >= 0;
+
             for (int i = 0; i < entries.Count; i++)
             {
                 CpuEntry e = entries[i];
                 Interlocked.Exchange(ref e.AccumTicks, 0L);
                 e.Average = 0.0;
                 e.Showing = 0.0;
+
+                if (pushToChart)
+                {
+                    int ci = ChartBase + i;
+                    if (showArr != null && ci < showArr.Length)
+                    {
+                        showArr[ci] = 0.0;
+                    }
+                    if (aveArr != null && ci < aveArr.Length)
+                    {
+                        aveArr[ci] = 0.0;
+                    }
+                }
             }
         }
     }
