@@ -406,9 +406,6 @@ namespace MoreMegaStructure
             segsFar.Clear();
             segsFront.Clear();
             cur_MaxViewDist = 0f;   // 逐帧重算本视图最远可绘制端点(用作外辉深度渐隐参考)
-            cur_MinViewDist = 1e30f; // 诊断: 最近端点眼距离
-            cur_RawNearMin = 1e30f;   // 诊断: 钳制前真实最近端点
-            cur_RawFarMax = 0f;       // 诊断: 钳制前真实最远端点
             // 缓存当前相机投影参数，供 UploadAndDrawRibbon 计算屏幕像素下限 -> 世界宽度
             cur_Ortho = cur.orthographic;
             cur_PixelHeight = cur.pixelHeight;
@@ -444,7 +441,6 @@ namespace MoreMegaStructure
             // 壳外(远景, 多为跨星系段)钳制到相机远球 + ZTest Always => 永不消失(壳外本无遮挡物)。
             // 相对帧原点 = 载入星系的恒星(玩家所在; 无论它是发射端还是接收端), 壳心即原点, 故近景判据用 |p| <= nearR。
             Vector3 camPos = cur.transform.position;   // Unity 世界(=相对渲染帧)相机位置, 与 vb/ve 同一坐标系
-            cur_CamMag = camPos.magnitude;
             bool universe = DysonSphere.renderPlace == ERenderPlace.Universe;
             s_camPos = camPos;
             s_universe = universe;
@@ -458,13 +454,6 @@ namespace MoreMegaStructure
                 Vector3 vb, ve;
                 if (!TryViewPoints(p.begin, p.end, relativePos, relativeRot, viewTarget, starPos, out vb, out ve))
                     continue;
-                // 诊断: 记录【钳制前】真实端点眼距离(未压缩), 判断恒星到底有多远、clampFarScale 系数够不够
-                {
-                    float rn = (vb - camPos).magnitude, rf = (ve - camPos).magnitude;
-                    float rmin = Mathf.Min(rn, rf), rmax = Mathf.Max(rn, rf);
-                    if (rmin < cur_RawNearMin) { cur_RawNearMin = rmin; diag_NearVB = (rn <= rf) ? vb : ve; }
-                    if (rmax > cur_RawFarMax) cur_RawFarMax = rmax;
-                }
                 // 稳定基线方案(按用户要求回退): 整条光束端点【以相机为球心】钳制到 s_clampR(方向不变, 只缩短) => 光束在所有视角都可见、不消失、无玻璃;
                 // 配合单分组 + ZTest LEqual(4) => 遮挡偏保守(通常被戴森壳挡住)。这是"只有遮挡错误、其余都稳定"的那个版本。
                 vb = CamClamp(vb, camPos, s_clampR);
@@ -473,8 +462,6 @@ namespace MoreMegaStructure
                 float dNear = (vb - camPos).magnitude, dFarE = (ve - camPos).magnitude;
                 float endD = Mathf.Min(Mathf.Max(dNear, dFarE), s_clampR);   // 实际可绘制最远距离(远景被钳到 s_clampR)
                 if (endD > cur_MaxViewDist) cur_MaxViewDist = endD;
-                float beamMin = Mathf.Min(dNear, dFarE);
-                if (beamMin < cur_MinViewDist) cur_MinViewDist = beamMin;
 
                 // 世界半宽只在主视图给(近处更粗)；星图/编辑器下坐标被 *0.00025 缩放，世界宽会给 0，纯用屏幕像素宽避免变成巨大宽面
 
@@ -539,28 +526,7 @@ namespace MoreMegaStructure
                 }
             }
 
-            // [遮挡诊断] 宇宙视角排查: 打印相机 near/far、钳制半径 farR、本帧最远光束端点距离。
-            // 判据: 若 maxViewDist/farR 落在 far 附近(极大), 说明远端挤进低深度精度区 -> 后被的戴森壳在数值深度上"更近" -> 过遮挡(前后都挡)。
-            // 星图坐标被 *0.00025 缩放故不受影响(与现象一致)。据此再决定: 动态近/远平面 vs 缩小 clampFarScale vs 对齐原版绘制相位。
-            if (diagLog && DysonSphere.renderPlace == ERenderPlace.Universe)
-            {
-                occlDiagTick++;
-                if (occlDiagTick % 30 == 1)
-                {
-                    float nearC = cur.nearClipPlane, farC = cur.farClipPlane;
-                    // 把最近端点投到视口: vp.z = 相机前向眼深度(裁剪/精度真正依据的量, 非 |·| 径向); vp.x/y 在 0..1 才在画面内
-                    Vector3 vp = cur.WorldToViewportPoint(diag_NearVB);
-                    Vector3 to = diag_NearVB - cur.transform.position;
-                    Utils.Log("[StarCannonLaser][遮挡诊断] near=" + nearC + " far=" + farC +
-                              " clampR=" + s_clampR + " nearR(壳半径*冗余)=" + s_nearR +
-                              " camMag=" + cur_CamMag +
-                              " rawNearMin=" + cur_RawNearMin + " rawFarMax=" + cur_RawFarMax +
-                              " eyeMin=" + cur_MinViewDist + " eyeMax=" + cur_MaxViewDist +
-                              " segsNear=" + segs.Count + " segsFar=" + segsFar.Count +
-                              " |nearVB|=" + to.magnitude + " fwdDepth=" + vp.z + " vpxy=(" + vp.x.ToString("F3") + "," + vp.y.ToString("F3") + ")" +
-                              " ortho=" + cur.orthographic);
-                }
-            }
+            // [遮挡诊断] 已作为不必要调试输出移除。
         }
 
         // 把一条 vb->ve 的光束细分成 n 段 ribbon quad；capStart/capEnd 复用为“全局沿长”(0..1)，供 shader 连续流动
@@ -785,12 +751,6 @@ namespace MoreMegaStructure
         // 本视图里最远的光束端点距离(视图空间, 近似到相机的最大 D)。用作外辉深度渐隐的 _ClipFar。
         // 关键: 必须用"光束实际终点距离", 不能用 farClip*0.5 —— 后者在远裁剪面很大(光束未被钳制)时远超终点, 使渐隐恒不触发。
         private static float cur_MaxViewDist = 1e9f;
-        private static float cur_MinViewDist = 0f;   // 本视图最近光束端点眼距离(诊断: 判断整条光束是否都落在眼深度很大、精度被压缩的区段)
-        private static float cur_CamMag = 0f;        // 相机相对帧位置长度(诊断: 判断 camPos 是否与 vb/ve 同系; 若巨大则是坐标系错配)
-        private static float cur_RawNearMin = 1e30f; // 诊断: 钳制前最近端点真实眼距离
-        private static float cur_RawFarMax = 0f;     // 诊断: 钳制前最远端点真实眼距离
-        private static Vector3 diag_NearVB;          // 诊断: 全局最近端点的视图空间坐标(用于投影到视口, 看真实眼深度是否超远平面)
-        private static int occlDiagTick;   // 遮挡诊断日志节流计数
 
         // ---------- 回退路径 (sailBullet) ----------
 

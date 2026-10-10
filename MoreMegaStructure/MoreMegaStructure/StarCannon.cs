@@ -647,10 +647,6 @@ namespace MoreMegaStructure
                         if (!CheckRelay(ref ptr3))
                             continue;
                     }
-                    if (false)
-                    {
-                        Debug.Log($"dfsNode yes: {ptr3.dfSNodeId} {ptr3.dfSCoreId} {ptr3.dfSConnectorId} {ptr3.dfSGammaId} {ptr3.dfSTurretId} {ptr3.dfSReplicatorId} in astro{ptr3.astroId} and oriAstro {ptr3.originAstroId} and relayId {ptr3.dfRelayId}");
-                    }
                     spaceSector.TransformFromAstro_ref(ptr3.astroId, out zero, ref ptr3.pos);
                     // 原逻辑判断是否在开火距离内 恒星炮不判断
                     float num28 = (float)(zero.x - (double)vector2.x);

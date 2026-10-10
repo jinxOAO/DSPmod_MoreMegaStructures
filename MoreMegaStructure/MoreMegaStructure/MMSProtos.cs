@@ -1981,7 +1981,7 @@ namespace MoreMegaStructure
             LocalizationModule.RegisterTranslation("PF攻击逻辑", "Attack Logic", "攻击逻辑", "");
             LocalizationModule.RegisterTranslation("PF寻敌逻辑", "Enemy Search", "寻敌逻辑", "");
             LocalizationModule.RegisterTranslation("PF折跃场", "Warp Array", "折跃场", "");
-            LocalizationModule.RegisterTranslation("PF巨构数据统计", "Statistics (MMS)", "数据统计（巨构）", "");
+            LocalizationModule.RegisterTranslation("PF巨构数据统计", "Produce Statistics", "生产数据统计", "");
             LocalizationModule.RegisterTranslation("PF其他补丁", "Other Patch", "其他补丁", "");
         }
 
