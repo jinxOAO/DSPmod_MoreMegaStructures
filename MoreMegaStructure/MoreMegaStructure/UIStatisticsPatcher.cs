@@ -124,35 +124,8 @@ namespace MoreMegaStructure
                     }
                 }
 
-                // 新增部分
-                int oldStarId = -1;
-                for (int i = 0; i < itemsData.Count; i++)
-                {
-                    int nowStarId = itemsData[i] / 100;
-                    if (oldStarId != nowStarId && oldStarId != -1 && oldStarId <= MoreMegaStructure.MegaArrayLength && oldStarId > 0)
-                    {
-                        if (MoreMegaStructure.StarMegaStructureType[oldStarId - 1] == 4)
-                        {
-                            itemsData.Insert(i, oldStarId * 100 + GameMain.galaxy.StarById(oldStarId).planetCount + 1);
-                            items.Insert(
-                                i, MMSPlanetById(oldStarId * 100 + GameMain.galaxy.StarById(oldStarId).planetCount + 1).displayName);
-                            i++;
-                        }
-                    }
-
-                    if (i == itemsData.Count - 1)
-                    {
-                        oldStarId = nowStarId;
-                        if (oldStarId > 0 && oldStarId <= MoreMegaStructure.MegaArrayLength && MoreMegaStructure.StarMegaStructureType[oldStarId - 1] == 4)
-                        {
-                            itemsData.Add(oldStarId * 100 + GameMain.galaxy.StarById(oldStarId).planetCount + 1);
-                            items.Add(MMSPlanetById(oldStarId * 100 + GameMain.galaxy.StarById(oldStarId).planetCount + 1).displayName);
-                            break;
-                        }
-                    }
-
-                    oldStarId = nowStarId;
-                }
+                // 新增部分：在该星系组末尾注入巨构虚项（此处为星际组装厂 type 4）
+                InjectMegaAstroEntriesIntoList(items, itemsData, 4);
 
                 // 这一行使原本的
                 _this.ValueToAstroBox();
@@ -163,6 +136,70 @@ namespace MoreMegaStructure
             MMSCPU.EndSample(ECpuWorkEntryExtended.Statistics);
             MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
             return true;
+        }
+
+        /// <summary>
+        /// 在 astroBox 的下拉列表(按恒星分组：先恒星系总计 starId*100，再各行星 planetId)中，
+        /// 于每个含指定巨构类型的星系组末尾插入该巨构的虚行星项(starId*100 + planetCount + 1)，
+        /// 显示名取 MMSPlanetById(...).displayName。生产页以 megaType=4(星际组装厂)调用；
+        /// 研究页以 megaType=2(科学枢纽)调用。每个星系至多一种巨构，故与另一类型不冲突。
+        /// </summary>
+        public static void InjectMegaAstroEntriesIntoList(List<string> items, List<int> itemsData, int megaType)
+        {
+            int oldStarId = -1;
+            for (int i = 0; i < itemsData.Count; i++)
+            {
+                int nowStarId = itemsData[i] / 100;
+                if (oldStarId != nowStarId && oldStarId != -1 && oldStarId <= MoreMegaStructure.MegaArrayLength && oldStarId > 0)
+                {
+                    if (MoreMegaStructure.StarMegaStructureType[oldStarId - 1] == megaType)
+                    {
+                        itemsData.Insert(i, oldStarId * 100 + GameMain.galaxy.StarById(oldStarId).planetCount + 1);
+                        items.Insert(
+                            i, MMSPlanetById(oldStarId * 100 + GameMain.galaxy.StarById(oldStarId).planetCount + 1).displayName);
+                        i++;
+                    }
+                }
+
+                if (i == itemsData.Count - 1)
+                {
+                    oldStarId = nowStarId;
+                    if (oldStarId > 0 && oldStarId <= MoreMegaStructure.MegaArrayLength && MoreMegaStructure.StarMegaStructureType[oldStarId - 1] == megaType)
+                    {
+                        itemsData.Add(oldStarId * 100 + GameMain.galaxy.StarById(oldStarId).planetCount + 1);
+                        items.Add(MMSPlanetById(oldStarId * 100 + GameMain.galaxy.StarById(oldStarId).planetCount + 1).displayName);
+                        break;
+                    }
+                }
+
+                oldStarId = nowStarId;
+            }
+        }
+
+        /// <summary>
+        /// 研究标签页下拉注入科学枢纽项。生产页前缀对 isProductionTab 返回 false(原生被跳过)，
+        /// 故本 postfix 不在生产页触发；研究/电力/戴森/击杀页前缀返回 true(原生执行)，postfix 触发后
+        /// 仅当 isResearchTab 时以 megaType=2 注入科学枢纽虚项，其它页无操作。
+        /// </summary>
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(UIStatisticsWindow), "RefreshAstroBox")]
+        public static void RefreshAstroBoxResearchPostPatch(ref UIStatisticsWindow __instance)
+        {
+            if (!enabled) return;
+            if (__instance == null) return;
+            if (!__instance.isResearchTab) return;
+            if (__instance.astroBox == null) return;
+            List<string> items = __instance.astroBox.Items;
+            List<int> itemsData = __instance.astroBox.ItemsData;
+            if (items == null || itemsData == null) return;
+            try
+            {
+                InjectMegaAstroEntriesIntoList(items, itemsData, 2);
+                __instance.ValueToAstroBox();
+            }
+            catch (Exception)
+            {
+            }
         }
 
         /// <summary>
@@ -297,7 +334,7 @@ namespace MoreMegaStructure
                 for (int i = GameMain.data.factories.Length; i < GameMain.data.factories.Length + GameMain.galaxy.starCount; i++) // 加入巨构统计
                 {
                     int idx = GameMain.data.factories.Length + GameMain.galaxy.starCount - i - 1;
-                    if (idx < MoreMegaStructure.MegaArrayLength && MoreMegaStructure.StarMegaStructureType[idx] == 4) __instance.AddProductStatGroup(i);
+                    if (idx < MoreMegaStructure.MegaArrayLength && (MoreMegaStructure.StarMegaStructureType[idx] == 4 || MoreMegaStructure.StarMegaStructureType[idx] == 2)) __instance.AddProductStatGroup(i);
                 }
             }
             else if (__instance.gameData.localPlanet != null && __instance.astroFilter == 0)
@@ -333,7 +370,7 @@ namespace MoreMegaStructure
                     for (int k = GameMain.data.factories.Length; k < GameMain.data.factories.Length + GameMain.galaxy.starCount; k++) // 加入巨构统计
                     {
                         int idx = GameMain.data.factories.Length + GameMain.galaxy.starCount - k - 1;
-                        if (idx < MoreMegaStructure.MegaArrayLength && MoreMegaStructure.StarMegaStructureType[idx] == 4) __instance.AddProductStatGroup(k);
+                        if (idx < MoreMegaStructure.MegaArrayLength && (MoreMegaStructure.StarMegaStructureType[idx] == 4 || MoreMegaStructure.StarMegaStructureType[idx] == 2)) __instance.AddProductStatGroup(k);
                     }
 
                     int starCount = __instance.gameData.galaxy.starCount;
@@ -502,7 +539,7 @@ namespace MoreMegaStructure
             for (int i = __instance.gameData.factories.Length; i < maxLen; i++)
             {
                 int starIndex =  endIndex - i;
-                if(MoreMegaStructure.StarMegaStructureType.Length > starIndex && starIndex >= 0 && MoreMegaStructure.StarMegaStructureType[starIndex] == 4)
+                if(MoreMegaStructure.StarMegaStructureType.Length > starIndex && starIndex >= 0 && (MoreMegaStructure.StarMegaStructureType[starIndex] == 4 || MoreMegaStructure.StarMegaStructureType[starIndex] == 2))
                     __instance.factoryStatPool[i].PrepareTick();
             }
             MMSCPU.EndSample(ECpuWorkEntryExtended.Statistics);
@@ -521,7 +558,7 @@ namespace MoreMegaStructure
             for (int i = __instance.gameData.factories.Length; i < maxLen; i++)
             {
                 int starIndex = endIndex - i;
-                if (MoreMegaStructure.StarMegaStructureType.Length > starIndex && starIndex >= 0 && MoreMegaStructure.StarMegaStructureType[starIndex] == 4)
+                if (MoreMegaStructure.StarMegaStructureType.Length > starIndex && starIndex >= 0 && (MoreMegaStructure.StarMegaStructureType[starIndex] == 4 || MoreMegaStructure.StarMegaStructureType[starIndex] == 2))
                 {
                     __instance.factoryStatPool[i].GameTick(time);
                     if (__instance.factoryStatPool[i].itemChanged && flag)
@@ -558,7 +595,7 @@ namespace MoreMegaStructure
             for (int i = __instance.gameData.factories.Length; i < maxLen; i++)
             {
                 int starIndex = endIndex - i;
-                if (MoreMegaStructure.StarMegaStructureType.Length > starIndex && starIndex >= 0 && MoreMegaStructure.StarMegaStructureType[starIndex] == 4)
+                if (MoreMegaStructure.StarMegaStructureType.Length > starIndex && starIndex >= 0 && (MoreMegaStructure.StarMegaStructureType[starIndex] == 4 || MoreMegaStructure.StarMegaStructureType[starIndex] == 2))
                     __instance.factoryStatPool[i].PrepareTick();
             }
         }
@@ -578,7 +615,7 @@ namespace MoreMegaStructure
             for (int i = __instance.gameData.factories.Length; i < maxLen; i++)
             {
                 int starIndex = endIndex - i;
-                if (MoreMegaStructure.StarMegaStructureType.Length > starIndex && starIndex >= 0 && MoreMegaStructure.StarMegaStructureType[starIndex] == 4)
+                if (MoreMegaStructure.StarMegaStructureType.Length > starIndex && starIndex >= 0 && (MoreMegaStructure.StarMegaStructureType[starIndex] == 4 || MoreMegaStructure.StarMegaStructureType[starIndex] == 2))
                     __instance.factoryStatPool[i].GameTick(time);
             }
         }

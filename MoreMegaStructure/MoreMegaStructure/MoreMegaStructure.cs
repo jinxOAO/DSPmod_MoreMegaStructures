@@ -1287,21 +1287,10 @@ namespace MoreMegaStructure
                         return;
                 }
 
-                FactoryProductionStat factoryProductionStat = null;
-                if (__instance.starData.planets.Length > 0)
-                {
-                    try
-                    {
-                        //PlanetFactory factory = __instance.starData.planets[__instance.starData.planets.Length - 1].factory;//科学枢纽的科研点产出算在0号星球上，目前测试0号是最内轨行星，如果是气态怎么办呢？
-                        //factoryProductionStat = statistics.production.factoryStatPool[factory.index];
-                        factoryProductionStat = statistics.production.factoryStatPool[0]; //这是母星的统计面板
-                    }
-                    catch (Exception)
-                    {
-                        factoryProductionStat = null;
-                        //Debug.LogWarning("factoryProductionStat didn't find.");
-                    }
-                }
+                // 研究点数不再记到母星 factoryStatPool[0]（会虚增母星/星系统计且无法单独查看该巨构），
+                // 改为记到该星系科学枢纽借用的尾部 factoryStatPool 槽位，使其与 IA 一样能进入所在星系/全星系
+                // 求和，并可在研究标签页的下拉里单独选中。GetIAFactoryStat 已含空/越界判断，与行星是否存在无关。
+                FactoryProductionStat factoryProductionStat = UIStatisticsPatcher.GetIAFactoryStat(idx);
 
                 int techHashedThisFrame = statistics.techHashedThisFrame;
                 long universeMatrixPointUploaded = history.universeMatrixPointUploaded;
