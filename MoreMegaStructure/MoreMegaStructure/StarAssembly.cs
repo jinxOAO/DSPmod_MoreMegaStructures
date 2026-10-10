@@ -737,27 +737,27 @@ namespace MoreMegaStructure
             int[] productRegister = null;
             int[] consumeRegister = null;
             int maxSlotCount = CalcMaxSlotIndex(__instance) + 1;
-            for (int i = 0; i < GameMain.galaxy.stars[starIndex].planetCount; i++)
+            if (UIStatisticsPatcher.enabled)
             {
-                PlanetData planet = GameMain.galaxy.stars[starIndex].planets[i];
-                if (planet != null)
+                // 直接取星际组装厂借用的尾部统计槽位，不依赖本星系是否存在行星工厂。
+                // 原实现把取借用槽位的逻辑塞在“遍历到某个有 factory 的行星”分支里，导致在没有任何行星工厂的星系
+                // 搭建 IA 时 productRegister/consumeRegister 始终为 null，实际产出无法写入统计（IA 页与星系合计都空）。
+                FactoryProductionStat iaStat = UIStatisticsPatcher.GetIAFactoryStat(starIndex);
+                if (iaStat != null)
                 {
-                    PlanetFactory factory = planet.factory;
-                    if (factory != null)
+                    productRegister = iaStat.productRegister;
+                    consumeRegister = iaStat.consumeRegister;
+                }
+            }
+            else
+            {
+                for (int i = 0; i < GameMain.galaxy.stars[starIndex].planetCount; i++)
+                {
+                    PlanetData planet = GameMain.galaxy.stars[starIndex].planets[i];
+                    if (planet != null)
                     {
-                        if (UIStatisticsPatcher.enabled)
-                        {
-                            if (GameMain.statistics.production.factoryStatPool.Length > factory.index
-                                && GameMain.data.factories.Length + GameMain.galaxy.starCount - starIndex - 1 < GameMain.statistics.production.factoryStatPool.Length)
-                            {
-                                //FactoryProductionStat factoryProductionStat = GameMain.statistics.production.factoryStatPool[factory.index];
-                                FactoryProductionStat factoryProductionStat = GameMain.statistics.production.factoryStatPool[GameMain.data.factories.Length + GameMain.galaxy.starCount - starIndex - 1];
-                                productRegister = factoryProductionStat.productRegister;
-                                consumeRegister = factoryProductionStat.consumeRegister;
-                                break;
-                            }
-                        }
-                        else
+                        PlanetFactory factory = planet.factory;
+                        if (factory != null)
                         {
                             FactoryProductionStat factoryProductionStat = GameMain.statistics.production.factoryStatPool[factory.index];
                             productRegister = factoryProductionStat.productRegister;

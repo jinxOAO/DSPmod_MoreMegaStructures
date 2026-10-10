@@ -1974,7 +1974,7 @@ namespace MoreMegaStructure
             LocalizationModule.RegisterTranslation("PF巨构总览", "MoreMegaStructure", "更多巨构", "");
             LocalizationModule.RegisterTranslation("PF主要逻辑", "MainLogic (MMS)", "主要逻辑（巨构）", "");
             LocalizationModule.RegisterTranslation("PF接收器", "Receivers", "接收器", "");
-            LocalizationModule.RegisterTranslation("PF星际组装厂", "Star Assembly", "星际组装厂", "");
+            LocalizationModule.RegisterTranslation("PF星际组装厂", "Interstellar Assembly", "星际组装厂", "");
             LocalizationModule.RegisterTranslation("PF货物生产", "Produce", "生产", "");
             LocalizationModule.RegisterTranslation("PF货物输送", "Cargo Transport", "货物输送", "");
             LocalizationModule.RegisterTranslation("PF恒星炮", "Star Cannon", "恒星炮", "");

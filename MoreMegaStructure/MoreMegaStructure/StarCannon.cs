@@ -474,6 +474,10 @@ namespace MoreMegaStructure
         }
 
 
+        public static bool CheckAndSearchAllTargets()
+        {
+            return CheckAndSearchAllTargets(-1);
+        }
 
         public static bool CheckAndSearchAllTargets(long gameTick = -1)
         {
