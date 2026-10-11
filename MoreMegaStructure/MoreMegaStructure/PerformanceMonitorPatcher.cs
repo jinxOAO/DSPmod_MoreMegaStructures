@@ -115,6 +115,24 @@ namespace MoreMegaStructure
         }
 
         /// <summary>
+        /// 供依赖本模组的第三方 mod 注册自定义性能统计项。
+        /// 若性能面板的饼图已经初始化过（ChartBase 已建立），会在主线程安全地重建尾部数组，
+        /// 保证迟到的注册项也能获得对应扇区；未重建过则仅登记，等面板打开时自然并入。
+        /// 返回值配合 BeginSample/EndSample 使用；重复调用本方法注册"同名项"会产生新条目，
+        /// 调用方应自行保证每项只注册一次（如放在自己插件的 Awake 中）。
+        /// </summary>
+        public static int RegisterEntry(string localizationKey, int level)
+        {
+            lock (entries)
+            {
+                entries.Add(new CpuEntry { Name = localizationKey, Level = level });
+                EnsureFrequency();
+                return entries.Count - 1;
+            }
+        }
+
+
+        /// <summary>
         /// 将一个枚举标识绑定到某个已注册的采样点索引，方便用枚举进行 Begin/End。
         /// </summary>
         public static void MapEnum(ECpuWorkEntryExtended entry, int index)

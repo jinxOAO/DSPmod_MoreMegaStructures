@@ -78,8 +78,6 @@ namespace MoreMegaStructure
         public static float shellOccDim = 0.3f;          // 单端/中点被挡(遮挡边界段)时的强度压暗系数, 柔化硬切边
         public static bool  starOccEnable = true;        // 恒星本体球遮挡(光束绕到星背后应消失)
         public static float starOccScale = 1.0f;         // [废弃方案配套] 恒星遮挡球半径 = viewRadius × 此值(仅 shellOccludeEnable=true 时生效)
-        // ★CPU遮挡诊断(废弃方案配套): 现行形态下保持 0 不刷屏; 仅 shellOccludeEnable=true 实验时置 1/2 抓数据。
-        public static int   shellOccDiag = 0;
         public static float clampFarScale = 0.9f;         // 原始(永不消失)方案生效系数: 端点以相机为球心钳制半径 farR = farClipPlane * 此值。只缩短不丢弃 => 光束在所有视角可见(遮挡可能偏保守)。
         public static float farKeep = 0.98f;              // 尊重深度方案的裁剪系数: 把光束线段沿相机前向深度裁到 [nearClipPlane, farClipPlane*farKeep] 之间, 保留真实位置/真实深度参与遮挡, 丢弃视锥外部分。因 D<=far 宽度不再爆炸(无玻璃), 且不伪钉深度(消除"远端被钳到固定深度->连后壳也误挡")。越接近1保留越长。
         public static float distAttenStrength = 0.85f;    // 子/侧光束距离衰减强度(0=不衰减,1=最强)
@@ -99,9 +97,6 @@ namespace MoreMegaStructure
         // 当前默认 3 = 核心+外辉（拿回光晕）。前提：bundle 里必须是 v5 及以后(外辉已 saturate 修复)，否则会重现 pow(负)->NaN 黑边。
         // 丝/Flare 仍关(bit2/bit3=0)；若未重打包 v5 先回到 1 只画核心。只改此值需重编 DLL。
         public static int debugKinds = 3;
-        // 诊断日志总开关: 关闭后不再打印周期性/信息性诊断日志(遮挡诊断/叠加诊断/shader 信息); 需要排查时置 true。材质初始化失败等一次性错误日志不受影响仍会打印。
-        // [本轮实验临时置 true] bullet 束模式需要 [MMS bulletBeam]/[MMS bulletMat] 日志判定子弹数量与 _Width/_Multiplier 默认值, 测完可改回 false。
-        public static bool diagLog = true;
         // 诊断开关: false=只显示现实视角叠加的原生 sailBullet 层(单独验证叠加); true=同时渲染我们自研的 ribbon shader 激光。现已恢复 ribbon 以看整体效果
         public static bool debugShowRibbon = true;
         // ===== 叠加层(sailBullet)外观调参 =====
@@ -252,7 +247,6 @@ namespace MoreMegaStructure
         private static readonly List<int> focusKeys = new List<int>();
         private static readonly List<int> blobKeys = new List<int>();
         private static ComputeBuffer buffer;
-        private static int capacity;
         private static Material mat;
         private static bool matFailed;
         private static bool matHasSize;         // 原生 bullet 材质是否有 _Size 属性(实测该 shader 无此属性, 保留仅为兼容)
@@ -290,15 +284,6 @@ namespace MoreMegaStructure
         private static readonly Vector3[] occCenter = new Vector3[11];
         private static readonly Quaternion[] occRot = new Quaternion[11];
         private static readonly float[] occMaxR = new float[11];
-        private static bool occShellAny;          // 本帧至少有一层壳通过游戏渲染条件(参与 CPU 遮挡)
-        private static bool occTopLogged;         // 部署自检只打一次
-        private static readonly bool[] occLayerLogged = new bool[11];   // 逐层坐标实目诊断只打一次(换存档/重建后重置)
-        // 诊断计数(每帧在 BuildRibbonSegs 开头清零): 各判定环节是否命中过
-        private static int dbgOccCalls, dbgOccPlanet, dbgOccStar, dbgOccSphereHit, dbgOccPolyHit, dbgOccProgHit;
-        private static int dbgRibbonSeen;    // CPU 判定分支实际进入次数(证明置顶模式代码路径生效)
-        private static bool dbgBranchLogged;
-        private static int dbgSegDrop, dbgSegDim;   // 本帧被 CPU 剔除/压暗的段数
-        private static int dbgProgSamp;             // 本帧进度门实目日志条数(防刷, 每帧最多5条)
         // 逐帧路由参数(BuildRibbonSegs 设置, RouteQuad 使用)
         private static Vector3 s_camPos;   // 相机(相对帧)位置
         private static float s_nearR;      // 近景球半径 = 载入星系最大戴森壳半径(dysonRadius*40000) * 冗余; 壳心 = 相对帧原点 = 本星系恒星(发射或接收端被载入者)
@@ -306,12 +291,10 @@ namespace MoreMegaStructure
         private static float s_reliableR;  // 相机深度可靠上限 = farClip * gpuDepthReliableFrac
         private static float s_fakeR;      // 伪钳分界 = clampR * 0.998: 超过即含被钳制(位置失真)的点
         private static float s_reliableFakeMin; // = min(s_reliableR, s_fakeR): 段两端相机距离超过它 → 深度不可靠, 走 Always+CPU
-        private static float dbgMinCamD;   // 本帧非置顶段中点的相机距离最小值(路由诊断)
         private static float s_clampR;     // 远景钳制半径 = farClipPlane * clampFarScale
         private static bool s_universe;    // 是否宇宙(主)视图; 星图/编辑器保持旧的"钳制 + LEqual"单分组
         private static float nearRadiusRedundancy = 1.2f; // 近景球相对最大壳半径的冗余系数(用户建议 ~1.2)
         private static ComputeBuffer segBuffer;
-        private static int segCapacity;
         private static Material laserMat;
         private static bool laserMatFailed;
         // ===== 真实深度+压带新分支状态 =====
@@ -551,7 +534,7 @@ namespace MoreMegaStructure
                     {
                         laserMat = UnityEngine.Object.Instantiate(m);
                         laserMat.hideFlags = HideFlags.HideAndDontSave;
-                        LogShaderDiag("加载材质", n, laserMat);
+                        ProbeShaderCapabilities(laserMat);
                         return true;
                     }
                     Shader sh = bundle.LoadAsset<Shader>(n);
@@ -559,7 +542,7 @@ namespace MoreMegaStructure
                     {
                         laserMat = new Material(sh);
                         laserMat.hideFlags = HideFlags.HideAndDontSave;
-                        LogShaderDiag("用shader创建材质", n, laserMat);
+                        ProbeShaderCapabilities(laserMat);
                         return true;
                     }
                 }
@@ -576,21 +559,13 @@ namespace MoreMegaStructure
             return false;
         }
 
-        // 诊断日志：打印实际加载到的 shader 版本特征，用于确认 bundle 里的 shader 是不是最新的双 Pass 版。
-        // 期望：passCount=2 且 _PulseParams/_FlowRand/_FlareTex 均为 True；否则说明游戏加载的是旧 shader(重打包未生效)。
-        private static void LogShaderDiag(string how, string n, Material m)
+        // 探测 bundle 里 shader 的能力(决定哪些深度分支可用): 缺 _ZCompress 等新版属性时自动降级到旧通道, 而不是"激光消失"。
+        // 判定依据就是这些 HasProperty 结果, 不再输出诊断文本。
+        private static void ProbeShaderCapabilities(Material m)
         {
             try
             {
-                Shader s = m != null ? m.shader : null;
-                string sname = s != null ? s.name : "(null)";
-                int pc = s != null ? s.passCount : -1;
-                bool pulse = m != null && m.HasProperty("_PulseParams");
-                bool flow = m != null && m.HasProperty("_FlowRand");
-                bool flare = m != null && m.HasProperty("_FlareTex");
-                bool laserTex = m != null && m.HasProperty("_LaserTex");
-                bool hasVer = m != null && m.HasProperty("_MMSVersion");
-                float ver = hasVer ? m.GetFloat("_MMSVersion") : -1f;
+                float ver = (m != null && m.HasProperty("_MMSVersion")) ? m.GetFloat("_MMSVersion") : -1f;
                 // 新分支能力探测: bundle 里的 shader 是否已含 _ZCompress(v15+)。缺它则宇宙视角自动回退 bullet 通道(而不是“激光消失”)。
                 laserHasZCompress = m != null && m.HasProperty("_ZCompress");
                 laserHasSysFold   = m != null && m.HasProperty("_SysFoldR");   // v16+ 才有
@@ -598,31 +573,8 @@ namespace MoreMegaStructure
                 laserHasSysPull    = m != null && m.HasProperty("_SysFoldPull");  // v18+ 才有: 落点回退
                 laserHasSysOuter   = m != null && m.HasProperty("_SysFoldOuterR"); // v19+ 才有: 逐视线落点 + 多层壳门控, 球壁真正可用的前提
                 laserShaderVer = ver;
-                if (diagLog)
-                Utils.Log("[StarCannonLaser] " + how + ": " + n + " | shader='" + sname + "' passCount=" + pc +
-                          " _MMSVersion=" + ver + (hasVer ? "" : "(无此属性=旧shader!)") +
-                          " _ZCompress=" + laserHasZCompress + " _SysFoldR=" + laserHasSysFold + " _ZDebug=" + laserHasVertexFold +
-                          " _SysFoldPull=" + laserHasSysPull + " _SysFoldOuterR=" + laserHasSysOuter +
-                          (_SysFoldRFmt()) +
-                          " _PulseParams=" + pulse + " _FlowRand=" + flow + " _FlareTex=" + flare + " _LaserTex=" + laserTex +
-                          "  (判定只看 _SysFoldOuterR=True(v19=逐视线落点: 最内层参考+最外层门控, 多层壳唯一可靠版) / 只有 _SysFoldPull=True 而无 _SysFoldOuterR=v18(单一壳半径建模, 内/外层仍会误挡) / _ZDebug=True(v17 折叠球比壳大, 被后壳误挡) / _SysFoldR=True(v16 解析式不可靠) / _ZCompress=True(v15平面壁) 且 passCount=1; _MMSVersion 是从 .mat 序列化值读出的旧数字, 不代表 shader 新旧, 可忽略)");
             }
             catch { }
-        }
-        // 诊断文案: bundle 里的 shader 不够新时自动降级, 并提醒重打包
-        private static string _SysFoldRFmt()
-        {
-            if (!laserHasSysOuter)
-            {
-                if (laserHasSysPull)
-                    return "  !!shader=v18(把一层的壳当单一半径球壁 => 比它外的层打得着壳打不着壁、比它内的层又落在落点之前, 仍会按层误挡), 自动退回平面壁: 需重打包到 v19!!";
-                if (laserHasVertexFold)
-                    return "  !!shader=v17(折叠球比壳大 => 激光被自己星系的后方壳层误挡), 自动退回平面壁: 需重打包到 v19!!";
-                if (laserHasSysFold)
-                    return "  !!shader=v16(解析式上限, 精度不够 => 激光不遮挡), 自动退回平面壁: 需重打包到 v19!!";
-                return "  !!shader=v15(无球壁), 宇宙视角自动退回平面壁模式: 需将 StarCannonLaser.shader 重新打包进 bundle!!";
-            }
-            return "";
         }
 
         // 复用已经被 CommonAPI 加载的 mmstabicon bundle 实例（不能对同一文件二次 LoadFromFile）
@@ -659,10 +611,6 @@ namespace MoreMegaStructure
             occluders.Clear();
             for (int oi = 0; oi <= 10; oi++) { occLayer[oi] = null; occMaxR[oi] = 0f; }   // 每帧全量重置, 防上一帧脏层残留
             occCam = cur.transform.position;
-            dbgOccCalls = dbgOccPlanet = dbgOccStar = dbgOccSphereHit = dbgOccPolyHit = dbgOccProgHit = 0;
-            dbgProgSamp = 0;
-            dbgRibbonSeen = dbgSegDrop = dbgSegDim = 0;   // ★诊断计数每帧清零(之前 seen 累加导致日志误导)
-            occShellAny = false;
             // ★真实深度压带分支(s_realDepth)下一概不需要 CPU 遮挡体: 遮挡全交给硬件深度。这里直接跳过整块重建,
             //   否则每帧白白构建遮挡体 + 上万次射线求交(历史上就是这部分把帧率拉到 10fps)。
             if (DysonSphere.renderPlace == ERenderPlace.Universe && viewStar != null && !(universeRibbonRealDepth && laserHasZCompress)
@@ -761,7 +709,6 @@ namespace MoreMegaStructure
             s_reliableR = cur.farClipPlane * Mathf.Clamp(gpuDepthReliableFrac, 0.1f, 0.99f);
             s_fakeR = s_clampR * 0.998f;
             s_reliableFakeMin = Mathf.Min(s_reliableR, s_fakeR);
-            dbgMinCamD = float.MaxValue;
 
             foreach (var kv in beams)
             {
@@ -841,30 +788,6 @@ namespace MoreMegaStructure
                     }
                 }
             }
-
-            // ★诊断汇总(挪到光束循环末尾): 之前打在循环前 calls 恒为刚清零的伪值。此处才是本帧真实判定链计数。
-            if (shellOccDiag > 0 && universe)
-            {
-                if (!occTopLogged)
-                {
-                    occTopLogged = true;
-                    Utils.Log("[MMS shellOcc] deploy-ok shellAny=" + occShellAny + " camDist=" + occCam.magnitude.ToString("F0") +
-                              " localStar=" + (gd.localStar != null ? gd.localStar.index : -1) +
-                              " spheres=" + (gd.dysonSpheres != null ? gd.dysonSpheres.Length : -1) +
-                              " mask=" + (gd.localStar != null && gd.dysonSpheres != null && gd.localStar.index >= 0 && gd.localStar.index < gd.dysonSpheres.Length && gd.dysonSpheres[gd.localStar.index] != null ? gd.dysonSpheres[gd.localStar.index].inGameRenderMaskL : -999) +
-                              " starDysonR=" + viewStar.dysonRadius + " nearR=" + s_nearR.ToString("F0") + " clampR=" + s_clampR.ToString("F0") +
-                              " viewR=" + viewStar.viewRadius.ToString("F0") + " physR=" + viewStar.physicsRadius.ToString("F0") +
-                              " relR=" + s_reliableR.ToString("F0") + " fakeR=" + s_fakeR.ToString("F0") +
-                              " beams=" + beams.Count + " topMode=" + (s_universe && shellOccludeEnable));
-                }
-                if (Time.frameCount % 90 == 0)
-                    Utils.Log("[MMS shellOcc] any=" + occShellAny + " occluders=" + occluders.Count +
-                              " seen=" + dbgRibbonSeen + " calls=" + dbgOccCalls + " planet=" + dbgOccPlanet + " shell=" + dbgOccStar +
-                              " sphereHit=" + dbgOccSphereHit + " poly=" + dbgOccPolyHit + " prog=" + dbgOccProgHit +
-                              " drop=" + dbgSegDrop + " dim=" + dbgSegDim +
-                              " segs=" + segs.Count + " far=" + segsFar.Count + " front=" + segsFront.Count +
-                              " minD=" + (dbgMinCamD >= float.MaxValue ? -1f : dbgMinCamD).ToString("F0") + " beams=" + beams.Count);
-            }
         }
 
         // 把一条 vb->ve 的光束细分成 n 段 ribbon quad；capStart/capEnd 复用为“全局沿长”(0..1)，供 shader 连续流动
@@ -883,7 +806,6 @@ namespace MoreMegaStructure
                 List<LaserSeg> tgt = group;
 
                 float midD = (mid - occCam).magnitude;
-                if (midD < dbgMinCamD) dbgMinCamD = midD;
                 // 用段两端的最大相机距离作判据: 只要有一个端点落入塌缩区/伪钳球, 整段深度都不可信
                 float dSeg = Mathf.Max(midD, Mathf.Max((q0 - occCam).magnitude, (q1 - occCam).magnitude));
                 if (front)
@@ -894,12 +816,6 @@ namespace MoreMegaStructure
                 else if (s_universe && shellOccludeEnable && dSeg > s_reliableFakeMin)
                 {
                     // ★深度不可靠段(进入 far 塌缩区, 或含被钳制的伪深度点): segsFar(Always) + CPU 判壳。
-                    dbgRibbonSeen++;
-                    if (shellOccDiag > 1 && !dbgBranchLogged)
-                    {
-                        dbgBranchLogged = true;
-                        Utils.Log("[MMS shellOcc] far-branch first: camD=" + dSeg.ToString("F0") + " relR=" + s_reliableR.ToString("F0") + " fakeR=" + s_fakeR.ToString("F0"));
-                    }
                     // 沿段 5 点采样: 壳开火时转得快, 3 点在旋转边界上极易闪烁("有的层挡住有的没挡住")。
                     // 两端同挡 或 ≥3 点挡(段主体在阴影里) => 整段丢弃; 1~2 点挡(压在边界) => 压暗柔化。
                     bool o0 = IsOccludedAny(q0);
@@ -908,8 +824,8 @@ namespace MoreMegaStructure
                     bool oa = IsOccludedAny(Vector3.Lerp(q0, q1, 0.25f));
                     bool ob = IsOccludedAny(Vector3.Lerp(q0, q1, 0.75f));
                     int hits = (o0 ? 1 : 0) + (o1 ? 1 : 0) + (om ? 1 : 0) + (oa ? 1 : 0) + (ob ? 1 : 0);
-                    if ((o0 && o1) || hits >= 3) { dbgSegDrop++; continue; }
-                    if (hits > 0) { segInten *= Mathf.Clamp01(shellOccDim); dbgSegDim++; }
+                    if ((o0 && o1) || hits >= 3) { continue; }
+                    if (hits > 0) { segInten *= Mathf.Clamp01(shellOccDim); }
                     tgt = segsFar;
                 }
                 else
@@ -1001,12 +917,7 @@ namespace MoreMegaStructure
             if (arr != null && viewStar.index >= 0 && viewStar.index < arr.Length) sp = arr[viewStar.index];
             if (sp == null && arr != null)                                 // 回退: 数组槽位与 starData.index 不吻合时全扫(老档/异常容错)
                 for (int i = 0; i < arr.Length; i++) if (arr[i] != null && arr[i].starData != null && arr[i].starData == viewStar) { sp = arr[i]; break; }
-            if (sp == null || sp.layersIdBased == null)
-            {
-                if (shellOccDiag > 1 && Time.frameCount % 90 == 0)
-                    Utils.Log("[MMS shellOcc] NO sphere: starIdx=" + viewStar.index + " arrLen=" + (arr != null ? arr.Length : -1));
-                return;
-            }
+            if (sp == null || sp.layersIdBased == null) return;
             // 星心在视图坐标系的位置(宇宙视角壳绘制公式: 视图平移 = starData.uPosition - relativePos 经 QInvRotateLF)
             Vector3 starC = (Vector3)Maths.QInvRotateLF(relativeRot, viewStar.uPosition - relativePos);
             for (int lid = 1; lid <= 10; lid++)
@@ -1027,15 +938,6 @@ namespace MoreMegaStructure
                 occCenter[lid] = starC;
                 occRot[lid] = layer.currentRotation;
                 occMaxR[lid] = maxR;
-                occShellAny = true;
-                // 坐标实目诊断(只打第一次激活): 星心视图坐标/相机/壳半径 —— 若 starC 量级不对一眼看穿
-                if (shellOccDiag > 1 && !occLayerLogged[lid])
-                {
-                    occLayerLogged[lid] = true;
-                    Utils.Log("[MMS shellOcc] L" + lid + " active: starC=" + starC + " |starC|=" + starC.magnitude.ToString("F0")
-                              + " camDist=" + (starC - occCam).magnitude.ToString("F0") + " maxR=" + maxR.ToString("F0")
-                              + " cursor=" + layer.shellCursor + " rot=" + layer.currentRotation);
-                }
             }
         }
 
@@ -1073,21 +975,14 @@ namespace MoreMegaStructure
                     if (d2 > r * r) continue;
                     if (oc2 < r * r && ptC2 < r * r) continue;            // 相机与目标点同在壳球内: 两者之间无壳面(穿壳交点在段外), 跳过 —— 消除壳内观战时 sphereHit 上万/帧的无效功
                     float thc = Mathf.Sqrt(r * r - d2);
-                    // 失败定位实目(diag>1, 只打前3次): 相机到壳心距 vs 壳半径 —— 球内/球外与交点范围一眼可见
-                    if (shellOccDiag > 1 && dbgOccSphereHit < 3)
-                        Utils.Log("[MMS shellOcc] test L" + lid + " k" + k + " r=" + r.ToString("F0") +
-                                  " |oc|=" + Mathf.Sqrt(oc2).ToString("F0") + " tca=" + tca.ToString("F0") +
-                                  " t1=" + (tca - thc).ToString("F0") + " t2=" + (tca + thc).ToString("F0") + " L=" + L.ToString("F0"));
                     for (int s = 0; s < 2; s++)
                     {
                         float t = (s == 0) ? tca - thc : tca + thc;       // 近/远两个球面交点都测: 后方壳(t>L)不挡, 前方壳(t在0..L)挡
                         if (t <= 0f || t >= L) continue;
-                        dbgOccSphereHit++;
                         Vector3 hp = occCam + dir * t;
                         Vector3 local = inv * (hp - occCenter[lid]);
                         if (!sh.IsPointInShell(new VectorLF3(local.x, local.y, local.z))) continue;
-                        dbgOccPolyHit++;
-                        if (ShellNodeProgress(sh, local) >= shellOccProgress) { dbgOccProgHit++; return true; }
+                        if (ShellNodeProgress(sh, local) >= shellOccProgress) return true;
                     }
                 }
             }
@@ -1117,24 +1012,14 @@ namespace MoreMegaStructure
             int total = (offs[idx + 1] - offs[idx]) * sh.cpPerVertex;
             if (total <= 0) return 0f;
             float pv = Mathf.Clamp01((float)cps[idx] / total);
-            // ★进度门实目: 多边形命中却进度不足时直接打印原始数据(与游戏 SetMaterialDynamicVars L1527 同式), 一眼看穿是索引错位还是数据真为0
-            if (pv < shellOccProgress && shellOccDiag > 0 && dbgProgSamp < 5)
-            {
-                dbgProgSamp++;
-                Utils.Log("[MMS shellOcc] prog-miss idx=" + idx + " cps=" + cps[idx] + "/" + total
-                          + " (offs " + offs[idx] + "->" + offs[idx + 1] + " cpPerV=" + sh.cpPerVertex + ")"
-                          + " nodes=" + cnt + " cpsLen=" + cps.Length + " offsLen=" + offs.Length
-                          + " p=" + pv.ToString("F3") + " nearD2=" + best.ToString("F0") + " localR=" + local.magnitude.ToString("F0"));
-            }
             return pv;
         }
 
         // 置顶模式统一遮挡判定入口: 星球/恒星(球) → 戴森壳块(多边形覆盖+进度+层可见)。
         private static bool IsOccludedAny(Vector3 pt)
         {
-            dbgOccCalls++;
-            if (IsOccludedByPlanet(pt)) { dbgOccPlanet++; return true; }
-            if (IsOccludedByShell(pt)) { dbgOccStar++; return true; }   // 此处 star 语义: 壳链总命中(细分计数见 sphereHit/poly/prog)
+            if (IsOccludedByPlanet(pt)) return true;
+            if (IsOccludedByShell(pt)) return true;
             return false;
         }
 
@@ -1268,21 +1153,6 @@ namespace MoreMegaStructure
             if (eps > 0.9f) eps = 0.9f;
             return eps;
         }
-        // 上述换算的反函数(仪表日志用): eps 对应的等效视深 z = f*n / (f - (1-eps)(f-n))
-        private static float ViewDepthForEps(float eps, float n, float f)
-        {
-            if (!(f > n + 0.01f) || eps <= 0f) return float.MaxValue;
-            float den = f - (1f - eps) * (f - n);
-            return den > 1e-9f ? f * n / den : float.MaxValue;
-        }
-        // 视深 z 对应的 device depth(非反转 [0,1] 约定, 越大越远)。用 double 算, 仅供日志报"壁与壳差几个 ulp"。
-        // 壁必须比壳远(此值大于壳的), 否则激光落在壳前 => 不会被遮; 差值小于 1~2 个 float32 ulp 则比较结果会随机。
-        private static double DevDepthOf(double z, double n, double f)
-        {
-            if (!(z > n) || !(f > n)) return 0.0;
-            return f * (z - n) / (z * (f - n));
-        }
-
         private static void UploadAndDrawRibbon()
         {
             // 分开渲染(用户方案): 近景(戴森壳内)真实深度 + ZTest LEqual => 与壳正确前后遮挡; 远景(壳外/跨星系)钳制 + ZTest Always => 永不消失。
@@ -1307,52 +1177,6 @@ namespace MoreMegaStructure
                 DrawRibbonGroup(segs, zm, projFactor, clipFar, eps, s_sysFoldR, fade);
                 DrawRibbonGroup(segsFront, zm, projFactor, clipFar, eps, s_sysFoldR, fade);   // 新方案下通常为空
                 DrawRibbonGroup(segsFar, zm, projFactor, clipFar, eps, s_sysFoldR, fade);
-                if (diagLog && Time.frameCount % 60 == 0)
-                {
-                    // 仪表行 1: 分组数量 + 本帧到底走了哪条深度路径(sys=球壁半径 / plane=平面壁 / off=不压)
-                    Utils.Log("[MMS realDepth] ztest=" + zm + " segs=" + segs.Count + " front=" + segsFront.Count +
-                              " far=" + segsFar.Count + " beams=" + beams.Count +
-                              " wall=" + (s_sphereWall ? "sphere" : (s_zTargetR > 0f ? "plane" : "off")) +
-                              " fade=" + fade.ToString("F2") +
-                              " drawR=" + (s_drawR >= float.MaxValue ? "none" : s_drawR.ToString("F0")) +
-                              " ver=" + laserShaderVer.ToString("F0"));
-                    // 仪表行 2: 壁参数。camD=相机到载入恒星, shellR=默认层半径(dysonRadius*40000), rMin/rMax=逐层扫描到的最内/最外壳半径,
-                    // layers=可见壳层数, sysR=落点参考半径(下发 _SysFoldR), outerR=门控半径(下发 _SysFoldOuterR),
-                    // wall=平面壁模式的目标视深, eps=远平面兜底, epsZ=eps 真正等效的视深, frontShellZ/rearShellZ=前/后壳层视深。
-                    Utils.Log("[MMS zWall] near=" + s_dbgNear.ToString("E2") + " far=" + s_dbgFar.ToString("E2") +
-                              " camD=" + s_dbgCamStarD.ToString("E2") + " shellR=" + s_dbgShellR.ToString("E2") +
-                              " layers=" + s_shellLayerN + " rMin=" + s_shellRMin.ToString("E2") + " rMax=" + s_shellRMax.ToString("E2") +
-                              " sysR=" + (s_sysFoldR > 0f ? s_sysFoldR.ToString("E2") : "off") +
-                              " outerR=" + (s_sysFoldOuter > 0f ? s_sysFoldOuter.ToString("E2") : "off") +
-                              " refMul=" + ribbonSysRefMul + " pullFrac=" + ribbonSysPullFrac + " pull=" + s_sysFoldPull.ToString("E2") +
-                              " camInShell=" + (s_dbgCamStarD < s_shellRMax ? "yes" : "no") +
-                              " mul=" + ribbonDepthTargetMul +
-                              " planeWall=" + (s_zTargetR > 0f ? s_zTargetR.ToString("E2") : "-") +
-                              " eps=" + eps.ToString("E2") + " epsZ=" + ViewDepthForEps(eps, s_dbgNear, s_dbgFar).ToString("E2") +
-                              " maxD=" + cur_MaxViewDist.ToString("E2") +
-                              " frontShellZ=" + Math.Max(1.0, s_dbgCamStarD - s_shellRMin).ToString("E2") +
-                              " rearShellZ=" + (s_dbgCamStarD + s_shellRMin).ToString("E2"));
-                    // 仪表行 3(关键证据): 落点与**最内层后半球面**在 device depth 上的间距。★必须为正: 激光落在它之前。
-                    // 最内层是最严格的基准: 激光能在它之前(marginUlp>0), 更外层的后半球面比它更远, 自然也在激光之后; 而前半球面(近约 2 个壳半径)照样能挡住激光。
-                    // (v17 及更早把壁放在壳外 => 这里是负值 => "激光被自己星系后方的壳层挡住", 与实际观察到的现象同根。)
-                    if (s_sphereWall)
-                    {
-                        double nd = s_dbgNear, fd = s_dbgFar;
-                        double devLaser = DevDepthOf((double)s_dbgCamStarD + s_sysFoldR - s_sysFoldPull, nd, fd);
-                        double devShell = DevDepthOf((double)s_dbgCamStarD + s_shellRMin, nd, fd);
-                        double devRearOuter = DevDepthOf((double)s_dbgCamStarD + s_shellRMax, nd, fd);
-                        double devFront = DevDepthOf(Math.Max((double)s_dbgNear * 1.001, (double)s_dbgCamStarD - s_shellRMin), nd, fd);
-                        double marginUlp = (devShell - devLaser) / 1.1920929e-7;
-                        Utils.Log("[MMS zGap] devLaser=" + devLaser.ToString("F9") + " devShell=" + devShell.ToString("F9") +
-                                  " marginUlp=" + marginUlp.ToString("F1") +
-                                  (marginUlp < 0.0 ? "  !!负=激光在最内层后壳之后 => 必被后方壳层误挡 => 调大 ribbonSysPullFrac"
-                                   : marginUlp < 2.0 ? "  !!小于 2 个 ulp, 次序会被舍入噪声主导 => 调大 ribbonSysPullFrac" : "") +
-                                  " vsOuterUlp=" + ((devRearOuter - devLaser) / 1.1920929e-7).ToString("F0") +
-                                  " frontMarginUlp=" + ((devLaser - devFront) / 1.1920929e-7).ToString("F0") +
-                                  " pull=" + s_sysFoldPull.ToString("E2") +
-                                  " dbg=" + (ribbonZDebug ? "ON" : "off") + " fold=per-ray-land(innerR)-pull(outerR=gate)");
-                    }
-                }
                 return;
             }
             DrawRibbonGroup(segs, s_universe ? 8 : ztestMode, projFactor, clipFar, 0f, 0f, haloFadeFrac);
@@ -1377,7 +1201,6 @@ namespace MoreMegaStructure
                 while (nc < count) nc *= 2;
                 if (segBuffer != null) segBuffer.Release();
                 segBuffer = new ComputeBuffer(nc, SEG_STRIDE, ComputeBufferType.Default);
-                segCapacity = nc;
                 System.Array.Resize(ref segScratch, nc);
             }
             list.CopyTo(0, segScratch, 0, count);
@@ -1439,14 +1262,6 @@ namespace MoreMegaStructure
                 matZMinDefault = matHasZMin ? mat.GetFloat("_ZMin") : 0f;
                 matHasZMax = mat.HasProperty("_ZMax");
                 matZMaxDefault = matHasZMax ? mat.GetFloat("_ZMax") : 1f;
-                if (diagLog)
-                    Utils.Log("[MMS bulletMat] props: _Size=" + matHasSize + "/" + matSizeDefault +
-                              " _Width=" + matHasWidth + "/" + matWidthDefault +
-                              " _Multiplier=" + matHasMult + "/" + matMultDefault +
-                              " _DistScalePoint=" + matHasDistScale + "/" + matDistScaleDefault +
-                              " _ZMin=" + matHasZMin + "/" + matZMinDefault +
-                              " _ZMax=" + matHasZMax + "/" + matZMaxDefault +
-                              " shader=" + (mat.shader != null ? mat.shader.name : "null"));
             }
             catch (Exception e)
             {
@@ -1509,13 +1324,6 @@ namespace MoreMegaStructure
                     }
                 }
             }
-
-            // 诊断(节流): 确认三种角色是否各自进入叠加桶, 尤其问题3"汇聚看不见"是门控没命中还是纯粗细/亮度问题
-            if (diagLog && Time.frameCount % 45 == 0)
-                Utils.Log("[MMS overlay] localIdx=" + localIdx + " beams=" + beams.Count +
-                          " main=" + mainKeys.Count + " focus=" + focusKeys.Count + " blob=" + blobKeys.Count +
-                          " focusBright=" + focusBright.ToString("F3") +
-                          " sizeProp=" + matHasSize + " sizeDefault=" + matSizeDefault);
 
             // 主光束(反思修复): 只渲染"玩家所在那一端"的近端段 L=2×该端恒星最大戴森壳半径。
             //   之前整根 begin->end 都渲染, 玩家站在发射星时目标端离相机几百万单位→精灵只有几像素→"接收端还是很细"。
@@ -1723,7 +1531,6 @@ namespace MoreMegaStructure
             if (viewStar == null) return;
             if (!TryInitMaterial()) return;                    // 原生材质不可用 => 调用方(Render 入口)回退 ribbon
             int localIdx = viewStar.index;
-            int nMain = -1, nFocus = -1, nSub = -1;             // 诊断: 各桶实际提交的子弹数
             VectorLF3 relativePos = gd.relativePos;
             Quaternion relativeRot = gd.relativeRot;
             VectorLF3 viewTarget = UIStarmap.viewTargetStatic;
@@ -1766,7 +1573,6 @@ namespace MoreMegaStructure
                 }
                 Color mc = DefaultColor;
                 mc *= Mathf.Clamp01(mainBright);
-                nMain = pool.Count;
                 if (pool.Count > 0) UploadAndDraw(mc, overlaySizeMain);
             }
             // 主激光端束股数用 bulletEndBundleStrands(实芯端头), 汇聚/攻击用 side 档
@@ -1783,7 +1589,6 @@ namespace MoreMegaStructure
                 }
                 Color fc = DefaultColor;
                 fc *= Mathf.Clamp01(focusBright);
-                nFocus = pool.Count;
                 if (pool.Count > 0) UploadAndDraw(fc, overlaySizeFocus);
             }
             // 攻击子激光: 压暗防大量重叠糊团(与旧叠加层同策略)
@@ -1799,19 +1604,8 @@ namespace MoreMegaStructure
                 }
                 Color bc = DefaultColor;
                 bc *= subIntensityScale;
-                nSub = pool.Count;
                 if (pool.Count > 0) UploadAndDraw(bc, overlaySizeSub);
             }
-
-            // 诊断(节流): 确认三类光束是否真进了 bullet 通道 + 每帧子弹量(性能预算) + _Width/_Multiplier 默认值
-            if (diagLog && Time.frameCount % 60 == 0)
-                Utils.Log("[MMS bulletBeam] localIdx=" + localIdx + " beams=" + beams.Count +
-                          " main=" + mainKeys.Count + "/" + nMain + " focus=" + focusKeys.Count + "/" + nFocus +
-                          " sub=" + blobKeys.Count + "/" + nSub +
-                          " mainBright=" + mainBright.ToString("F2") + " focusBright=" + focusBright.ToString("F2") +
-                          " W=" + matHasWidth + "/" + matWidthDefault + " M=" + matHasMult + "/" + matMultDefault +
-                          " DS=" + matHasDistScale + "/" + matDistScaleDefault + " Z=" + matHasZMin + "/" + matZMinDefault + "-" + matZMaxDefault + "/" + matHasZMax +
-                          " cap=" + capacity);
         }
 
         // 玩家在哪个系, 那一端的端束股数加权(近端观战时恒星一侧不再显得浅)
@@ -1940,7 +1734,6 @@ namespace MoreMegaStructure
                 while (nc < count) nc *= 2;
                 if (buffer != null) buffer.Release();
                 buffer = new ComputeBuffer(nc, STRIDE, ComputeBufferType.Default);
-                capacity = nc;
                 System.Array.Resize(ref bulletScratch, nc);
             }
             pool.CopyTo(0, bulletScratch, 0, count);

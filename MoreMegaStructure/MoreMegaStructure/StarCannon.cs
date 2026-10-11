@@ -780,8 +780,6 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(DysonSphere), "GameTick")]
         public static void StarCannonUpdate(ref DysonSphere __instance, long gameTick)
         {
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.StarCannon);
             if (__instance == null || __instance.layersIdBased == null)
                 return;
 
@@ -795,6 +793,8 @@ namespace MoreMegaStructure
             if (__instance.energyGenCurrentTick < 10000)
                 return;
 
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.StarCannon);
             RefreshStarCannonProperties();
             starCannonStarIndex = starIndex;
 
