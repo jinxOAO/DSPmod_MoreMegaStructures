@@ -26,7 +26,32 @@ Shader "MMS/StarCannonLaser"
         _ClipFar ("外辉远端深度渐隐-相机远裁剪半径(视图单位)", Float) = 1000000000
         _HaloFadeFrac ("外辉远端深度渐隐起点(占裁剪半径比例)", Float) = 0.4
         _ZTestMode ("深度测试(0=Disable 2=Less 3=Equal 4=LessEqual 5=Greater 7=GreaterEqual 8=Always)", Int) = 8
-        _MMSVersion ("Version(勿改, 仅供日志校验; 14=暴露_ZTestMode供遮挡诊断)", Float) = 14
+        // 远平面兜底 eps: >0 时把顶点裁剪深度压到 z <= w*(1-eps)。只用作"超出硬件 far 的部分"的兜底(取极小值 1e-7)。
+        // 必须保留: 当相机离载入星系很远(整个星系超出 far)时, 连近端起点自己的视深都 > far => 不兜底就会被远平面切断。
+        // 这个量对应多远的视深无关紧要(它只在"实在无处可放"时才接住顶点), 但绝不能拿它当主壁: 主壁 = 上面的球壁。
+        _ZCompress ("远平面兜底 eps(0=关闭)", Float) = 0
+        // 球形深度壁的"触发球"半径(视图单位, 0=关闭): 球心 = 视图帧原点 = 载入恒星 = 戴森壳心。
+        // ★为什么必需是球而不是平面: 壳是球面, 沿离轴角 θ 的壳面视深 = R*cosθ; 固定视深的平面壁会让
+        //   屏幕中心(θ小)与边缘(θ大)的遮挡次序恰好反过来(边界为半顶角 acos(wall/R) 的圆锥, 实测 17.9° 对应 mul=0.95)。
+        // ★为何在 shader 里做而不是 CPU 改形状: 沿相机射线改顶点位置虽然不改单点投影, 但 ribbon 的 dir/sideV/宽度
+        //   是从两端点之差重新算的 -> 长尾多段折到球面同一片区域后 quad 退化(直接塌缩看不见) = 远端被截断(已踩过此坑)。
+        //   本 shader 只对"用来投影的坐标"做折叠, 形状/宽度/方向全部用原始坐标算 => 两者兼得。
+        // ★★★ [v19 多层壳修正] 一个恒星最多有 10 层戴森壳, 每层自己的 orbitRadius 不同(源码: minOrbitRadius=physicsRadius*1.5,
+        //   maxOrbitRadius = defOrbitRadius*2 = dysonRadius*40000*2), 且各层独立旋转。把"一层的壳"当成一个整体球壁是错的:
+        //   只取单一半径(旧版用 defOrbitRadius) 时, 比它外的层"打得到壳、打不到壁" => 那圈不折 => 被 far 兜底钉到最远 => 误挡,
+        //   屏幕上就是一圈圈"按壳层显露"的边界。现在改成逐视线的规则:
+        //   激光落点 = 这条视线上**最近的那个后侧壳面**再往相机方向回退 _SysFoldPull。
+        //   ⇒ 每一层的后半球都被激光盖住, 而前半球(比落点近很多)照样能挡住激光 —— 不存在任何环带漏洞。
+        // 实现: 以 ρ = 视线到星心(帧原点)的垂距为参, 取参考半径 rt = max(_SysFoldR, ρ), 落点 = -b + sqrt(rt^2-ρ^2) - pull。
+        //   ρ < _SysFoldR 时就是球面远交点; ρ ≥ _SysFoldR 时自然退化到"星心在该视线上的最近点", 且 rt^2-ρ^2 永远 ≥ 0(无打空分支)。
+        _SysFoldR ("落点参考半径=最内层壳半径(0=关闭)", Float) = 0
+        _SysFoldOuterR ("门控半径=最外层壳半径(0=不门控)", Float) = 0
+        // 落点沿射线向相机回退量(视图单位, 0=贴参考面): 保证激光严格在该参考面**之前**。按 float32 ulp 留余量(见 C# 的 [MMS zGap])。
+        _SysFoldPull ("落点沿射线回退量(0=贴参考面)", Float) = 0
+        // 诊断用: >0 时把本顶点最终裁剪深度(device depth, 0=近平面 1=远平面)分档编进颜色:
+        // 红=接近 0(上限算坏, 永不遮挡的典型特征), 蓝=中等(真实深度), 绿=接近远端(已折到球壁), 紫=被 far 兜底钉住。测试完请关回 0。
+        _ZDebug ("深度自检着色(0=关)", Float) = 0
+        _MMSVersion ("Version(勿改, 仅供日志校验; 19=逐视线落点:最内层参考+最外层门控)", Float) = 19
     }
 
     CGINCLUDE
@@ -53,7 +78,63 @@ Shader "MMS/StarCannonLaser"
     float  _ClipFar;       // 相机远裁剪半径(视图单位)；外辉按到相机距离接近它时淡出
     float  _HaloFadeFrac;  // 从该比例的裁剪半径处开始深度渐隐
     int    _ZTestMode;     // 深度测试模式(渲染状态用, 见 Properties)：遮挡诊断期间由 C# SetInt 覆盖
+    float  _ZCompress;     // 远平面兜底 eps; 0=关闭。由 C# 仅在"宇宙现实视角"下发非零, 其它视角维持旧行为
+    float  _SysFoldR;      // 落点参考半径 = 最内层壳半径(视图单位); 0=关闭
+    float  _SysFoldOuterR; // 门控半径 = 最外层壳半径; 视线垂距超过它就完全不折(那里没有任何壳); 0=不门控
+    float  _SysFoldPull;   // 落点沿射线向相机回退量(视图单位); 0=贴在参考面上
+    float  _ZDebug;        // 深度自检着色开关
     float  _MMSVersion;   // 版本指纹，不参与渲染，仅供 C# 日志校验 bundle 里是不是最新 shader
+
+    // 逐视线的球形深度壁: 把顶点沿【相机->该点】射线折到"该视线上最近的后侧壳面再往相机回退 _SysFoldPull"的位置,
+    // 然后走**同一个 UNITY_MATRIX_VP** 投影。星心 = 帧原点, 所以一个 ρ 就完全描述了这条视线。
+    // 只折"用来投影的坐标": 图元的形状/宽度/方向仍然完全由原始 beginPos/endPos 算(那些在 LineVert 里已经算完),
+    // 而沿相机射线折叠本身不改变屏幕投影位置 => 既不塌缩(不截断)也不变形。
+    // ★关键: 绝不能自己拿解析式 d = f(z-n)/(z(f-n)) 算上限再写回 v.z!
+    //   壁与壳的半径差只占几个百分点, 换算到 device depth 只有 ~3e-7, 而 float32 在 1.0 附近的 ulp = 1.19e-7,
+    //   解析式里 f*(z-n) 与 z*(f-n) 又是 5.9e9 量级(ulp=512, 相对误差 ~8.6e-8) => 舍入误差与信号同量级且系统性偏小,
+    //   结果就是激光稳定地落在壳前 => "完全不遮挡 + 也永远不会被 far 切断"(用户实测到的两条现象同根)。
+    //   投影走同一个矩阵 => 深度与游戏自己画的戴森壳逐位同构, 只差真实的那几个百分点。
+    // dev: 输出本顶点最终的 device depth(0..1), 仅在 _ZDebug>0 时被片元拿去编色。
+    //   ★用 out 参数而不是裸全局变量: HLSL 里未加语义的全局会被归进 $Globals 常量缓冲, 在函数内写它
+    //     在部分 fxc 版本上直接编译失败 => Unity 打包时报错、bundle 里只剩旧 shader(排查代价极大)。
+    float4 BandZ(float3 wp, out float dev)
+    {
+        float3 zc = wp;
+        if (_SysFoldR > 0.0)
+        {
+            float3 cam = _WorldSpaceCameraPos;          // 与 wp 同坐标系(视图帧), 已由 D=distance(camPos,p) 的宽度/渐隐行为验证
+            float3 dv = wp - cam;
+            float  dist = length(dv);
+            if (dist > 1e-3)
+            {
+                float3 dir = dv / dist;
+                float  cc  = dot(cam, cam);
+                float  b   = dot(cam, dir);                    // 星心到射线的有符号投影(相机前方分量)
+                float  rho2 = max(cc - b * b, 0.0);            // 视线到星心的垂距^2
+                // 门控: 视线连最外层壳都擦不到 => 那条视线上没有任何后侧壳面需要绕开 => 保留真实深度(交给 far 兜底)
+                if (_SysFoldOuterR <= 0.0 || rho2 < _SysFoldOuterR * _SysFoldOuterR)
+                {
+                    // rt = max(最内层半径, ρ): ρ 小于最内层时落点就在最内层球面上; ρ 更大时落点自然退化成"星心最近点"
+                    // 此时 rt^2 - ρ^2 恒 >= 0, 所以绝不会出现"打空"分支 => 没有任何环带漏洞
+                    float  rt  = max(_SysFoldR, sqrt(rho2));
+                    float  tLand = -b + sqrt(max(rt * rt - rho2, 0.0)) - _SysFoldPull;
+                    if (tLand > 0.0 && tLand < dist) zc = cam + dir * tLand;   // 只有比落点更远的顶点才折
+                }
+            }
+        }
+        float4 v = mul(UNITY_MATRIX_VP, float4(zc, 1.0));
+        // 兜底: 折完仍然在硬件远平面之外(相机离星系太远 / 视线打不到球)时, 把 z 钉在 far 内侧, 否则会被远平面裁掉。
+        if (_ZCompress > 0.0 && v.w > 0.0)
+        {
+            #if defined(UNITY_REVERSED_Z)
+                v.z = max(v.z, v.w * _ZCompress);          // reversed-Z: 远平面在 0 侧
+            #else
+                v.z = min(v.z, v.w * (1.0 - _ZCompress));  // 非反转(本作的 GL 兼容路径, 深度重映射到[0,1]): 远平面在 1 侧
+            #endif
+        }
+        dev = (v.w > 0.0) ? (v.z / v.w) : 0.0;
+        return v;
+    }
 
     struct appdata { uint id : SV_VertexID; };
 
@@ -66,15 +147,17 @@ Shader "MMS/StarCannonLaser"
         float2 cap    : TEXCOORD3;
         float2 uv     : TEXCOORD4;
         float  kind   : TEXCOORD5;
+        float  dev    : TEXCOORD6;
     };
 
     // 把该 quad 收成零面积(不可见)：四个顶点塌到同一点
     v2f Collapse(LaserSeg s)
     {
         v2f o;
-        o.vertex = mul(UNITY_MATRIX_VP, float4(s.beginPos, 1.0));
+        float dev;
+        o.vertex = BandZ(s.beginPos, dev);
         o.sideUV = 0; o.along = 0; o.uv = 0; o.cap = 0;
-        o.col = fixed4(0,0,0,0); o.kind = s.kind;
+        o.col = fixed4(0,0,0,0); o.kind = s.kind; o.dev = dev;
         return o;
     }
 
@@ -89,9 +172,10 @@ Shader "MMS/StarCannonLaser"
         float  dl   = length(dvec);
         if (dl < 1e-3)   // 退化线段：塌成零面积不可见，避免 normalize 产生 NaN 撑成巨大垃圾四边形
         {
-            o.vertex = mul(UNITY_MATRIX_VP, float4(s.beginPos, 1.0));
+            float devDeg;
+            o.vertex = BandZ(s.beginPos, devDeg);
             o.sideUV = 0; o.along = 0; o.uv = 0; o.cap = 0;
-            o.col = fixed4(0,0,0,0); o.kind = s.kind;
+            o.col = fixed4(0,0,0,0); o.kind = s.kind; o.dev = devDeg;
             return o;
         }
         float3 dir    = dvec / dl;
@@ -129,7 +213,7 @@ Shader "MMS/StarCannonLaser"
             halfW *= smoothstep(0.0, ef, gae) * smoothstep(0.0, ef, 1.0 - gae);
         }
         float3 pos   = p + sideV * (side * halfW);
-        o.vertex  = mul(UNITY_MATRIX_VP, float4(pos, 1.0));
+        o.vertex  = BandZ(pos, o.dev);
         o.sideUV  = side;
         o.along   = along;
         o.uv      = float2(along, side * 0.5 + 0.5);
@@ -154,7 +238,7 @@ Shader "MMS/StarCannonLaser"
         float3 right = float3(UNITY_MATRIX_V[0][0], UNITY_MATRIX_V[1][0], UNITY_MATRIX_V[2][0]);
         float3 up    = float3(UNITY_MATRIX_V[0][1], UNITY_MATRIX_V[1][1], UNITY_MATRIX_V[2][1]);
         float3 pos   = s.beginPos + (right * sx + up * sy) * s.halfWidth;
-        o.vertex = mul(UNITY_MATRIX_VP, float4(pos, 1.0));
+        o.vertex = BandZ(pos, o.dev);
         o.sideUV = sx; o.along = sy;
         o.uv = float2(sx * 0.5 + 0.5, sy * 0.5 + 0.5);
         o.col  = (fixed4)(s.color * s.intensity);
@@ -179,6 +263,22 @@ Shader "MMS/StarCannonLaser"
         phase += (tex2D(_NoiseTex, float2(ga * 0.7 - t * 0.15, 0.33)).r - 0.5) * _FlowRand;
         float pulse = pow(0.5 + 0.5 * sin(phase * 6.2831853), _PulseParams.z);
         float amt = profile * (1.0 - _PulseParams.w * 0.5 + _PulseParams.w * pulse);
+
+        // [深度自检] _ZDebug>0 时把 device depth 分档编色(加法混合下直接看颜色就能判深度落在哪个区间):
+        //   红 = d < 0.02 相当于贴近平面 => 它永远不会被任何东西遮住(上限算坏的故障特征)
+        //   蓝 = 0.02..0.98 中等深度(真实几何就在此区间, 会被前方的壳/星体遮)
+        //   绿 = d >= 0.98 靠近远平面但未被钉(典型: 已折到球壁)
+        //   紫 = d >= 1-eps 被远平面兜底钉住(整个系统超出 far)
+        if (_ZDebug > 0.5)
+        {
+            float dd = saturate(i.dev);
+            float3 tint = float3(1, 0, 0);
+            tint = lerp(tint, float3(0, 0, 1), smoothstep(0.02, 0.06, dd));
+            tint = lerp(tint, float3(0, 1, 0), smoothstep(0.98, 0.985, dd));
+            tint = lerp(tint, float3(0.7f, 0, 1), saturate((dd - (1.0 - _ZCompress)) * 1e7));
+            amt *= 2.2;
+            return fixed4(tint * amt, 1);
+        }
 
         return i.col * amt;   // 末端不再按百分比渐隐(起点可藏在恒星里)
     }
@@ -219,6 +319,17 @@ Shader "MMS/StarCannonLaser"
             float amt = profile * (0.7 + 0.6 * sin(i.along * 20.0 + t * 22.0));
             amt *= lerp(1.0, saturate(i.along * 24.0), i.cap.x) * lerp(1.0, saturate((1.0 - i.along) * 24.0), i.cap.y);
             result = i.col * amt;
+        }
+        // [深度自检] 与 FragCore 同一套分档编色(只对外辉/丝生效, Flare 保持原样便于对比)
+        if (_ZDebug > 0.5 && i.kind < 2.5)
+        {
+            float dd = saturate(i.dev);
+            float3 tint = float3(1, 0, 0);
+            tint = lerp(tint, float3(0, 0, 1), smoothstep(0.02, 0.06, dd));
+            tint = lerp(tint, float3(0, 1, 0), smoothstep(0.98, 0.985, dd));
+            tint = lerp(tint, float3(0.7f, 0, 1), saturate((dd - (1.0 - _ZCompress)) * 1e7));
+            float lum = max(max(result.r, result.g), result.b);
+            result = fixed4(tint * lum * 2.2, 1);
         }
         return result;
     }

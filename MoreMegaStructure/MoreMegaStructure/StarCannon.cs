@@ -42,7 +42,7 @@ namespace MoreMegaStructure
         public static int laserBulletEndPosDelta = 75; // 主激光命中处随机偏移（激光命中处半径）
         //public static int laserAttackPosDelta = 1000; // 次级攻击激光发射处随机偏移
         public static int maxSideLaserIntensity = 5; //12束集束激光子弹数
-        public static int focusBeamMaxBar = 100;      // 预热/集束汇聚激光最多发射的根数(受第1层已建 node 数限制; 可试 100)
+        public static int focusBeamMaxBar = 36;      // 预热/集束汇聚激光最多发射的根数(受第1层已建 node 数限制; 可试 100)
         public static float sideLaserBulletLifeTime = 0.1f;
         public static VectorLF3 normDirection = new VectorLF3(0, 1, 0);
         public static int reverseDirection = 1; //只能是1或者-1，1是北极为炮口，-1则是南极。相当于设计恒星炮时所有层级南北极互换
@@ -421,6 +421,16 @@ namespace MoreMegaStructure
 
             ref EnemyData ptr0 = ref spaceSector.enemyPool[id];
             if (ptr0.id <= 0) // 目标已不存在
+                return false;
+
+            // 校验目标仍属于当前瞄准的星系, 防止 pool 槽位被其他星系的实体复用后误伤
+            if (ptr0.originAstroId < 1000000)
+                return false;
+            int hiveIdx = ptr0.originAstroId - 1000000;
+            if (spaceSector.dfHivesByAstro == null || hiveIdx >= spaceSector.dfHivesByAstro.Length)
+                return false;
+            EnemyDFHiveSystem hive = spaceSector.dfHivesByAstro[hiveIdx];
+            if (hive == null || hive.starData == null || hive.starData.index != currentTargetStarIndex)
                 return false;
 
             if (ptr0.dfRelayId > 0)
