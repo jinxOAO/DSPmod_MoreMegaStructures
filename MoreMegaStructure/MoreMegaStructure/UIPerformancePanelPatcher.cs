@@ -67,6 +67,7 @@ namespace MoreMegaStructure
         /// 逐条追加自定义统计项。缩进风格与游戏原生 AppendCpuStatEntry 对齐：
         /// level 0 顶格，level 1 用 "  · "，level 2 用 "    - "，更深一级多两个空格。
         /// 每个统计项恰好向三列各写入一行，保证列之间行数一致。
+        /// 绝不与主线程数值相加 —— 并发线程的耗时相加得到的是 CPU 时间总和，不是墙上占用。
         /// </summary>
         private static void AppendCustomEntries(StringBuilder label, StringBuilder value1, StringBuilder value2, double total)
         {
@@ -75,9 +76,12 @@ namespace MoreMegaStructure
             {
                 int level = MMSCPU.GetLevel(i);
                 label.Append(GetIndent(level));
-                label.AppendLine(MMSCPU.GetName(i));
+                label.Append(MMSCPU.GetName(i));
 
                 double seconds = MMSCPU.GetShowingSeconds(i);
+                double worker = MMSCPU.GetWorkerSeconds(i);
+                label.AppendLine();
+
                 if (seconds >= 2.5E-07)
                 {
                     value1.AppendFormat("{0:0.000} ms\r\n", seconds * 1000.0);
@@ -96,6 +100,7 @@ namespace MoreMegaStructure
                     value2.AppendFormat("{0:0.00} %\r\n", seconds / total * 100.0);
                 }
             }
+
         }
 
         private static string GetIndent(int level)

@@ -800,11 +800,11 @@ namespace MoreMegaStructure
             if (state == EStarCannonState.Standby)
                 return;
 
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.StarCannon);
+            MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.StarCannon);
             if (state != EStarCannonState.Recharge)
             {
-                MMSCPU.BeginSample(ECpuWorkEntryExtended.EnemySearch);
+                MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.EnemySearch);
                 if (state == EStarCannonState.Align || state == EStarCannonState.Heat)
                 {
                     if (!CheckAndSearchAllTargets(gameTick))
@@ -818,17 +818,17 @@ namespace MoreMegaStructure
                     if (!CheckAndSearchAllTargets(gameTick))
                         StopFiring();                    
                 }
-                MMSCPU.EndSample(ECpuWorkEntryExtended.EnemySearch);
+                MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.EnemySearch);
                 // 根据目标恒星位置计算锁定方向信息
-                MMSCPU.BeginSample(ECpuWorkEntryExtended.AttackLogic);
+                MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.AttackLogic);
                 VectorLF3 targetUPos;
                 if(currentTargetStarIndex < 0 || currentTargetStarIndex >= GameMain.galaxy.starCount)
                 {
                     StopFiring();
 
-                    MMSCPU.EndSample(ECpuWorkEntryExtended.AttackLogic);
-                    MMSCPU.EndSample(ECpuWorkEntryExtended.StarCannon);
-                    MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
+                    MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.AttackLogic);
+                    MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.StarCannon);
+                    MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
                     return;
                 }
                 targetUPos = GameMain.galaxy.stars[currentTargetStarIndex].uPosition;
@@ -978,7 +978,7 @@ namespace MoreMegaStructure
                         beginShellLen: fireShellLen,
                         endShellLen: targetShellLen);
                 }
-                MMSCPU.EndSample(ECpuWorkEntryExtended.AttackLogic);
+                MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.AttackLogic);
             }
 
             // 状态计时结算与转换
@@ -1006,8 +1006,8 @@ namespace MoreMegaStructure
                 state = EStarCannonState.Standby;
                 time = 0;
             }
-            MMSCPU.EndSample(ECpuWorkEntryExtended.StarCannon);
-            MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.StarCannon);
+            MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
         }
 
         public static void LaserEffect2(DysonSphere sphere, long gameTick, VectorLF3 targetUPos)
@@ -1132,17 +1132,32 @@ namespace MoreMegaStructure
             DysonSwarm swarm = GameMain.data.dysonSpheres[starCannonStarIndex]?.swarm;
             if (swarm == null) return;
             if (swarm.bulletPool == null) return;
-            foreach (var item in noExplodeBullets.Keys)
+            // 只有真正要干活的路径才计费（前面的守卫都在计时窗口之外）。
+            // 这段属于开炮期间的特效结算，此前完全没有被计费，因此挂在"PF激光渲染与特效"下，
+            // 并按 恒星炮 -> 巨构总览 的顺序补齐父括号，保证父项始终包得住子项。
+            CpuHandle hMms = MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
+            CpuHandle hCannon = MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.StarCannon);
+            CpuHandle hRender = MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.StarCannonRender);
+            try
             {
-                if (noExplodeBullets[item] > 0 && swarm.bulletPool.Length > item)
+                foreach (var item in noExplodeBullets.Keys)
                 {
-                    if (swarm.bulletPool[item].id != 0 && swarm.bulletPool[item].t >= swarm.bulletPool[item].maxt)
+                    if (noExplodeBullets[item] > 0 && swarm.bulletPool.Length > item)
                     {
-                        swarm.RemoveBullet(item);
-                        int rm;
-                        noExplodeBullets.TryRemove(item, out rm);
+                        if (swarm.bulletPool[item].id != 0 && swarm.bulletPool[item].t >= swarm.bulletPool[item].maxt)
+                        {
+                            swarm.RemoveBullet(item);
+                            int rm;
+                            noExplodeBullets.TryRemove(item, out rm);
+                        }
                     }
                 }
+            }
+            finally
+            {
+                MMSCPU.EndSampleSafe(hRender);
+                MMSCPU.EndSampleSafe(hCannon);
+                MMSCPU.EndSampleSafe(hMms);
             }
         }
 

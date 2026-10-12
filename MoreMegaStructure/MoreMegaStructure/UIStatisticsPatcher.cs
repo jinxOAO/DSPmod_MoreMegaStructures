@@ -39,8 +39,8 @@ namespace MoreMegaStructure
             {
                 return true;
             }
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.Statistics);
+            MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.Statistics);
             var _this = __instance;
 
             // 原方法逻辑：看但凡有在GameData.factories这个列表里的工厂，但是又没在 this.astroBox.Items;和this.astroBox.ItemsData;里面的，将其planetId插入到正确位置（如果是整个星系的第一个插入的工厂，则额外先pushback一个（注意星系在这个ItemsData列表里是不按id排序的，而是按加入顺序排序的，所以说pushback，不是插入）该星系的总统计(starId*100)，然后再add该行星工厂的planetId）。
@@ -129,12 +129,12 @@ namespace MoreMegaStructure
 
                 // 这一行使原本的
                 _this.ValueToAstroBox();
-                MMSCPU.EndSample(ECpuWorkEntryExtended.Statistics);
-                MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
+                MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.Statistics);
+                MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
                 return false;
             }
-            MMSCPU.EndSample(ECpuWorkEntryExtended.Statistics);
-            MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.Statistics);
+            MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
             return true;
         }
 
@@ -318,8 +318,8 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(UIStatisticsWindow), "DetermineProductEntryList")]
         public static bool ComputeDisplayEntriesPrePatch(ref UIStatisticsWindow __instance)
         {
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.Statistics);
+            MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.Statistics);
             __instance.productEntryList.PrepareDisplayEntries(__instance.lastListCursor);
             Array.Clear(__instance.statGroup, 0, __instance.statGroupCursor);
             __instance.statGroupCursor = 0;
@@ -499,8 +499,8 @@ namespace MoreMegaStructure
             }
             __instance.productEntryList.RefreshDatasIndices(__instance.lastListCursor);
 
-            MMSCPU.EndSample(ECpuWorkEntryExtended.Statistics);
-            MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.Statistics);
+            MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
             return false;
         }
 
@@ -531,8 +531,8 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(ProductionStatistics), "PrepareTick")]
         public static void ProductionStatisticsPrepareTickPostPatch(ref ProductionStatistics __instance)
         {
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.Statistics);
+            MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.Statistics);
             int maxLen = __instance.gameData.factories.Length + GameMain.galaxy.starCount;
             maxLen = maxLen < __instance.factoryStatPool.Length ? maxLen : __instance.factoryStatPool.Length;
             int endIndex = GameMain.data.factories.Length + GameMain.galaxy.starCount - 1;
@@ -542,16 +542,16 @@ namespace MoreMegaStructure
                 if(MoreMegaStructure.StarMegaStructureType.Length > starIndex && starIndex >= 0 && (MoreMegaStructure.StarMegaStructureType[starIndex] == 4 || MoreMegaStructure.StarMegaStructureType[starIndex] == 2))
                     __instance.factoryStatPool[i].PrepareTick();
             }
-            MMSCPU.EndSample(ECpuWorkEntryExtended.Statistics);
-            MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.Statistics);
+            MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
         }
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(ProductionStatistics), "GameTick")]
         public static void ProductionStatisticsGameTickPostPatch(ref ProductionStatistics __instance, long time)
         {
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.Statistics);
+            MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.Statistics);
             bool flag = true;
             int maxLen = Math.Min(__instance.gameData.factories.Length + GameMain.galaxy.starCount, __instance.factoryStatPool.Length);
             int endIndex = GameMain.data.factories.Length + GameMain.galaxy.starCount - 1;
@@ -575,8 +575,8 @@ namespace MoreMegaStructure
                     }
                 }
             }
-            MMSCPU.EndSample(ECpuWorkEntryExtended.Statistics);
-            MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.Statistics);
+            MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
         }
 
         /// <summary>

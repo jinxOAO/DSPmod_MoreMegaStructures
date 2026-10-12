@@ -1260,7 +1260,7 @@ namespace MoreMegaStructure
                 }
             }
             // 再从地表拿
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.CargoTransport);
+            CpuHandle hCargo = MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.CargoTransport);
             if (result < itemCount)
             {
                 int planetCount = GameMain.galaxy.stars[starIndex].planetCount;
@@ -1297,6 +1297,9 @@ namespace MoreMegaStructure
                                                     stationComponent.storage[k].count -= need;
                                                     stationComponent.storage[k].inc -= oriInc * need;
                                                 }
+                                                // 取满即返回，这条提前退出的路径同样必须闭合采样括号，
+                                                // 否则本次取货的耗时连同父项一起泄漏。
+                                                MMSCPU.EndSampleSafe(hCargo);
                                                 return result;
                                             }
                                             else
@@ -1320,7 +1323,7 @@ namespace MoreMegaStructure
                 }
             }
 
-            MMSCPU.EndSample(ECpuWorkEntryExtended.CargoTransport);
+            MMSCPU.EndSampleSafe(hCargo);
             return result;
         }
 
@@ -1330,7 +1333,7 @@ namespace MoreMegaStructure
         /// <param name="starIndex"></param>
         public static void SendProductToGround(int starIndex)
         {
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.CargoTransport);
+            MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.CargoTransport);
             int planetCount = GameMain.galaxy.stars[starIndex].planetCount;
             for (int i = 0; i < planetCount; i++)
             {
@@ -1385,7 +1388,7 @@ namespace MoreMegaStructure
                     }
                 }
             }
-            MMSCPU.EndSample(ECpuWorkEntryExtended.CargoTransport);
+            MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.CargoTransport);
         }
 
         // 返回每帧理想的基础消耗产出系数：这是已被各种特化的加速效果加成过的结果，但还未被增产效果加成

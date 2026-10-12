@@ -1772,16 +1772,43 @@ namespace MoreMegaStructure
     }
 
     // 宿主：OnRenderObject 由每个渲染相机各调一次；LateUpdate 做生命周期清理。
+    // 这两处都是恒星炮开炮期间的主要开销来源，此前完全落在性能面板的统计窗口之外
+    // （游戏只把它们记进自身的 Renderer/Drawing 项），所以在这里显式计费：
+    // 采样链为 巨构总览 -> 恒星炮 -> PF激光渲染与特效，保证每一层父项都包得住子项。
     public class StarCannonLaserHost : MonoBehaviour
     {
         private void OnRenderObject()
         {
-            StarCannonLaserRenderer.Render();
+            CpuHandle hMms = MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
+            CpuHandle hCannon = MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.StarCannon);
+            CpuHandle hRender = MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.StarCannonRender);
+            try
+            {
+                StarCannonLaserRenderer.Render();
+            }
+            finally
+            {
+                MMSCPU.EndSampleSafe(hRender);
+                MMSCPU.EndSampleSafe(hCannon);
+                MMSCPU.EndSampleSafe(hMms);
+            }
         }
 
         private void LateUpdate()
         {
-            StarCannonLaserRenderer.TickLifetime();
+            CpuHandle hMms = MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
+            CpuHandle hCannon = MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.StarCannon);
+            CpuHandle hRender = MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.StarCannonRender);
+            try
+            {
+                StarCannonLaserRenderer.TickLifetime();
+            }
+            finally
+            {
+                MMSCPU.EndSampleSafe(hRender);
+                MMSCPU.EndSampleSafe(hCannon);
+                MMSCPU.EndSampleSafe(hMms);
+            }
         }
     }
 }

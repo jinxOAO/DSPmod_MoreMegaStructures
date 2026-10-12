@@ -58,14 +58,24 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(ThreadManager), "ProcessFrame")]
         public static void WarpArrayLogicUpdate(long frameCounter)
         {
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.WarpField);
-            UpdateSectorTripCostRatio(frameCounter); // 每帧更新一部分星系，一秒全部更新一次
+            // 折跃场自身有独立统计项，但它同样属于巨构 mod 的开销，因此必须再套一层顶层括号，
+            // 否则"PF巨构总览"会小于"PF折跃场"（父项括号根本没罩住这段代码）。
+            CpuHandle hMms = MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
+            CpuHandle hWarp = MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.WarpField);
+            try
+            {
+                UpdateSectorTripCostRatio(frameCounter); // 每帧更新一部分星系，一秒全部更新一次
 
-            if (frameCounter % 60 == 44)
-                UpdateWarpArrayDatas();
-            if (frameCounter % 3600 == 45)
-                SortWarpArray();
-            MMSCPU.EndSample(ECpuWorkEntryExtended.WarpField);
+                if (frameCounter % 60 == 44)
+                    UpdateWarpArrayDatas();
+                if (frameCounter % 3600 == 45)
+                    SortWarpArray();
+            }
+            finally
+            {
+                MMSCPU.EndSampleSafe(hWarp);
+                MMSCPU.EndSampleSafe(hMms);
+            }
         }
 
         public static void CheckSectorWarpArrays()
@@ -176,7 +186,11 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(StationComponent), "InternalTickRemote")]
         public static bool StationShipUpdatesPrePatch(ref StationComponent __instance, PlanetFactory factory, int timeGene, float shipSailSpeed, float shipWarpSpeed, int shipCarries, StationComponent[] gStationPool, AstroData[] astroPoses, ref VectorLF3 relativePos, ref Quaternion relativeRot, bool starmap, int[] consumeRegister)
         {
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.WarpField);
+            // 同 WarpArrayLogicUpdate：物流船的远程更新也属于巨构开销，必须再套一层顶层括号，
+            // 否则并行模式下它跑在工作线程上，"PF巨构总览"根本统计不到它。
+            // 本方法只有一条退出路径（末尾 return false），因此无需额外 try/finally。
+            CpuHandle hMms = MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
+            CpuHandle hWarp = MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.WarpField);
             //------------------------------------------------------------------------------
             float oriShipWarpSpeed = shipWarpSpeed;
             if(fixSailSpeed)
@@ -1186,7 +1200,8 @@ namespace MoreMegaStructure
                 }
             }
 
-            MMSCPU.EndSample(ECpuWorkEntryExtended.WarpField);
+            MMSCPU.EndSampleSafe(hWarp);
+            MMSCPU.EndSampleSafe(hMms);
             return false;
         }
 
