@@ -1799,10 +1799,10 @@ namespace MoreMegaStructure
             LocalizationModule.RegisterTranslation("恒星炮设计说明题目", "Design Instructions", "恒星炮设计说明", "");
             LocalizationModule.RegisterTranslation("恒星炮设计说明文本",
                                                    "1. When the star cannon fires, the rotation axes of all layers will overlap, and the north pole will point to the target, so please design the north pole of each layer's grid as the center of the muzzle;\n" +
-                                                   "2. When the star cannon fires, 12 random  nodes on the 1st layer will emit a laser to the muzzle. For aesthetic reasons, please try to make the first layer only contain up to 12 nodes, and try to make them symmetrical to each other;\n" +
+                                                   "2. When the star cannon fires, 36 random  nodes on the 1st layer will emit a laser to the muzzle. For aesthetic reasons, please try to make the first layer only contain up to 36 nodes, and try to make them symmetrical to each other;\n" +
                                                    "3. The construction of the star cannon needs to go through multiple stages. And at the same time, the star cannon can increase its damage, max fire target count, and charging speed several times. After reaching the final stage, continue to build shells will continuously increase the damage;\n" +
                                                    "4. After built the star cannon, select a star system or a space dark fog hive in starmap mode, then launch the star cannon. Star cannon can NOT fire at its own star system.",
-                                                   "1.恒星炮开火时所有层级的旋转轴将重叠，并且让北极指向目标开火，因此设计时请以各层网格自身的北极点为炮口中心；\n2.恒星炮开火时，第1层的随机12个节点将发射出激光指向炮口，为美观考虑，请尽量使得第1层只包含12个（或更少的）节点，并使其相互对称。\n3.恒星炮建造需要经过多个阶段，随着各建造阶段完成，恒星炮能数次提高伤害、同时射击的目标数和充能速度等属性。在达到最终阶段后，继续修建壳层可以不断提高伤害。\n4.建造恒星炮后，在星图模式中选择一个恒星系或太空黑雾巢穴进行开火。恒星炮无法向自身所在星系开火。",
+                                                   "1.恒星炮开火时所有层级的旋转轴将重叠，并且让北极指向目标开火，为美观考虑，设计时请以各层网格自身的北极点为炮口中心；\n2.恒星炮开火时，第1层的随机36个节点将发射出激光指向炮口，为美观考虑，请尽量使得第1层只包含36个（或更少的）节点，并使其相互对称。\n3.恒星炮建造需要经过多个阶段，随着各建造阶段完成，恒星炮能数次提高伤害、同时射击的目标数和充能速度等属性。在达到最终阶段后，继续修建壳层可以不断提高伤害。\n4.建造恒星炮后，在星图模式中选择一个恒星系或太空黑雾巢穴进行开火。恒星炮无法向自身所在星系开火。",
                                                    "");
             LocalizationModule.RegisterTranslation("恒星炮开火按钮文本", "Launch Star Cannon (R)", " 启动恒星炮 (R)", "");
             LocalizationModule.RegisterTranslation("恒星炮开火标题", "Launch Star Cannon", "启动恒星炮", "");

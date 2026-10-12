@@ -42,7 +42,7 @@ namespace MoreMegaStructure
         public static int laserBulletEndPosDelta = 75; // 主激光命中处随机偏移（激光命中处半径）
         //public static int laserAttackPosDelta = 1000; // 次级攻击激光发射处随机偏移
         public static int maxSideLaserIntensity = 5; //12束集束激光子弹数
-        public static int focusBeamMaxBar = 36;      // 预热/集束汇聚激光最多发射的根数(受第1层已建 node 数限制; 可试 100)
+        public static int focusBeamMaxBar = 36;      // 预热/集束汇聚激光最多发射的根数
         public static float sideLaserBulletLifeTime = 0.1f;
         public static VectorLF3 normDirection = new VectorLF3(0, 1, 0);
         public static int reverseDirection = 1; //只能是1或者-1，1是北极为炮口，-1则是南极。相当于设计恒星炮时所有层级南北极互换
@@ -793,8 +793,6 @@ namespace MoreMegaStructure
             if (__instance.energyGenCurrentTick < 10000)
                 return;
 
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.StarCannon);
             RefreshStarCannonProperties();
             starCannonStarIndex = starIndex;
 
@@ -802,7 +800,9 @@ namespace MoreMegaStructure
             if (state == EStarCannonState.Standby)
                 return;
 
-            if(state != EStarCannonState.Recharge)
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.BeginSample(ECpuWorkEntryExtended.StarCannon);
+            if (state != EStarCannonState.Recharge)
             {
                 MMSCPU.BeginSample(ECpuWorkEntryExtended.EnemySearch);
                 if (state == EStarCannonState.Align || state == EStarCannonState.Heat)
@@ -825,6 +825,10 @@ namespace MoreMegaStructure
                 if(currentTargetStarIndex < 0 || currentTargetStarIndex >= GameMain.galaxy.starCount)
                 {
                     StopFiring();
+
+                    MMSCPU.EndSample(ECpuWorkEntryExtended.AttackLogic);
+                    MMSCPU.EndSample(ECpuWorkEntryExtended.StarCannon);
+                    MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
                     return;
                 }
                 targetUPos = GameMain.galaxy.stars[currentTargetStarIndex].uPosition;
