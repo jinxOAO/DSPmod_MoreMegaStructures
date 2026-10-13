@@ -82,3 +82,9 @@ MoreMegaStructure/MoreMegaStructure/obj/Debug/
 *.cache
 .suo
 *.pdb
+
+# Temporary debug/push logs written at repo root (never commit these)
+/_pushout*.txt
+/_curltrace*.txt
+/_tokcheck.ps1
+/_*.*
