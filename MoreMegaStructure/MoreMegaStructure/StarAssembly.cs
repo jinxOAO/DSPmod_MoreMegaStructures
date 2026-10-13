@@ -737,27 +737,27 @@ namespace MoreMegaStructure
             int[] productRegister = null;
             int[] consumeRegister = null;
             int maxSlotCount = CalcMaxSlotIndex(__instance) + 1;
-            for (int i = 0; i < GameMain.galaxy.stars[starIndex].planetCount; i++)
+            if (UIStatisticsPatcher.enabled)
             {
-                PlanetData planet = GameMain.galaxy.stars[starIndex].planets[i];
-                if (planet != null)
+                // 直接取星际组装厂借用的尾部统计槽位，不依赖本星系是否存在行星工厂。
+                // 原实现把取借用槽位的逻辑塞在“遍历到某个有 factory 的行星”分支里，导致在没有任何行星工厂的星系
+                // 搭建 IA 时 productRegister/consumeRegister 始终为 null，实际产出无法写入统计（IA 页与星系合计都空）。
+                FactoryProductionStat iaStat = UIStatisticsPatcher.GetIAFactoryStat(starIndex);
+                if (iaStat != null)
                 {
-                    PlanetFactory factory = planet.factory;
-                    if (factory != null)
+                    productRegister = iaStat.productRegister;
+                    consumeRegister = iaStat.consumeRegister;
+                }
+            }
+            else
+            {
+                for (int i = 0; i < GameMain.galaxy.stars[starIndex].planetCount; i++)
+                {
+                    PlanetData planet = GameMain.galaxy.stars[starIndex].planets[i];
+                    if (planet != null)
                     {
-                        if (UIStatisticsPatcher.enabled)
-                        {
-                            if (GameMain.statistics.production.factoryStatPool.Length > factory.index
-                                && GameMain.data.factories.Length + GameMain.galaxy.starCount - starIndex - 1 < GameMain.statistics.production.factoryStatPool.Length)
-                            {
-                                //FactoryProductionStat factoryProductionStat = GameMain.statistics.production.factoryStatPool[factory.index];
-                                FactoryProductionStat factoryProductionStat = GameMain.statistics.production.factoryStatPool[GameMain.data.factories.Length + GameMain.galaxy.starCount - starIndex - 1];
-                                productRegister = factoryProductionStat.productRegister;
-                                consumeRegister = factoryProductionStat.consumeRegister;
-                                break;
-                            }
-                        }
-                        else
+                        PlanetFactory factory = planet.factory;
+                        if (factory != null)
                         {
                             FactoryProductionStat factoryProductionStat = GameMain.statistics.production.factoryStatPool[factory.index];
                             productRegister = factoryProductionStat.productRegister;
@@ -1260,6 +1260,7 @@ namespace MoreMegaStructure
                 }
             }
             // 再从地表拿
+            CpuHandle hCargo = MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.CargoTransport);
             if (result < itemCount)
             {
                 int planetCount = GameMain.galaxy.stars[starIndex].planetCount;
@@ -1296,6 +1297,9 @@ namespace MoreMegaStructure
                                                     stationComponent.storage[k].count -= need;
                                                     stationComponent.storage[k].inc -= oriInc * need;
                                                 }
+                                                // 取满即返回，这条提前退出的路径同样必须闭合采样括号，
+                                                // 否则本次取货的耗时连同父项一起泄漏。
+                                                MMSCPU.EndSampleSafe(hCargo);
                                                 return result;
                                             }
                                             else
@@ -1319,6 +1323,7 @@ namespace MoreMegaStructure
                 }
             }
 
+            MMSCPU.EndSampleSafe(hCargo);
             return result;
         }
 
@@ -1328,6 +1333,7 @@ namespace MoreMegaStructure
         /// <param name="starIndex"></param>
         public static void SendProductToGround(int starIndex)
         {
+            MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.CargoTransport);
             int planetCount = GameMain.galaxy.stars[starIndex].planetCount;
             for (int i = 0; i < planetCount; i++)
             {
@@ -1382,6 +1388,7 @@ namespace MoreMegaStructure
                     }
                 }
             }
+            MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.CargoTransport);
         }
 
         // 返回每帧理想的基础消耗产出系数：这是已被各种特化的加速效果加成过的结果，但还未被增产效果加成

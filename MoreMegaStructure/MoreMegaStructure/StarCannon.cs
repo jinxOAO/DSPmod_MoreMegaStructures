@@ -42,6 +42,7 @@ namespace MoreMegaStructure
         public static int laserBulletEndPosDelta = 75; // 主激光命中处随机偏移（激光命中处半径）
         //public static int laserAttackPosDelta = 1000; // 次级攻击激光发射处随机偏移
         public static int maxSideLaserIntensity = 5; //12束集束激光子弹数
+        public static int focusBeamMaxBar = 36;      // 预热/集束汇聚激光最多发射的根数
         public static float sideLaserBulletLifeTime = 0.1f;
         public static VectorLF3 normDirection = new VectorLF3(0, 1, 0);
         public static int reverseDirection = 1; //只能是1或者-1，1是北极为炮口，-1则是南极。相当于设计恒星炮时所有层级南北极互换
@@ -422,6 +423,16 @@ namespace MoreMegaStructure
             if (ptr0.id <= 0) // 目标已不存在
                 return false;
 
+            // 校验目标仍属于当前瞄准的星系, 防止 pool 槽位被其他星系的实体复用后误伤
+            if (ptr0.originAstroId < 1000000)
+                return false;
+            int hiveIdx = ptr0.originAstroId - 1000000;
+            if (spaceSector.dfHivesByAstro == null || hiveIdx >= spaceSector.dfHivesByAstro.Length)
+                return false;
+            EnemyDFHiveSystem hive = spaceSector.dfHivesByAstro[hiveIdx];
+            if (hive == null || hive.starData == null || hive.starData.index != currentTargetStarIndex)
+                return false;
+
             if (ptr0.dfRelayId > 0)
             {
                 return CheckRelay(ref ptr0);
@@ -473,11 +484,13 @@ namespace MoreMegaStructure
         }
 
 
-
         public static bool CheckAndSearchAllTargets()
         {
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.EnemySearch);
+            return CheckAndSearchAllTargets(-1);
+        }
+
+        public static bool CheckAndSearchAllTargets(long gameTick = -1)
+        {
             if (maxAimCount <= 0)
                 return false;
             int count = Mathf.Min(currentTargetIds.Count, maxAimCount);
@@ -516,9 +529,90 @@ namespace MoreMegaStructure
                     break;
                 }
             }
-            MMSCPU.EndSample(ECpuWorkEntryExtended.EnemySearch);
-            MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
+            // 方案1: 由 GameTick 驱动且已处于预热/开火阶段时, 目标打不满/打光就尝试激活未激活敌舰(幂等, 无未激活舰则 no-op)
+            if (gameTick >= 0 && (int)state >= 2)
+            {
+                TryActivateDormantShips(gameTick);
+            }
             return currentTargetIds.Count > 0;
+        }
+
+        /// <summary>
+        /// 方案1(激活未激活敌舰): 由 GameTick 驱动且已处于预热/开火阶段时, 若本星系"打不满/打光"合法目标,
+        /// 用官方 EnemyDFHiveSystem.ActivateUnit 把巢穴"待命编队"里 units[port]==1 的悬停舰(星图中白色, 此时不在 enemyPool)实例化为真实敌舰, 并直接加入 currentTargetIds,
+        /// 复用现有校验/伤害/渲染管线。全程只读 forms 槽位并调用官方激活接口, 不触碰 pbuilders/数组结构 => 存档安全; ActivateUnit 内部以 units[port]==1 为前置 => 不会重复激活同一槽。
+        /// 触发: 目标数==0(即将停火, 无需tick门槛) 或 (目标数<上限 且 gameTick%30==19)。单次上限 n = maxAimCount*2, 且不超过剩余未激活舰数。
+        /// 控制流(与需求一致): 先判情景B(有优先巢穴时优先激活"优先巢穴"的舰), 一旦成功激活(>=1)即置标志跳过情景A;
+        /// B 未成功(条件不满足或优先巢穴无未激活舰)则继续走情景A(激活全星系的舰)。情景A 不以"没有优先巢穴"为前提。
+        /// 决策"直接加入列表"而非"等下帧重寻": 现有 SearchNextTarget 仅在降级到 -2 时才搜索舰船, 有优先巢穴时新激活的舰不会被自动锁定,
+        /// 故必须主动加入; 加入后下一帧仍会被 CheckTarget 校验并按 maxAimCount 裁剪, 安全。
+        /// </summary>
+        public static void TryActivateDormantShips(long gameTick)
+        {
+            int legalCount = currentTargetIds.Count;                 // 校验+补寻之后的合法目标数(含正在攻击的)
+            bool noTargets = legalCount == 0;                        // 完全没目标, 即将停止开火
+            bool lowTargets = legalCount < maxAimCount;              // 目标未满, 有激光空转/即将转火
+            bool tickGate = gameTick % 30 == 19;                     // 低频批量激活时机
+            bool trigger = noTargets || (lowTargets && tickGate);     // 情景A/B 共用的触发条件
+            if (!trigger)
+                return;
+            if (maxAimCount <= 0 || spaceSector == null || spaceSector.dfHives == null)
+                return;
+            if (currentTargetStarIndex < 0 || currentTargetStarIndex >= GameMain.galaxy.starCount)
+                return;
+
+            int n = maxAimCount * 2;                                 // 本次尝试激活数量上限
+
+            // 情景B: 有优先巢穴时, 先尝试只激活"优先巢穴"的未激活舰; 成功激活>=1 即置标志返回, 跳过情景A
+            if (priorTargetHiveOriAstroId >= 0)
+            {
+                EnemyDFHiveSystem priorityHive = spaceSector.GetHiveByAstroId(priorTargetHiveOriAstroId);
+                if (priorityHive != null && ActivateHiveShips(priorityHive, n, gameTick) > 0)
+                    return;                                          // 标志: 情景B成功激活 => 跳过情景A
+            }
+
+            // 情景A(或情景B未成功时): 激活目标星系各巢穴的未激活舰, 直到达到 n 或全部激活; 情景A不限制有没有优先巢穴
+            EnemyDFHiveSystem hive = spaceSector.dfHives[currentTargetStarIndex];
+            int activated = 0;
+            while (hive != null && activated < n)
+            {
+                activated += ActivateHiveShips(hive, n - activated, gameTick);
+                hive = hive.nextSibling;
+            }
+        }
+
+        /// <summary>
+        /// 激活指定巢穴至多 quota 个"待命(未激活)敌舰": 遍历巢穴三个编队 hive.forms[formId](formId 0/1/2 对应 protoId 8113/8112/8111),
+        /// 找 units[port]==1 的悬停槽(星图中白色、此刻尚未进入 enemyPool), 调官方 EnemyDFHiveSystem.ActivateUnit(formId, port, gameTick)
+        /// 将其实例化为真实 localized 敌舰, 再把对应的 enemyId 去重加入 currentTargetIds。
+        /// 只读 forms 槽位并调用官方激活接口, 不碰 pbuilders/数组结构 => 存档安全; ActivateUnit 以 units[port]==1 为前置, 已激活/空槽返回0 => 幂等。
+        /// 返回实际激活数量。
+        /// </summary>
+        public static int ActivateHiveShips(EnemyDFHiveSystem hive, int quota, long gameTick)
+        {
+            if (hive == null || hive.forms == null || hive.units == null || hive.units.buffer == null || quota <= 0 || spaceSector == null || currentTargetIds == null)
+                return 0;
+            int done = 0;
+            for (int formId = 0; formId < hive.forms.Length && done < quota; formId++)
+            {
+                EnemyFormation form = hive.forms[formId];
+                if (form == null || form.units == null)
+                    continue;
+                for (int port = 1; port < form.units.Length && done < quota; port++)
+                {
+                    if (form.units[port] != 1)                     // 只激活"待命"槽: 0=空位, 2=激活中, 3=出击中; 1=待命
+                        continue;
+                    int unitId = hive.ActivateUnit(formId, port, gameTick);   // 官方实例化: 生成真实 localized 敌舰
+                    if (unitId > 0 && unitId < hive.units.buffer.Length)
+                    {
+                        int enemyId = hive.units.buffer[unitId].enemyId;   // EnemyUnitComponent 是结构体, 直接取 enemyId(与官方 DeactivateUnit 一致)
+                        if (enemyId > 0 && !currentTargetIds.Contains(enemyId))
+                            currentTargetIds.Add(enemyId);
+                        done++;
+                    }
+                }
+            }
+            return done;
         }
 
       
@@ -529,8 +623,6 @@ namespace MoreMegaStructure
         /// <returns></returns>
         public static SkillTarget SearchNextTarget()
         {
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.EnemySearch);
             SkillTarget skillTarget = default(SkillTarget);
             if (currentTargetStarIndex < 0 || currentTargetStarIndex >= GameMain.galaxy.starCount)
                 return skillTarget;
@@ -564,10 +656,6 @@ namespace MoreMegaStructure
                     {
                         if (!CheckRelay(ref ptr3))
                             continue;
-                    }
-                    if (false)
-                    {
-                        Debug.Log($"dfsNode yes: {ptr3.dfSNodeId} {ptr3.dfSCoreId} {ptr3.dfSConnectorId} {ptr3.dfSGammaId} {ptr3.dfSTurretId} {ptr3.dfSReplicatorId} in astro{ptr3.astroId} and oriAstro {ptr3.originAstroId} and relayId {ptr3.dfRelayId}");
                     }
                     spaceSector.TransformFromAstro_ref(ptr3.astroId, out zero, ref ptr3.pos);
                     // 原逻辑判断是否在开火距离内 恒星炮不判断
@@ -624,8 +712,6 @@ namespace MoreMegaStructure
                 skillTarget = SearchNextTarget();
             }
 
-            MMSCPU.EndSample(ECpuWorkEntryExtended.EnemySearch);
-            MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
             return skillTarget;
         }
 
@@ -694,8 +780,6 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(DysonSphere), "GameTick")]
         public static void StarCannonUpdate(ref DysonSphere __instance, long gameTick)
         {
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.StarCannon);
             if (__instance == null || __instance.layersIdBased == null)
                 return;
 
@@ -716,11 +800,14 @@ namespace MoreMegaStructure
             if (state == EStarCannonState.Standby)
                 return;
 
-            if(state != EStarCannonState.Recharge)
+            MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.StarCannon);
+            if (state != EStarCannonState.Recharge)
             {
-                if(state == EStarCannonState.Align || state == EStarCannonState.Heat)
+                MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.EnemySearch);
+                if (state == EStarCannonState.Align || state == EStarCannonState.Heat)
                 {
-                    if (!CheckAndSearchAllTargets())
+                    if (!CheckAndSearchAllTargets(gameTick))
                     {
                         UIRealtimeTip.Popup("目标无法定位警告".Translate());
                         StopFiring();
@@ -728,15 +815,20 @@ namespace MoreMegaStructure
                 }
                 else if(state == EStarCannonState.Fire || state == EStarCannonState.Aim || state == EStarCannonState.Switch)
                 {
-                    if (!CheckAndSearchAllTargets())
+                    if (!CheckAndSearchAllTargets(gameTick))
                         StopFiring();                    
                 }
-
+                MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.EnemySearch);
                 // 根据目标恒星位置计算锁定方向信息
+                MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.AttackLogic);
                 VectorLF3 targetUPos;
                 if(currentTargetStarIndex < 0 || currentTargetStarIndex >= GameMain.galaxy.starCount)
                 {
                     StopFiring();
+
+                    MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.AttackLogic);
+                    MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.StarCannon);
+                    MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
                     return;
                 }
                 targetUPos = GameMain.galaxy.stars[currentTargetStarIndex].uPosition;
@@ -746,7 +838,6 @@ namespace MoreMegaStructure
                 if (direction.z != 0)
                     vert = new VectorLF3(1, 1, (-direction.x - direction.y) / direction.z);
                 Quaternion final = Quaternion.LookRotation(vert, direction);
-
                 // 操作每一个壳层的旋转、瞄准等
                 for (int i = 0; i < __instance.layersIdBased.Length; i++)
                 {
@@ -760,7 +851,7 @@ namespace MoreMegaStructure
                             layer.orbitAngularSpeed = reAimAngularSpeed;
                             layer.InitOrbitRotation(layer.orbitRotation, final); //每个戴森壳层开始轨道旋转、对齐瞄准
                             float aimTimeNeed = Quaternion.Angle(layer.orbitRotation, final) / layer.orbitAngularSpeed * 60f;
-                            endAimTime = Mathf.Max(time + endAimTime, time + (int)aimTimeNeed); //保存瞄准完成所需的最大时间
+                            endAimTime = Mathf.Max(endAimTime, time + (int)aimTimeNeed); //保存瞄准完成所需的最大时间
                             layer.orbitAngularSpeed = originAngularSpeed;
                         }
 
@@ -819,6 +910,16 @@ namespace MoreMegaStructure
                     if (currentTargetStarIndex >= 0 && currentTargetStarIndex < GameMain.galaxy.starCount)
                         centerStarUPos = GameMain.galaxy.StarById(currentTargetStarIndex + 1).uPosition;
                     int count = Mathf.Min(maxAimCount, currentTargetIds.Count);
+                    // 记录恒星身份 index, 交给独立渲染器在现实视角按"当前星系(localStar)"直接比对来叠加同源 bullet(遮挡正确); 全程空判断防报错
+                    int fireStarIdx = (__instance.starData != null) ? __instance.starData.index : -1;
+                    int targetStarIdx = (currentTargetStarIndex >= 0 && currentTargetStarIndex < GameMain.galaxy.starCount
+                        && GameMain.galaxy.stars[currentTargetStarIndex] != null)
+                        ? GameMain.galaxy.stars[currentTargetStarIndex].index : -1;
+                    // 主光束近端渲染长度 L = 2×该端恒星"最大戴森壳半径"。源码最大壳半径 = dysonRadius*40000*2 (UIStatisticsDysonDetailPanel/DysonSphereStatPlan), 故 L = dysonRadius*160000。各星系各算各的, 交由渲染器在绘制前现场裁剪
+                    float fireShellLen = (__instance.starData != null) ? __instance.starData.dysonRadius * 160000f : 0f;
+                    float targetShellLen = (currentTargetStarIndex >= 0 && currentTargetStarIndex < GameMain.galaxy.starCount
+                        && GameMain.galaxy.stars[currentTargetStarIndex] != null)
+                        ? GameMain.galaxy.stars[currentTargetStarIndex].dysonRadius * 160000f : 0f;
                     float ratio = 1.0f;
                     if(damageReductionPerLy > 0)
                     {
@@ -842,112 +943,42 @@ namespace MoreMegaStructure
                         Vector3 vec;
                         spaceSector.skillSystem.GetObjectUPositionAndVelocity(ref target, out enemyUPos, out vec);
                         enemyUPos += (VectorLF3)vec * 0.016666667f;
-                        AddNewLaser(centerStarUPos, enemyUPos, target.id, 1, 30);
+                        //AddNewLaser(centerStarUPos, enemyUPos, target.id, 1, 30);
                         spaceSector.skillSystem.DamageObject((int)(damagePerTick * ratio), damageSlice, ref target, ref caster);
                         if (maxAimCount - count > 0 && i == count - 1) // 如果目标过少，少于可以同时射击的最大数量，溢出的可射击的激光将同时射击最后一个合法目标
                         {
                             for (int j = 0; j < maxAimCount - count; j++)
                             {
-                                AddNewLaser(centerStarUPos, enemyUPos, target.id, 1, 10);
+                                //AddNewLaser(centerStarUPos, enemyUPos, target.id, 1, 10);
                                 spaceSector.skillSystem.DamageObject((int)(damagePerTick * ratio), damageSlice, ref target, ref caster);
                             }
                         }
-                        // 为了让星图模式也显示恒星到敌人的攻击的激光，当玩家查看星图时，设置激光
-                        if (UIGame.viewMode == EViewMode.Starmap && UIRoot.instance.uiGame.starmap.viewStarSystem == GameMain.galaxy.StarById(currentTargetStarIndex + 1)) 
-                        {
-                            DysonSwarm swarm = GameMain.data.dysonSpheres[currentTargetStarIndex]?.swarm;
-                            if(swarm != null)
-                            {
-                                int bulletIndex = swarm.AddBullet(new SailBullet
-                                {
-                                    maxt = 0.3f,
-                                    lBegin = Vector3.zero,
-                                    uEndVel = ((Vector3)enemyUPos - centerStarUPos)*3,
-                                    uBegin = centerStarUPos,
-                                    uEnd = enemyUPos,
-                                }, 0);
-                                swarm.bulletPool[bulletIndex].state = 0;
-                            }
-                        }
+                        // 恒星 -> 单个敌人 的攻击激光：交给独立渲染器，三种视图都能看到，且不经过 DysonSwarm（隐藏戴森云也可见）
+                        StarCannonLaserRenderer.AddBeam(1000 + i, centerStarUPos, enemyUPos,
+                            StarCannonLaserRenderer.DefaultColor,
+                            StarCannonLaserRenderer.baseBulletCount,
+                            StarCannonLaserRenderer.defaultMuzzleRadius * 0.5f,
+                            StarCannonLaserRenderer.defaultImpactRadius * 0.5f,
+                            beginStarIdx: targetStarIdx,
+                            endStarIdx: targetStarIdx);
                     }
 
-                    // 为了让星图模式也显示恒星到恒星的激光激光，用深空来敌老套路创建太阳帆发射轨迹
-                    StarData starData = __instance.starData;
-                    int nearPoint = 400000;
-                    if (__instance.starData.type == EStarType.GiantStar)
-                        nearPoint = 1000000;
-                    if (currentTargetStarIndex < GameMain.data.dysonSpheres.Length)
-                    {
-                        DysonSwarm targetSwarm = GameMain.data.dysonSpheres[currentTargetStarIndex]?.swarm;
-                        DysonSwarm casterSwarm = __instance.swarm;
-                        int lessBulletRatio = 1;
-                        if (casterSwarm != null)
-                        {
-                            //VectorLF3 direction = targetUPos - starData.uPosition;
-                            for (int i = 0; i < laserBulletNum / lessBulletRatio || i == 0; i++)
-                            {
-                                int bulletIndex = casterSwarm.AddBullet(new SailBullet
-                                {
-                                    maxt = 0.3f,
-                                    lBegin = __instance.starData.uPosition,
-                                    uEndVel = targetUPos,
-                                    uBegin = __instance.starData.uPosition + Utils.RandPosDelta() * laserBulletPosDelta,
-                                    uEnd = ((i == 0) ? (targetUPos + Utils.RandPosDelta() * laserBulletEndPosDelta) : ((targetUPos - __instance.starData.uPosition).normalized * nearPoint * (1+ Utils.RandF() * 3)) + __instance.starData.uPosition),
-                                }, 0);
-                                casterSwarm.bulletPool[bulletIndex].state = 0;
-                                if (i >= 1)
-                                {
-                                    //noExplodeBullets.AddOrUpdate(bulletIndex, 1, (x, y) => 1);
-                                }
-                            }
-                        }
-
-                        //不在同星系，本星系内光会很细，增加一段短光
-                        int dec = 5;
-                        if (renderLevel >= 3) dec = 2;
-                        if (casterSwarm != null)
-                        {
-                            for (int i = 0; i < laserBulletNum / dec || i == 0; i++)
-                            {
-                                int bulletIndex = __instance.swarm.AddBullet(new SailBullet
-                                {
-                                    maxt = 0.3f,
-                                    lBegin = __instance.starData.uPosition,
-                                    uEndVel = targetUPos,
-                                    uBegin = __instance.starData.uPosition + Utils.RandPosDelta() * laserBulletEndPosDelta / dec,
-                                    uEnd = (targetUPos - __instance.starData.uPosition).normalized * nearPoint + __instance.starData.uPosition + Utils.RandPosDelta() * laserBulletEndPosDelta / dec
-                                }, 0);
-                                __instance.swarm.bulletPool[bulletIndex].state = 0;
-
-                                //noExplodeBullets.AddOrUpdate(bulletIndex, 1, (x, y) => 1);
-                            }
-                        }
-
-                        //如果不在同星系，接收星系需要同样生成光束（由于发射星系的光束不会在观察目标星系时渲染），此部分是必须的
-                        //但是减小了光线粗细和粒子数量
-                        if (targetSwarm != null && targetSwarm.starData.index != __instance.starData.index)
-                        {
-                            //无需改变生成点和终点
-                            for (int i = 0; i < laserBulletNum / dec || i == 0; i++)
-                            {
-                                int bulletIndex = targetSwarm.AddBullet(new SailBullet
-                                {
-                                    maxt = 0.3f,
-                                    lBegin = __instance.starData.uPosition,
-                                    uEndVel = targetUPos,
-                                    uBegin = __instance.starData.uPosition + Utils.RandPosDelta() * (laserBulletPosDelta / dec),
-                                    uEnd = targetUPos + Utils.RandPosDelta() * (laserBulletEndPosDelta / dec * 2)
-                                }, 0);
-                                targetSwarm.bulletPool[bulletIndex].state = 0;
-                                if (i >= 1)
-                                {
-                                    //noExplodeBullets.AddOrUpdate(bulletIndex, 1, (x, y) => 1);
-                                }
-                            }
-                        }
-
-                    }
+                    // 恒星 -> 恒星 主光束：交给独立渲染器（自带三视图坐标换算 + 自持 DrawProceduralNow，
+                    // 不再往任何 DysonSwarm 灌太阳帆，因此隐藏戴森云渲染、或正在查看别的星系时都能显示，且大幅省性能）
+                    StarCannonLaserRenderer.EnsureHost();
+                    int beamLevel = Mathf.Max(1, renderLevel);
+                    StarCannonLaserRenderer.AddBeam(1, __instance.starData.uPosition, targetUPos,
+                        StarCannonLaserRenderer.DefaultColor,
+                        StarCannonLaserRenderer.baseBulletCount * beamLevel,
+                        StarCannonLaserRenderer.defaultMuzzleRadius * beamLevel,
+                        StarCannonLaserRenderer.defaultImpactRadius * beamLevel,
+                        0.35f, 1f, 3 + beamLevel,
+                        beginStarIdx: fireStarIdx,
+                        endStarIdx: targetStarIdx,
+                        beginShellLen: fireShellLen,
+                        endShellLen: targetShellLen);
                 }
+                MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.AttackLogic);
             }
 
             // 状态计时结算与转换
@@ -975,8 +1006,8 @@ namespace MoreMegaStructure
                 state = EStarCannonState.Standby;
                 time = 0;
             }
-            MMSCPU.EndSample(ECpuWorkEntryExtended.StarCannon);
-            MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.StarCannon);
+            MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
         }
 
         public static void LaserEffect2(DysonSphere sphere, long gameTick, VectorLF3 targetUPos)
@@ -1055,7 +1086,12 @@ namespace MoreMegaStructure
 
 
             int activeFrameNum = 0;
-            int maxBarNum = 12;
+            int maxBarNum = focusBeamMaxBar;
+            // 聚能阶段亮度：预热时 laserIntensity 从 0 涨到 maxSideLaserIntensity，归一化后驱动光束逐渐变亮
+            // 从 0.15 起步(而非 0)：保证预热一开始就有“较暗但可见”的汇聚激光，随后每秒变亮直到开火
+            float focusIntensity = maxSideLaserIntensity > 0
+                ? Mathf.Clamp01(0.15f + 0.85f * (float)laserIntensity / (float)maxSideLaserIntensity)
+                : 1f;
             DysonSphereLayer layer = __instance.layersIdBased[1];
             if (layer == null) return;
             eff3EndPos = layer.starData.uPosition + (VectorLF3)Maths.QRotate(layer.currentRotation, normDirection * focusDistance * 0.95 * reverseDirection);
@@ -1065,29 +1101,23 @@ namespace MoreMegaStructure
                     break;
                 if (layer.nodePool[i] == null)
                     continue;
-                for (int j = 0; j < laserIntensity; j++)
-                {
-                    int bulletIndex = __instance.swarm.AddBullet(new SailBullet
-                    {
-                        maxt = sideLaserBulletLifeTime,
-                        lBegin = __instance.starData.uPosition,
-                        uEndVel = targetUPos,
-                        uBegin = layer.NodeUPos(layer.nodePool[i]),
-                        uEnd = eff3EndPos
-                    }, 0);
-                    __instance.swarm.bulletPool[bulletIndex].state = 0;
-                    if (j >= 0)
-                    {
-                        //noExplodeBullets.AddOrUpdate(bulletIndex, 1, (x, y) => 1);
-                    }
-                }
+                // 集束侧激光：从壳层 node 汇聚到炮口前方，交给独立渲染器（不再向 swarm 灌子弹）
+                // beginStarIdx/endStarIdx = 发射恒星 index（汇聚束两段都在发射星壳层附近），供现实视角叠加层按当前星系身份门控
+                StarCannonLaserRenderer.AddBeam(2000 + i, layer.NodeUPos(layer.nodePool[i]), eff3EndPos,
+                    StarCannonLaserRenderer.DefaultColor,
+                    2 + laserIntensity,
+                    24f, 12f, 0.2f, focusIntensity,
+                    beginStarIdx: (__instance.starData != null ? __instance.starData.index : -1),
+                    endStarIdx: (__instance.starData != null ? __instance.starData.index : -1));
                 activeFrameNum += 1;
-                //AddNewLaser(layer.NodeUPos(layer.nodePool[i]), eff3EndPos, 0, laserIntensity);
             }
             for (; activeFrameNum < maxBarNum; activeFrameNum++)
             {
                 //AddNewLaser(layer.starData.uPosition, layer.starData.uPosition, 0, 0);
             }
+            // 预热阶段主光束还未出现，此处必须主动创建渲染宿主，否则汇聚光束只会写进字典而没有任何 OnRenderObject 来绘制，
+            // 表现为“汇聚光束和主光束同时才出现”。EnsureHost 幂等，beams 为空时不会创建。
+            StarCannonLaserRenderer.EnsureHost();
             //Compensate12LaserDamage();
         }
 
@@ -1102,17 +1132,32 @@ namespace MoreMegaStructure
             DysonSwarm swarm = GameMain.data.dysonSpheres[starCannonStarIndex]?.swarm;
             if (swarm == null) return;
             if (swarm.bulletPool == null) return;
-            foreach (var item in noExplodeBullets.Keys)
+            // 只有真正要干活的路径才计费（前面的守卫都在计时窗口之外）。
+            // 这段属于开炮期间的特效结算，此前完全没有被计费，因此挂在"PF激光渲染与特效"下，
+            // 并按 恒星炮 -> 巨构总览 的顺序补齐父括号，保证父项始终包得住子项。
+            CpuHandle hMms = MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
+            CpuHandle hCannon = MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.StarCannon);
+            CpuHandle hRender = MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.StarCannonRender);
+            try
             {
-                if (noExplodeBullets[item] > 0 && swarm.bulletPool.Length > item)
+                foreach (var item in noExplodeBullets.Keys)
                 {
-                    if (swarm.bulletPool[item].id != 0 && swarm.bulletPool[item].t >= swarm.bulletPool[item].maxt)
+                    if (noExplodeBullets[item] > 0 && swarm.bulletPool.Length > item)
                     {
-                        swarm.RemoveBullet(item);
-                        int rm;
-                        noExplodeBullets.TryRemove(item, out rm);
+                        if (swarm.bulletPool[item].id != 0 && swarm.bulletPool[item].t >= swarm.bulletPool[item].maxt)
+                        {
+                            swarm.RemoveBullet(item);
+                            int rm;
+                            noExplodeBullets.TryRemove(item, out rm);
+                        }
                     }
                 }
+            }
+            finally
+            {
+                MMSCPU.EndSampleSafe(hRender);
+                MMSCPU.EndSampleSafe(hCannon);
+                MMSCPU.EndSampleSafe(hMms);
             }
         }
 

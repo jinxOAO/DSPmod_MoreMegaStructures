@@ -16,7 +16,7 @@ namespace MoreMegaStructure
         public const int starAssemblyRepresentativeItemId = 9493; // 用这个itemId代表巨构组装厂的生产机器itemId
 
         public static bool enabled = true;
-        public static bool forceBanned = true;
+        public static bool forceBanned = false;
         public static long time0 = 0;
         public static long time1 = 0;
         public static long time2 = 0;
@@ -39,8 +39,8 @@ namespace MoreMegaStructure
             {
                 return true;
             }
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.Statistics);
+            MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.Statistics);
             var _this = __instance;
 
             // 原方法逻辑：看但凡有在GameData.factories这个列表里的工厂，但是又没在 this.astroBox.Items;和this.astroBox.ItemsData;里面的，将其planetId插入到正确位置（如果是整个星系的第一个插入的工厂，则额外先pushback一个（注意星系在这个ItemsData列表里是不按id排序的，而是按加入顺序排序的，所以说pushback，不是插入）该星系的总统计(starId*100)，然后再add该行星工厂的planetId）。
@@ -124,45 +124,82 @@ namespace MoreMegaStructure
                     }
                 }
 
-                // 新增部分
-                int oldStarId = -1;
-                for (int i = 0; i < itemsData.Count; i++)
-                {
-                    int nowStarId = itemsData[i] / 100;
-                    if (oldStarId != nowStarId && oldStarId != -1 && oldStarId <= MoreMegaStructure.MegaArrayLength && oldStarId > 0)
-                    {
-                        if (MoreMegaStructure.StarMegaStructureType[oldStarId - 1] == 4)
-                        {
-                            itemsData.Insert(i, oldStarId * 100 + GameMain.galaxy.StarById(oldStarId).planetCount + 1);
-                            items.Insert(
-                                i, MMSPlanetById(oldStarId * 100 + GameMain.galaxy.StarById(oldStarId).planetCount + 1).displayName);
-                            i++;
-                        }
-                    }
-
-                    if (i == itemsData.Count - 1)
-                    {
-                        oldStarId = nowStarId;
-                        if (oldStarId > 0 && oldStarId <= MoreMegaStructure.MegaArrayLength && MoreMegaStructure.StarMegaStructureType[oldStarId - 1] == 4)
-                        {
-                            itemsData.Add(oldStarId * 100 + GameMain.galaxy.StarById(oldStarId).planetCount + 1);
-                            items.Add(MMSPlanetById(oldStarId * 100 + GameMain.galaxy.StarById(oldStarId).planetCount + 1).displayName);
-                            break;
-                        }
-                    }
-
-                    oldStarId = nowStarId;
-                }
+                // 新增部分：在该星系组末尾注入巨构虚项（此处为星际组装厂 type 4）
+                InjectMegaAstroEntriesIntoList(items, itemsData, 4);
 
                 // 这一行使原本的
                 _this.ValueToAstroBox();
-                MMSCPU.EndSample(ECpuWorkEntryExtended.Statistics);
-                MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
+                MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.Statistics);
+                MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
                 return false;
             }
-            MMSCPU.EndSample(ECpuWorkEntryExtended.Statistics);
-            MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.Statistics);
+            MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
             return true;
+        }
+
+        /// <summary>
+        /// 在 astroBox 的下拉列表(按恒星分组：先恒星系总计 starId*100，再各行星 planetId)中，
+        /// 于每个含指定巨构类型的星系组末尾插入该巨构的虚行星项(starId*100 + planetCount + 1)，
+        /// 显示名取 MMSPlanetById(...).displayName。生产页以 megaType=4(星际组装厂)调用；
+        /// 研究页以 megaType=2(科学枢纽)调用。每个星系至多一种巨构，故与另一类型不冲突。
+        /// </summary>
+        public static void InjectMegaAstroEntriesIntoList(List<string> items, List<int> itemsData, int megaType)
+        {
+            int oldStarId = -1;
+            for (int i = 0; i < itemsData.Count; i++)
+            {
+                int nowStarId = itemsData[i] / 100;
+                if (oldStarId != nowStarId && oldStarId != -1 && oldStarId <= MoreMegaStructure.MegaArrayLength && oldStarId > 0)
+                {
+                    if (MoreMegaStructure.StarMegaStructureType[oldStarId - 1] == megaType)
+                    {
+                        itemsData.Insert(i, oldStarId * 100 + GameMain.galaxy.StarById(oldStarId).planetCount + 1);
+                        items.Insert(
+                            i, MMSPlanetById(oldStarId * 100 + GameMain.galaxy.StarById(oldStarId).planetCount + 1).displayName);
+                        i++;
+                    }
+                }
+
+                if (i == itemsData.Count - 1)
+                {
+                    oldStarId = nowStarId;
+                    if (oldStarId > 0 && oldStarId <= MoreMegaStructure.MegaArrayLength && MoreMegaStructure.StarMegaStructureType[oldStarId - 1] == megaType)
+                    {
+                        itemsData.Add(oldStarId * 100 + GameMain.galaxy.StarById(oldStarId).planetCount + 1);
+                        items.Add(MMSPlanetById(oldStarId * 100 + GameMain.galaxy.StarById(oldStarId).planetCount + 1).displayName);
+                        break;
+                    }
+                }
+
+                oldStarId = nowStarId;
+            }
+        }
+
+        /// <summary>
+        /// 研究标签页下拉注入科学枢纽项。生产页前缀对 isProductionTab 返回 false(原生被跳过)，
+        /// 故本 postfix 不在生产页触发；研究/电力/戴森/击杀页前缀返回 true(原生执行)，postfix 触发后
+        /// 仅当 isResearchTab 时以 megaType=2 注入科学枢纽虚项，其它页无操作。
+        /// </summary>
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(UIStatisticsWindow), "RefreshAstroBox")]
+        public static void RefreshAstroBoxResearchPostPatch(ref UIStatisticsWindow __instance)
+        {
+            if (!enabled) return;
+            if (__instance == null) return;
+            if (!__instance.isResearchTab) return;
+            if (__instance.astroBox == null) return;
+            List<string> items = __instance.astroBox.Items;
+            List<int> itemsData = __instance.astroBox.ItemsData;
+            if (items == null || itemsData == null) return;
+            try
+            {
+                InjectMegaAstroEntriesIntoList(items, itemsData, 2);
+                __instance.ValueToAstroBox();
+            }
+            catch (Exception)
+            {
+            }
         }
 
         /// <summary>
@@ -247,10 +284,6 @@ namespace MoreMegaStructure
                                         break;
                                     }
                                 }
-                                if (i == planetId - 1)
-                                {
-                                    Utils.Log("planetById Postfix found no factory to replace null, now returning new PlanetData() as result");
-                                }
                             }
                             if (planet.factory == null)
                             {
@@ -270,7 +303,6 @@ namespace MoreMegaStructure
                 }
                 catch (Exception)
                 {
-                    Utils.Log("Error in MoreMegaStructure PalnetByIdPostPatch.");
                 }
 
             }
@@ -286,8 +318,8 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(UIStatisticsWindow), "DetermineProductEntryList")]
         public static bool ComputeDisplayEntriesPrePatch(ref UIStatisticsWindow __instance)
         {
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.Statistics);
+            MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.Statistics);
             __instance.productEntryList.PrepareDisplayEntries(__instance.lastListCursor);
             Array.Clear(__instance.statGroup, 0, __instance.statGroupCursor);
             __instance.statGroupCursor = 0;
@@ -302,7 +334,7 @@ namespace MoreMegaStructure
                 for (int i = GameMain.data.factories.Length; i < GameMain.data.factories.Length + GameMain.galaxy.starCount; i++) // 加入巨构统计
                 {
                     int idx = GameMain.data.factories.Length + GameMain.galaxy.starCount - i - 1;
-                    if (idx < MoreMegaStructure.MegaArrayLength && MoreMegaStructure.StarMegaStructureType[idx] == 4) __instance.AddProductStatGroup(i);
+                    if (idx < MoreMegaStructure.MegaArrayLength && (MoreMegaStructure.StarMegaStructureType[idx] == 4 || MoreMegaStructure.StarMegaStructureType[idx] == 2)) __instance.AddProductStatGroup(i);
                 }
             }
             else if (__instance.gameData.localPlanet != null && __instance.astroFilter == 0)
@@ -338,7 +370,7 @@ namespace MoreMegaStructure
                     for (int k = GameMain.data.factories.Length; k < GameMain.data.factories.Length + GameMain.galaxy.starCount; k++) // 加入巨构统计
                     {
                         int idx = GameMain.data.factories.Length + GameMain.galaxy.starCount - k - 1;
-                        if (idx < MoreMegaStructure.MegaArrayLength && MoreMegaStructure.StarMegaStructureType[idx] == 4) __instance.AddProductStatGroup(k);
+                        if (idx < MoreMegaStructure.MegaArrayLength && (MoreMegaStructure.StarMegaStructureType[idx] == 4 || MoreMegaStructure.StarMegaStructureType[idx] == 2)) __instance.AddProductStatGroup(k);
                     }
 
                     int starCount = __instance.gameData.galaxy.starCount;
@@ -467,8 +499,8 @@ namespace MoreMegaStructure
             }
             __instance.productEntryList.RefreshDatasIndices(__instance.lastListCursor);
 
-            MMSCPU.EndSample(ECpuWorkEntryExtended.Statistics);
-            MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.Statistics);
+            MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
             return false;
         }
 
@@ -499,34 +531,34 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(ProductionStatistics), "PrepareTick")]
         public static void ProductionStatisticsPrepareTickPostPatch(ref ProductionStatistics __instance)
         {
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.Statistics);
+            MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.Statistics);
             int maxLen = __instance.gameData.factories.Length + GameMain.galaxy.starCount;
             maxLen = maxLen < __instance.factoryStatPool.Length ? maxLen : __instance.factoryStatPool.Length;
             int endIndex = GameMain.data.factories.Length + GameMain.galaxy.starCount - 1;
             for (int i = __instance.gameData.factories.Length; i < maxLen; i++)
             {
                 int starIndex =  endIndex - i;
-                if(MoreMegaStructure.StarMegaStructureType.Length > starIndex && starIndex >= 0 && MoreMegaStructure.StarMegaStructureType[starIndex] == 4)
+                if(MoreMegaStructure.StarMegaStructureType.Length > starIndex && starIndex >= 0 && (MoreMegaStructure.StarMegaStructureType[starIndex] == 4 || MoreMegaStructure.StarMegaStructureType[starIndex] == 2))
                     __instance.factoryStatPool[i].PrepareTick();
             }
-            MMSCPU.EndSample(ECpuWorkEntryExtended.Statistics);
-            MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.Statistics);
+            MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
         }
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(ProductionStatistics), "GameTick")]
         public static void ProductionStatisticsGameTickPostPatch(ref ProductionStatistics __instance, long time)
         {
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.Statistics);
+            MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.Statistics);
             bool flag = true;
             int maxLen = Math.Min(__instance.gameData.factories.Length + GameMain.galaxy.starCount, __instance.factoryStatPool.Length);
             int endIndex = GameMain.data.factories.Length + GameMain.galaxy.starCount - 1;
             for (int i = __instance.gameData.factories.Length; i < maxLen; i++)
             {
                 int starIndex = endIndex - i;
-                if (MoreMegaStructure.StarMegaStructureType.Length > starIndex && starIndex >= 0 && MoreMegaStructure.StarMegaStructureType[starIndex] == 4)
+                if (MoreMegaStructure.StarMegaStructureType.Length > starIndex && starIndex >= 0 && (MoreMegaStructure.StarMegaStructureType[starIndex] == 4 || MoreMegaStructure.StarMegaStructureType[starIndex] == 2))
                 {
                     __instance.factoryStatPool[i].GameTick(time);
                     if (__instance.factoryStatPool[i].itemChanged && flag)
@@ -543,85 +575,307 @@ namespace MoreMegaStructure
                     }
                 }
             }
-            MMSCPU.EndSample(ECpuWorkEntryExtended.Statistics);
-            MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.Statistics);
+            MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
+        }
+
+        /// <summary>
+        /// 多线程统计路径下游戏只会调用 PrepareTick_Parallel（其内部按 factoryCount 分段处理真实工厂，
+        /// 永远不涉及借用给巨构的尾部槽位）。这里仅在 threadOrdinal==0 的工作线程上补齐巨构尾部槽位的
+        /// PrepareTick，保证与串行路径行为一致且每 tick 恰好一次。巨构槽位与真实工厂头部槽位互不相交，
+        /// 因此与其它线程的头部处理无数据竞争。
+        /// </summary>
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(ProductionStatistics), "PrepareTick_Parallel")]
+        public static void ProductionStatisticsPrepareTickParallelPostPatch(ref ProductionStatistics __instance, int threadOrdinal)
+        {
+            if (threadOrdinal != 0) return;
+            int maxLen = Math.Min(__instance.gameData.factories.Length + GameMain.galaxy.starCount, __instance.factoryStatPool.Length);
+            int endIndex = __instance.gameData.factories.Length + GameMain.galaxy.starCount - 1;
+            for (int i = __instance.gameData.factories.Length; i < maxLen; i++)
+            {
+                int starIndex = endIndex - i;
+                if (MoreMegaStructure.StarMegaStructureType.Length > starIndex && starIndex >= 0 && (MoreMegaStructure.StarMegaStructureType[starIndex] == 4 || MoreMegaStructure.StarMegaStructureType[starIndex] == 2))
+                    __instance.factoryStatPool[i].PrepareTick();
+            }
+        }
+
+        /// <summary>
+        /// 多线程统计路径下补齐巨构尾部槽位的 GameTick，使实际产出/消耗的累计量在默认多线程模式下也能统计。
+        /// 仅在 threadOrdinal==0 工作线程执行一次；注意此处绝不调用 OnItemChange（工作线程访问 UI 会崩溃），
+        /// 面板自身会按刷新周期轮询，参考速率则由主线程的 extraInfoCalculator.GameTick 驱动。
+        /// </summary>
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(ProductionStatistics), "GameTick_Parallel")]
+        public static void ProductionStatisticsGameTickParallelPostPatch(ref ProductionStatistics __instance, long time, int threadOrdinal)
+        {
+            if (threadOrdinal != 0) return;
+            int maxLen = Math.Min(__instance.gameData.factories.Length + GameMain.galaxy.starCount, __instance.factoryStatPool.Length);
+            int endIndex = __instance.gameData.factories.Length + GameMain.galaxy.starCount - 1;
+            for (int i = __instance.gameData.factories.Length; i < maxLen; i++)
+            {
+                int starIndex = endIndex - i;
+                if (MoreMegaStructure.StarMegaStructureType.Length > starIndex && starIndex >= 0 && (MoreMegaStructure.StarMegaStructureType[starIndex] == 4 || MoreMegaStructure.StarMegaStructureType[starIndex] == 2))
+                    __instance.factoryStatPool[i].GameTick(time);
+            }
+        }
+
+
+        /// <summary>
+        /// 面板每次按 astroFilter 刷新真实工厂仓储时(RefreshItemsStorageCount)，同步把星际组装厂内部仓储
+        /// 写入其借用的尾部槽位，使仓储数量列显示巨构内部堆积值（方案第3条）。进出口、垃圾保持 0。
+        /// </summary>
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(ProductionStatistics), "RefreshItemsStorageCount")]
+        public static void RefreshItemsStorageCountPostPatch(ref ProductionStatistics __instance, int astroFilter)
+        {
+            RefreshAllIAStorage();
+        }
+
+        /// <summary>
+        /// 刷新所有星际组装厂借用槽的内部仓储(storageCount + detailedStorageCounts)。真实工厂的仓储分类由
+        /// ProductionExtraInfoCalculator 周期刷新，但 IA 借用槽不在其处理范围内，且面板正常浏览星系/全星区时
+        /// 并不会调用 RefreshItemsStorageCount(它主要服务于 GoalTools/成就)，所以星系/全星区的 IA 仓储需要由
+        /// RefreshProductionExtraInfo 这条与真实工厂同频的刷新路径主动补齐。
+        /// </summary>
+        public static void RefreshAllIAStorage()
+        {
+            if (GameMain.galaxy == null) return;
+            int maxStar = Math.Min(GameMain.galaxy.starCount, MoreMegaStructure.StarMegaStructureType.Length);
+            for (int starIndex = 0; starIndex < maxStar; starIndex++)
+            {
+                if (MoreMegaStructure.StarMegaStructureType[starIndex] == 4)
+                    FillIAStorage(starIndex);
+            }
+        }
+
+        /// <summary>
+        /// 把某个星系的星际组装厂内部仓储(StarAssembly.productStorage)写入其借用的 factoryStatPool 槽位。
+        /// 采用 reset 后 add 的方式，保证多次刷新幂等、且全星区/星系求和时各巨构槽位数值都是最新的。
+        /// </summary>
+        public static void FillIAStorage(int starIndex)
+        {
+            if (starIndex < 0 || starIndex >= MoreMegaStructure.StarMegaStructureType.Length) return;
+            if (MoreMegaStructure.StarMegaStructureType[starIndex] != 4) return;
+            if (!StarAssembly.productStorage.ContainsKey(starIndex)) return;
+            if (GameMain.data == null || GameMain.data.statistics == null || GameMain.data.statistics.production == null) return;
+            FactoryProductionStat[] pool = GameMain.data.statistics.production.factoryStatPool;
+            if (pool == null) return;
+            int idx = StarIndex2FactoryIndex(starIndex);
+            if (idx < GameMain.data.factories.Length || idx >= pool.Length) return;
+            FactoryProductionStat fps = pool[idx];
+            if (fps == null) return;
+            fps.ResetStorageCount();
+            fps.ResetDetailedStorageCount();
+            foreach (KeyValuePair<int, int> kv in StarAssembly.productStorage[starIndex])
+            {
+                if (kv.Value > 0)
+                {
+                    fps.AddStorageCount(kv.Key, kv.Value);
+                    // 与原生 ProductionExtraInfoCalculator 配对写法一致：巨构内部仓储归入"其他设施"子分类
+                    // (EDetailedStorageCountType.Other)，供 UIStorageCountTip 悬停子标签页读取。
+                    fps.AddDetailedStorageCount(kv.Key, EDetailedStorageCountType.Other, kv.Value);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 仓储数量悬停子标签页(UIStorageCountTip.Refresh)只会累加真实工厂 [0,factoryCount) 或本星系行星工厂的
+        /// detailedStorageCounts，星际组装厂借用的尾部槽位不在这个遍历范围内，导致其内部仓储不会出现在任何子分类中。
+        /// 这里在原生 Refresh 之后，按当前 astroFilter 把对应范围的巨构尾部槽 detailedStorageCounts(仅"其他设施"Other 会非零)
+        /// 追加进 entryDatas，再复刻原生末尾的渲染段刷新各分类数值/显隐/总计，使 IA 内部仓储与真实工厂一样计入"其他设施"，
+        /// 覆盖 全星区(astroFilter==0)、所在星系(%100==0)、IA 虚行星页 三种视图；只看单个真实行星时不会混入 IA。
+        /// </summary>
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(UIStorageCountTip), "Refresh")]
+        public static void UIStorageCountTipRefreshPostPatch(ref UIStorageCountTip __instance)
+        {
+            if (!enabled) return;
+            if (__instance == null) return;
+            GameData data = GameMain.data;
+            if (data == null || data.statistics == null || data.statistics.production == null) return;
+            if (__instance.entryDatas == null || __instance.entries == null || __instance.entries.Length == 0) return;
+            FactoryProductionStat[] pool = data.statistics.production.factoryStatPool;
+            if (pool == null) return;
+
+            int astroFilter = __instance.astroFilter;
+            int itemId = __instance.itemId;
+            long added = 0L;
+            int maxStar = Math.Min(data.galaxy.starCount, MoreMegaStructure.StarMegaStructureType.Length);
+            for (int starIndex = 0; starIndex < maxStar; starIndex++)
+            {
+                if (MoreMegaStructure.StarMegaStructureType[starIndex] != 4) continue;
+                bool include;
+                if (astroFilter == 0) include = true; // 全星区
+                else if (astroFilter % 100 == 0) include = (starIndex == astroFilter / 100 - 1); // 所在星系
+                else include = IsStarAssemblyAstroFilter(astroFilter) && starIndex == astroFilter / 100 - 1; // IA 虚行星页
+                if (!include) continue;
+
+                int idx = StarIndex2FactoryIndex(starIndex);
+                if (idx < data.factories.Length || idx >= pool.Length) continue;
+                FactoryProductionStat fps = pool[idx];
+                if (fps == null || fps.productIndices == null || fps.productPool == null) continue;
+                if (itemId < 0 || itemId >= fps.productIndices.Length) continue;
+                int num = fps.productIndices[itemId];
+                if (num <= 0 || num >= fps.productPool.Length) continue;
+                long[] detailed = fps.productPool[num].detailedStorageCounts;
+                if (detailed == null) continue;
+                for (int j = 0; j < __instance.entryDatas.Length && j < detailed.Length; j++)
+                {
+                    if (detailed[j] != 0L)
+                    {
+                        __instance.entryDatas[j] += detailed[j];
+                        added += detailed[j];
+                    }
+                }
+            }
+            if (added == 0L) return; // 无巨构贡献则完全保持原生显示
+
+            // 复刻原生 Refresh 末尾渲染段：按更新后的 entryDatas 重新计算显隐/数值/总计
+            GameHistoryData history = data.history;
+            long total = 0L;
+            float y = __instance.entries[0].rectTrans.anchoredPosition.y;
+            for (int k = 0; k < __instance.entries.Length; k++)
+            {
+                if ((k == 4 && __instance.entryDatas[k] == 0L) || (k == 1 && history != null && !history.logisticsSystemUnlocked && __instance.entryDatas[k] == 0L))
+                {
+                    __instance.entries[k].gameObject.SetActive(false);
+                }
+                else
+                {
+                    __instance.entries[k].Refresh(__instance.entryDatas[k], ref y);
+                    total += __instance.entryDatas[k];
+                }
+            }
+            __instance.rectTrans.sizeDelta = new Vector2(276f, -y + 12f);
+            __instance.totalCountText.text = total.ToString("#,##0");
+        }
+
+        /// <summary>
+        /// 游戏原生 RefreshProductionExtraInfo 的最后一条 else 分支会对 astroFilter 直接执行
+        /// gameData.galaxy.PlanetById(astroFilter).factoryIndex。星际组装厂的虚行星 id（starId*100+planetCount+1）
+        /// 既不是 -1、也不是 0、更不是 %100==0，会落入该 else 分支，而真实 PlanetById 返回 null 触发空引用崩溃。
+        /// 这里拦截该虚行星场景：巨构的参考速率/仓储/进出口由本类其它补丁(MMSRefreshItemsCyclicRefSpeedWithFactory、
+        /// FillIAStorage)单独维护，且方案要求进出口/垃圾恒为 0，因此无需进入 extraInfoCalculator（其内部还会用
+        /// gameData.factories[num] 索引真实工厂，借用槽位越界会再次崩溃），直接跳过原方法即可。
+        /// 其余（真实行星/星系/全星区/当前星球）一律交回原方法处理。
+        /// </summary>
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(UIStatisticsWindow), "RefreshProductionExtraInfo")]
+        public static bool RefreshProductionExtraInfoPrePatch(ref UIStatisticsWindow __instance)
+        {
+            if (!enabled) return true;
+            if (__instance == null) return true;
+            if (!__instance.isProductionTab || __instance.astroFilter < -1) return true;
+            int astroFilter = __instance.astroFilter;
+            // 全星系(-1)/星系(%100==0)视图下，原生用 extraInfoCalculator 持续刷新真实工厂的仓储数量与分类，
+            // 但 IA 借用槽不在其处理范围内；而面板正常浏览这些视图时并不会调用 RefreshItemsStorageCount，
+            // 导致星系/全星区里来自星际组装厂的仓储数据不刷新(只有进入 IA 页面才更新)。这里顺带补齐所有 IA 的内部仓储。
+            if (astroFilter == -1 || astroFilter % 100 == 0)
+            {
+                try { RefreshAllIAStorage(); }
+                catch (Exception) { }
+            }
+            // 仅当原方法会走 else 分支（非 -1、非 %100==0）且真实行星查不到时，才认定为巨构虚行星并跳过。
+            int iaFactoryIndex;
+            if (astroFilter != -1 && astroFilter % 100 != 0 && TryGetIAFactoryIndex(astroFilter, out iaFactoryIndex))
+            {
+                // 原方法此处会执行 PlanetById(astroFilter).factoryIndex，对巨构虚行星返回 null 而崩溃；且绝不能把借用索引
+                // 塞进 extraInfoCalculator（其 CalculateImmediately/GameTick 会用 gameData.factories[num] 索引，越界二次崩溃）。
+                // 巨构的参考速率与内部仓储改由下面直接刷新（不再依赖 extraInfoCalculator 这条永远进不去、也从不触发的路径）。
+                try
+                {
+                    RefreshIARefSpeedAndStorage(FactoryIndex2StarIndex(iaFactoryIndex));
+                }
+                catch (Exception)
+                {
+                }
+                return false; // 跳过原方法，规避空引用
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 取某星系星际组装厂借用的 FactoryProductionStat 槽位（含全部边界/空判断），取不到返回 null。
+        /// </summary>
+        public static FactoryProductionStat GetIAFactoryStat(int starIndex)
+        {
+            if (starIndex < 0 || starIndex >= MoreMegaStructure.StarMegaStructureType.Length) return null;
+            if (GameMain.data == null || GameMain.data.statistics == null || GameMain.data.statistics.production == null) return null;
+            FactoryProductionStat[] pool = GameMain.data.statistics.production.factoryStatPool;
+            if (pool == null) return null;
+            int idx = StarIndex2FactoryIndex(starIndex);
+            if (idx < GameMain.data.factories.Length || idx >= pool.Length) return null;
+            return pool[idx];
+        }
+
+        /// <summary>
+        /// 直接刷新星际组装厂的期望生产/消耗参考速率与内部仓储。原本这一步只在
+        /// ProductionExtraInfoCalculator.GameTick 处理借用索引时经 CalculateFactory_IA 触发，但由于原生
+        /// RefreshProductionExtraInfo 对巨构虚行星在 AddFactory 之前就空引用崩溃、而拦截补丁又跳过原方法，
+        /// 借用索引永远不会进入 extraInfoCalculator，导致参考速率恒为 0。改为在打开 IA 统计页时直接计算。
+        /// </summary>
+        public static void RefreshIARefSpeedAndStorage(int starIndex)
+        {
+            if (starIndex < 0 || starIndex >= MoreMegaStructure.StarMegaStructureType.Length) return;
+            if (MoreMegaStructure.StarMegaStructureType[starIndex] != 4) return;
+            if (GetIAFactoryStat(starIndex) == null) return;
+            int maxInc = 0;
+            try
+            {
+                GameHistoryData history = GameMain.data.history;
+                ItemProto itemProto = LDB.items.Select(2313);
+                int[] incItemIds = (itemProto != null) ? itemProto.prefabDesc.incItemId : null;
+                if (incItemIds != null && history != null)
+                {
+                    for (int i = 0; i < incItemIds.Length; i++)
+                    {
+                        if (history.ItemUnlocked(incItemIds[i]))
+                        {
+                            ItemProto p = LDB.items.Select(incItemIds[i]);
+                            if (p != null && p.Ability > maxInc) maxInc = p.Ability;
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+            }
+            MMSRefreshItemsCyclicRefSpeedWithFactory(starIndex, maxInc);
+            FillIAStorage(starIndex);
         }
 
 
 
         /// <summary>
-        /// 下面这个是写入星际组装厂的 预期理想产出和消耗数据
+        /// 在游戏创建 ProductionStatistics 时立刻把 factoryStatPool 扩容为
+        /// factories.Length + starCount，并为借用槽位初始化 FactoryProductionStat。
+        /// 否则新开局（无 Import/IntoOtherSave 流程）池子仍是 factories.Length 长度，
+        /// 后续所有 [factories.Length + starCount - 1 - starIndex] 的巨构槽位访问都会越界。
+        /// 直接基于 __instance 操作而非 GameMain.data，避免加载期 GameMain.data 尚未指向本 gameData 的时序问题。
         /// </summary>
-        /// <param name="__instance"></param>
-        /// <param name="astroFilter"></param>
         [HarmonyPostfix]
-        [HarmonyPatch(typeof(ProductionStatistics), "RefreshItemsCyclicRefSpeed")]
-        public static void RefreshItemsCyclicRefSpeedPostPatch(ref ProductionStatistics __instance, int astroFilter)
+        [HarmonyPatch(typeof(ProductionStatistics), "Init")]
+        public static void ProductionStatisticsInitPostPatch(ref ProductionStatistics __instance)
         {
-            // 原本的方法会读取增产剂解锁级别。
-            GameHistoryData history = __instance.gameData.history;
-            ItemProto itemProto = LDB.items.Select(2313);
-            int[] array = (itemProto != null) ? itemProto.prefabDesc.incItemId : null;
-            int maxIncLevelByProliferatorUnlocked = 0;
-            if (array != null)
+            if (!enabled) return;
+            if (__instance == null || __instance.gameData == null) return;
+            int factoriesLen = __instance.gameData.factories.Length;
+            int starCount = __instance.gameData.galaxy.starCount;
+            if (__instance.factoryStatPool != null && __instance.factoryStatPool.Length > factoriesLen) return; // 已扩容
+            FactoryProductionStat[] old = __instance.factoryStatPool;
+            __instance.factoryStatPool = new FactoryProductionStat[factoriesLen + starCount];
+            if (old != null)
             {
-                for (int i = 0; i < array.Length; i++)
-                {
-                    if (history.ItemUnlocked(array[i]))
-                    {
-                        ItemProto itemProto2 = LDB.items.Select(array[i]);
-                        if (itemProto2 != null && itemProto2.Ability > maxIncLevelByProliferatorUnlocked)
-                        {
-                            maxIncLevelByProliferatorUnlocked = itemProto2.Ability;
-                        }
-                    }
-                }
+                for (int i = 0; i < old.Length && i < __instance.factoryStatPool.Length; i++)
+                    __instance.factoryStatPool[i] = old[i];
             }
-
-            if (astroFilter == 0) // 把所有组装厂数据都写入
+            for (int i = factoriesLen; i < __instance.factoryStatPool.Length; i++)
             {
-                int minStarCount = GameMain.galaxy.starCount;
-                if (minStarCount > MoreMegaStructure.MegaArrayLength)
-                    minStarCount = MoreMegaStructure.MegaArrayLength;
-                for (int starIndex = 0; starIndex < minStarCount; starIndex++)
+                if (__instance.factoryStatPool[i] == null)
                 {
-                    if (MoreMegaStructure.StarMegaStructureType[starIndex] == (int)EMegaType.InterstellarAssembly)
-                    {
-                        // 写入星际组装厂ref速度数据
-                        MMSRefreshItemsCyclicRefSpeedWithFactory(starIndex, maxIncLevelByProliferatorUnlocked);
-                    }
-                }
-            }
-            else if (astroFilter % 100 == 0)
-            {
-                StarData starData = __instance.gameData.galaxy.StarById(astroFilter / 100);
-                if (starData != null)
-                {
-                    int starIndex = starData.index;
-                    if (starIndex < MoreMegaStructure.StarMegaStructureType.Length && MoreMegaStructure.StarMegaStructureType[starIndex] == (int)EMegaType.InterstellarAssembly)
-                    {
-                        // 写入星际组装厂ref速度数据
-                        MMSRefreshItemsCyclicRefSpeedWithFactory(starIndex, maxIncLevelByProliferatorUnlocked);
-                    }
-                }
-            }
-            else
-            {
-                PlanetData planetData = __instance.gameData.galaxy.PlanetById(astroFilter);
-                if(planetData == null) // 基本上意味着astroFilter代表着这个星系行星数+1（超出planets长度的那个）的那个行星，也就是星际组装厂的替代占位index
-                {
-                    int starIndex = astroFilter / 100 - 1;
-                    if(starIndex >= 0 && starIndex < GameMain.galaxy.stars.Length && starIndex < MoreMegaStructure.StarMegaStructureType.Length && MoreMegaStructure.StarMegaStructureType[starIndex] == (int)EMegaType.InterstellarAssembly)
-                    {
-                        int planetIndex = astroFilter % 100 - 1;
-                        
-                        // 如果是那个astroFilter代表着这个星系行星数+1（超出planets长度的那个）的那个行星，也就是星际组装厂的替代占位index
-                        if (planetIndex>=0 && planetIndex == GameMain.galaxy.stars[starIndex].planets.Length) 
-                        {
-                            // 写入星际组装厂ref速度数据
-                            MMSRefreshItemsCyclicRefSpeedWithFactory(starIndex, maxIncLevelByProliferatorUnlocked);
-                        }
-                    }
+                    __instance.factoryStatPool[i] = new FactoryProductionStat();
+                    __instance.factoryStatPool[i].Init();
                 }
             }
         }
@@ -636,7 +890,8 @@ namespace MoreMegaStructure
             int borrowedFactoryIndex = GameMain.data.factories.Length + GameMain.galaxy.starCount - starIndex - 1;
             FactoryProductionStat factoryProductionStat = GameMain.data.statistics.production.factoryStatPool[borrowedFactoryIndex];
             factoryProductionStat.ResetRefSpeed();
-            for (int slot = 0; slot < 15; slot++)
+            int slotCount = StarAssembly.recipeIds[starIndex].Count;
+            for (int slot = 0; slot < slotCount; slot++)
             {
                 if (slot == 0)
                 {
@@ -1032,7 +1287,8 @@ namespace MoreMegaStructure
                 factoryProductionStat.ResetRefProductSpeed(itemId);
             if(calcConsumption)
                 factoryProductionStat.ResetRefConsumeSpeed(itemId);
-            for (int slot = 0; slot < 15; slot++)
+            int slotCount = StarAssembly.recipeIds[starIndex].Count;
+            for (int slot = 0; slot < slotCount; slot++)
             {
                 if(slot == 0 && itemId == 9500)
                 {
@@ -1111,7 +1367,12 @@ namespace MoreMegaStructure
                     bool flagFilterIsThisStarSystem = __instance.astroFilter % 100 == 0 && i == __instance.astroFilter / 100 - 1;
                     bool flagFilterIsThisStarAssembly = IsStarAssemblyAstroFilter(__instance.astroFilter) && i == __instance.astroFilter / 100 - 1;
                     bool flagStarIsStarAssembly = i < MoreMegaStructure.StarMegaStructureType.Length && MoreMegaStructure.StarMegaStructureType[i] == (int)EMegaType.InterstellarAssembly;
-                    if ( flagIsHoveringStarAssembly && flagStarIsStarAssembly && (flagFilterIsTotalGalaxyData || flagFilterIsThisStarSystem || flagFilterIsThisStarAssembly))
+                    // 全星区视图会枚举所有建了星际组装厂的恒星；仅当该组装厂对本次悬停物品确有贡献
+                    // (子条目数据已按 astroId 填充)时才列出，否则会出现名称"???"、数量 x0、占比 0% 的空条目。
+                    // 与下方原生对行星子条目的过滤条件(loadedSubTipDatas[astroId].astroId == astroId)保持一致。
+                    int iaSubAstroId = DefineStarAssemblyAstroId(i);
+                    bool flagIAHasSubData = __instance.loadedSubTipDatas != null && iaSubAstroId >= 0 && iaSubAstroId < __instance.loadedSubTipDatas.Length && __instance.loadedSubTipDatas[iaSubAstroId].astroId == iaSubAstroId;
+                    if ( flagIsHoveringStarAssembly && flagStarIsStarAssembly && flagIAHasSubData && (flagFilterIsTotalGalaxyData || flagFilterIsThisStarSystem || flagFilterIsThisStarAssembly))
                     {
                         idx++;
                         if (idx >= minIndexInCurPage && idx <= maxIndexInCurPage)
@@ -1862,6 +2123,7 @@ namespace MoreMegaStructure
             }
             
             MMSRefreshItemsCyclicRefSpeedWithFactory(FactoryIndex2StarIndex(factoryIndex), num);
+            FillIAStorage(FactoryIndex2StarIndex(factoryIndex));
         }
 
 
@@ -1914,28 +2176,68 @@ namespace MoreMegaStructure
         }
 
 
+        /// <summary>
+        /// 原封不动模仿游戏本体：本体对每个真实工厂调用 FactoryProductionStat.Export 存整套多时间窗滚动历史
+        /// (powerPool 6x3600、每个 productPool 项 count[7200]、productIndices[12000] 等)。这里把借给巨构的
+        /// 尾部槽位(factoryStatPool 中索引 &gt;= factories.Length 的部分)"一视同仁"地全部导出，不按
+        /// StarMegaStructureType 过滤——正如本体对所有工厂一视同仁。这样当玩家中途切换某星系巨构类型
+        /// (科学枢纽&lt;-&gt;星际组装厂等)，同一槽里研究历史/生产历史出现"有的全 0、有的混杂"时，也只是原样搬运
+        /// 该槽字节，绝不会因类型判断而漏读/错位/报错。写入数量 = 尾部槽数，与 Import 端严格对称。
+        /// </summary>
         public static void Export(BinaryWriter w)
         {
-            //w.Write(0);
-            //w.Write(GameMain.statistics.production.factoryStatPool.Length - GameMain.data.factories.Length);
-            //for (int i = GameMain.data.factories.Length; i < GameMain.statistics.production.factoryStatPool.Length; i++)
-            //{
-            //    GameMain.statistics.production.factoryStatPool[i].Export(w.BaseStream, w);
-            //}
+            RearrangeStatisticLists(); // 幂等：保证尾部槽已扩容且非 null
+            FactoryProductionStat[] pool = GameMain.statistics.production.factoryStatPool;
+            int start = GameMain.data.factories.Length;
+            int tail = (pool != null) ? pool.Length - start : 0;
+            if (tail < 0) tail = 0;
+            w.Write(0);    // 结构版本标识 tag(当前为 0，供将来 blob 内部格式演进时区分)
+            w.Write(tail); // 本次写入的巨构尾部槽数量
+            for (int i = start; i < start + tail; i++)
+            {
+                FactoryProductionStat st = pool[i];
+                if (st == null) // 防御性补建，确保写入槽数恒等于 tail，避免读档错位
+                {
+                    st = new FactoryProductionStat();
+                    st.Init();
+                    pool[i] = st;
+                }
+                st.Export(w.BaseStream, w);
+            }
         }
 
+        /// <summary>
+        /// 读取由 Export 写入的巨构统计 blob。仅对 savedModVersion &gt;= 200 的存档读取：
+        /// 200 是本 blob 正式启用读写、且由当前游戏版本 FactoryProductionStat 结构写出的起点。
+        /// 200 之前(含历史曾写过但结构/字节布局存疑的 119-134、以及导出被注释的 135-199)一律不读取——
+        /// 统计数据是按 tick 重建的可重算数据，老存档回 0 无副作用，绝不为赌老格式一致性而读出垃圾数值。
+        /// 因本 blob 严格位于 mod 存档段最末且自描述，200 之前不读 = 尾部多余字节被存档框架按段长忽略，绝对安全。
+        /// 夹取到当前池长度以兼容星系数量变化；全程 try/catch 兜底，任何异常都不影响读档流程本身。
+        /// </summary>
         public static void Import(BinaryReader r)
         {
             RearrangeStatisticLists();
-            if (MoreMegaStructure.savedModVersion >= 119 && MoreMegaStructure.savedModVersion<=134)
+            if (MoreMegaStructure.savedModVersion < 200) return; // 200 之前(含 119-134/135-199)一律不读
+            try
             {
-                r.ReadInt32();
-                int num = r.ReadInt32();
-                int count = Math.Min(GameMain.statistics.production.factoryStatPool.Length, GameMain.data.factories.Length + num);
-                for (int i = GameMain.data.factories.Length; i < count; i++)
+                r.ReadInt32(); // 结构版本标识 tag
+                int num = r.ReadInt32(); // 保存时的尾部槽数量
+                FactoryProductionStat[] pool = GameMain.statistics.production.factoryStatPool;
+                int start = GameMain.data.factories.Length;
+                int count = Math.Min(pool.Length, start + num); // 夹取到当前池长度
+                for (int i = start; i < count; i++)
                 {
-                    GameMain.statistics.production.factoryStatPool[i].Import(r.BaseStream, r);
+                    if (pool[i] == null) // 保证仍逐槽 Import，维持与写入端字节对齐
+                    {
+                        pool[i] = new FactoryProductionStat();
+                        pool[i].Init();
+                    }
+                    pool[i].Import(r.BaseStream, r);
                 }
+            }
+            catch (Exception)
+            {
+                // 读档安全兜底：任何异常都不让游戏崩溃；最坏情况统计历史回 0 并随 tick 自然重建。
             }
         }
 

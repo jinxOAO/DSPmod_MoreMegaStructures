@@ -26,15 +26,15 @@ namespace MoreMegaStructure
     [BepInDependency(DSPModSavePlugin.MODGUID)]
     [CommonAPISubmoduleDependency(nameof(ProtoRegistry), nameof(TabSystem), nameof(LocalizationModule))]
     [BepInDependency("starfi5h.plugin.ModFixerOne")]
-    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "1.9.4")]
+    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "2.0.1")]
     public class MoreMegaStructure : BaseUnityPlugin, IModCanSave
     {
         /// <summary>
         /// mod版本会进行存档
         /// </summary>
-        public static int modVersion = 193;
+        public static int modVersion = 200;
 
-        public static int savedModVersion = 190;
+        public static int savedModVersion = 193;
 
         public static bool CompatibilityPatchUnlocked = false;
 
@@ -317,7 +317,7 @@ namespace MoreMegaStructure
             if (UIBuildMenuPatcher.enabled) Harmony.CreateAndPatchAll(typeof(UIBuildMenuPatcher));
             Harmony.CreateAndPatchAll(typeof(UIStarCannon));
             Harmony.CreateAndPatchAll(typeof(UIMechaWindowPatcher));
-            //Harmony.CreateAndPatchAll(typeof(PerformanceMonitorPatcher));
+            Harmony.CreateAndPatchAll(typeof(PerformanceMonitorPatcher));
             Harmony.CreateAndPatchAll(typeof(UIPerformancePanelPatcher));
             Harmony.CreateAndPatchAll(typeof(UIDialogPatch));
             Harmony.CreateAndPatchAll(typeof(UIStationWindowPatcher));
@@ -393,7 +393,7 @@ namespace MoreMegaStructure
                 pilerLvl = 1;
             }
 
-            if (Input.GetKeyDown(KeyCode.R) && UIRoot.instance.uiGame.starmap.active)
+            if (Input.GetKeyDown(KeyCode.R) && UIRoot.instance.uiGame.starmap.active && !VFInput.inputing)
             {
                 StarCannon.OnFireButtonClick();
             }
@@ -942,9 +942,34 @@ namespace MoreMegaStructure
             int[] productRegister,
             int[] consumeRegister)
         {
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.MainLogic);
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.Receiver);
+            // 采样窗口用 try/finally 保证配对：下面的分支存在提前 return（取到催化剂时直接返回），
+            // 一旦泄漏就会让本帧这段计时整段丢失，父项也因此被系统性低报。
+            CpuHandle hMms = MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
+            CpuHandle hReceiver = MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.Receiver);
+            try
+            {
+                return GameTick_GammaBody(ref __instance, useIon, useCata, keyFrame, factory, productRegister, consumeRegister);
+            }
+            finally
+            {
+                MMSCPU.EndSampleSafe(hReceiver);
+                MMSCPU.EndSampleSafe(hMms);
+            }
+        }
+
+        /// <summary>
+        /// GameTick_GammaPatch 的实现体，逻辑与返回值完全保持原样，只是为了让上层的
+        /// 采样括号能够用 try/finally 严格配对而单独抽出。
+        /// </summary>
+        private static bool GameTick_GammaBody(
+            ref PowerGeneratorComponent __instance,
+            bool useIon,
+            bool useCata,
+            bool keyFrame,
+            PlanetFactory factory,
+            int[] productRegister,
+            int[] consumeRegister)
+        {
             int idx = factory.planet.star.id - 1;
             bool postWork = false;
             if (idx < 0 || idx >= MegaArrayLength)
@@ -1192,9 +1217,6 @@ namespace MoreMegaStructure
                 }
             }
 
-            MMSCPU.EndSample(ECpuWorkEntryExtended.Receiver);
-            MMSCPU.EndSample(ECpuWorkEntryExtended.MainLogic);
-            MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
             return false;
         }
 
@@ -1205,8 +1227,24 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(ThreadManager), "ProcessFrame")]
         public static void GameTickPostPatch(long frameCounter)
         {
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.MainLogic);
+            // 这一段每逻辑帧都会执行，且内部会调用多个巨构逻辑；用 try/finally 保证
+            // 任何一处抛出异常都不会把顶层括号留在开启状态（否则会连带影响本帧总览计时）。
+            CpuHandle hMms = MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
+            try
+            {
+                GameTickPostBody(frameCounter);
+            }
+            finally
+            {
+                MMSCPU.EndSampleSafe(hMms);
+            }
+        }
+
+        /// <summary>
+        /// GameTickPostPatch 的实现体，逻辑保持原样，仅为让顶层采样括号能够严格配对而抽出。
+        /// </summary>
+        private static void GameTickPostBody(long frameCounter)
+        {
             isRemoteReceiveingGear = false;
             if ((GameMain.mainPlayer.package.GetItemCount(9500) < maxAutoReceiveGear || maxAutoReceiveGear >= 3000)) isRemoteReceiveingGear = true;
 
@@ -1241,14 +1279,12 @@ namespace MoreMegaStructure
                 }
             }
             hashGenByAllSN = 0;
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.StarAssembly);
+            MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.StarAssembly);
             StarAssembly.UIFrameUpdate(frameCounter);
-            MMSCPU.EndSample(ECpuWorkEntryExtended.StarAssembly);
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.StarCannon);
+            MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.StarAssembly);
+            MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.StarCannon);
             StarCannon.RefreshStarCannonProperties();
-            MMSCPU.EndSample(ECpuWorkEntryExtended.StarCannon);
-            MMSCPU.EndSample(ECpuWorkEntryExtended.MainLogic);
-            MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
+            MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.StarCannon);
             //UIStatisticsPatcher.UpdateLag();
         }
 
@@ -1260,8 +1296,24 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(DysonSphere), "GameTick")]
         public static void DysonSphereGameTickPostPatch(ref DysonSphere __instance)
         {
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.MainLogic);
+            // 科学枢纽分支里存在多处提前 return（无正在研究的科技、黑雾矩阵科技等），
+            // 因此把计时窗口放在 try/finally 上，避免括号泄漏导致本项统计丢失。
+            CpuHandle hMms = MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
+            try
+            {
+                DysonSphereGameTickBody(__instance);
+            }
+            finally
+            {
+                MMSCPU.EndSampleSafe(hMms);
+            }
+        }
+
+        /// <summary>
+        /// DysonSphereGameTickPostPatch 的实现体，逻辑保持原样，仅为让采样括号能够严格配对而抽出。
+        /// </summary>
+        private static void DysonSphereGameTickBody(DysonSphere __instance)
+        {
             int idx = __instance.starData.id - 1;
             if (idx < 0 || idx >= MegaArrayLength)
             {
@@ -1292,21 +1344,10 @@ namespace MoreMegaStructure
                         return;
                 }
 
-                FactoryProductionStat factoryProductionStat = null;
-                if (__instance.starData.planets.Length > 0)
-                {
-                    try
-                    {
-                        //PlanetFactory factory = __instance.starData.planets[__instance.starData.planets.Length - 1].factory;//科学枢纽的科研点产出算在0号星球上，目前测试0号是最内轨行星，如果是气态怎么办呢？
-                        //factoryProductionStat = statistics.production.factoryStatPool[factory.index];
-                        factoryProductionStat = statistics.production.factoryStatPool[0]; //这是母星的统计面板
-                    }
-                    catch (Exception)
-                    {
-                        factoryProductionStat = null;
-                        //Debug.LogWarning("factoryProductionStat didn't find.");
-                    }
-                }
+                // 研究点数不再记到母星 factoryStatPool[0]（会虚增母星/星系统计且无法单独查看该巨构），
+                // 改为记到该星系科学枢纽借用的尾部 factoryStatPool 槽位，使其与 IA 一样能进入所在星系/全星系
+                // 求和，并可在研究标签页的下拉里单独选中。GetIAFactoryStat 已含空/越界判断，与行星是否存在无关。
+                FactoryProductionStat factoryProductionStat = UIStatisticsPatcher.GetIAFactoryStat(idx);
 
                 int techHashedThisFrame = statistics.techHashedThisFrame;
                 long universeMatrixPointUploaded = history.universeMatrixPointUploaded;
@@ -1377,7 +1418,7 @@ namespace MoreMegaStructure
             }
             else if (StarMegaStructureType[idx] == 4) //如果是星际组装厂
             {
-                MMSCPU.BeginSample(ECpuWorkEntryExtended.StarAssembly);
+                MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.StarAssembly);
                 StarAssembly.InternalUpdate(__instance);
                 StarAssembly.TryUseRocketInStorageToBuildIA(__instance);
                 /*
@@ -1397,10 +1438,8 @@ namespace MoreMegaStructure
                     }
                 }
                 */
-                MMSCPU.EndSample(ECpuWorkEntryExtended.StarAssembly);
+                MMSCPU.EndSampleSafe(ECpuWorkEntryExtended.StarAssembly);
             }
-            MMSCPU.EndSample(ECpuWorkEntryExtended.MainLogic);
-            MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
         }
 
         /// <summary>
@@ -1411,20 +1450,37 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(SiloComponent), "InternalUpdate")]
         public static void SiloUpdatePatch(ref SiloComponent __instance)
         {
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.Patch);
+            // 先做守卫判断再进计时括号：本挂点会被游戏中每一个发射井调用，
+            // 原写法在"不是本模组火箭发射器"时提前 return 却已经把括号打开，属于高频泄漏。
             int planetId = __instance.planetId;
             int starIndex = planetId / 100 - 1;
-            PlanetFactory factory = GameMain.galaxy.stars[starIndex].planets[planetId % 100 - 1].factory;
-            int gmProtoId = factory.entityPool[__instance.entityId].protoId;
-            if (gmProtoId != 2312) return; //只修改原始火箭发射器
-
             if (starIndex < 0 || starIndex >= MegaArrayLength)
             {
                 //Debug.LogWarning("SiloInternalUpdate Patch Error because starIndex out of range.");
                 return;
             }
+            PlanetFactory factory = GameMain.galaxy.stars[starIndex].planets[planetId % 100 - 1].factory;
+            int gmProtoId = factory.entityPool[__instance.entityId].protoId;
+            if (gmProtoId != 2312) return; //只修改原始火箭发射器
 
+            CpuHandle hMms = MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
+            CpuHandle hPatch = MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.Patch);
+            try
+            {
+                SiloUpdateBody(ref __instance, starIndex);
+            }
+            finally
+            {
+                MMSCPU.EndSampleSafe(hPatch);
+                MMSCPU.EndSampleSafe(hMms);
+            }
+        }
+
+        /// <summary>
+        /// SiloUpdatePatch 的实现体，逻辑保持原样，仅为让采样括号能够严格配对而抽出。
+        /// </summary>
+        private static void SiloUpdateBody(ref SiloComponent __instance, int starIndex)
+        {
             int bulletIdExpected = 1503;
             int megaType = StarMegaStructureType[starIndex];
             switch (megaType)
@@ -1478,8 +1534,6 @@ namespace MoreMegaStructure
                 __instance.bulletInc = 0;
                 __instance.bulletId = bulletIdExpected;
             }
-            MMSCPU.EndSample(ECpuWorkEntryExtended.Patch);
-            MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
         }
 
         /// <summary>
@@ -1490,41 +1544,48 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(EjectorComponent), "InternalUpdate")]
         public static void EjectorUpdatePatch(ref EjectorComponent __instance)
         {
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.MoreMegaStructure);
-            MMSCPU.BeginSample(ECpuWorkEntryExtended.Patch);
-            // if (!GenesisCompatibility) return; // 目前只对创世之书生效
+            // 同 SiloUpdatePatch：守卫前置，避免游戏中每一个普通弹射器都打开一对不配对的括号；
+            // 真正要做替换的分支再放进 try/finally，保证括号必定闭合。
             int planetId = __instance.planetId;
             int starIndex = planetId / 100 - 1;
-            PlanetFactory factory = GameMain.galaxy.stars[starIndex].planets[planetId % 100 - 1].factory;
-            int gmProtoId = factory.entityPool[__instance.entityId].protoId;
-            if (gmProtoId != 2311) return; //只修改原始弹射器
-
             if (starIndex < 0 || starIndex >= MegaArrayLength)
             {
                 return;
             }
+            PlanetFactory factory = GameMain.galaxy.stars[starIndex].planets[planetId % 100 - 1].factory;
+            int gmProtoId = factory.entityPool[__instance.entityId].protoId;
+            if (gmProtoId != 2311) return; //只修改原始弹射器
+            // if (!GenesisCompatibility) return; // 目前只对创世之书生效
 
-            int megaType = StarMegaStructureType[starIndex];
-            if (megaType == 2)
+            CpuHandle hMms = MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.MoreMegaStructure);
+            CpuHandle hPatch = MMSCPU.BeginSampleSafe(ECpuWorkEntryExtended.Patch);
+            try
             {
-                if (__instance.bulletId == 1501)
+                int megaType = StarMegaStructureType[starIndex];
+                if (megaType == 2)
                 {
-                    __instance.bulletCount = 0;
-                    __instance.bulletInc = 0;
-                    __instance.bulletId = 6006;
+                    if (__instance.bulletId == 1501)
+                    {
+                        __instance.bulletCount = 0;
+                        __instance.bulletInc = 0;
+                        __instance.bulletId = 6006;
+                    }
+                }
+                else
+                {
+                    if (__instance.bulletId == 6006)
+                    {
+                        __instance.bulletCount = 0;
+                        __instance.bulletInc = 0;
+                        __instance.bulletId = 1501;
+                    }
                 }
             }
-            else
+            finally
             {
-                if (__instance.bulletId == 6006)
-                {
-                    __instance.bulletCount = 0;
-                    __instance.bulletInc = 0;
-                    __instance.bulletId = 1501;
-                }
+                MMSCPU.EndSampleSafe(hPatch);
+                MMSCPU.EndSampleSafe(hMms);
             }
-            MMSCPU.EndSample(ECpuWorkEntryExtended.Patch);
-            MMSCPU.EndSample(ECpuWorkEntryExtended.MoreMegaStructure);
         }
 
         /// <summary>

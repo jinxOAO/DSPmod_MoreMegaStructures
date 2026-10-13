@@ -65,6 +65,8 @@ bld/
 # Game source reference (decompiled DSP Assembly-CSharp, local only)
 _ref/
 _ref
+_dev/
+_dev
 
 # Local decompilation tools & output (not part of the mod)
 .qtools/

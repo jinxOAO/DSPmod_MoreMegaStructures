@@ -1799,10 +1799,10 @@ namespace MoreMegaStructure
             LocalizationModule.RegisterTranslation("恒星炮设计说明题目", "Design Instructions", "恒星炮设计说明", "");
             LocalizationModule.RegisterTranslation("恒星炮设计说明文本",
                                                    "1. When the star cannon fires, the rotation axes of all layers will overlap, and the north pole will point to the target, so please design the north pole of each layer's grid as the center of the muzzle;\n" +
-                                                   "2. When the star cannon fires, 12 random  nodes on the 1st layer will emit a laser to the muzzle. For aesthetic reasons, please try to make the first layer only contain up to 12 nodes, and try to make them symmetrical to each other;\n" +
+                                                   "2. When the star cannon fires, 36 random  nodes on the 1st layer will emit a laser to the muzzle. For aesthetic reasons, please try to make the first layer only contain up to 36 nodes, and try to make them symmetrical to each other;\n" +
                                                    "3. The construction of the star cannon needs to go through multiple stages. And at the same time, the star cannon can increase its damage, max fire target count, and charging speed several times. After reaching the final stage, continue to build shells will continuously increase the damage;\n" +
                                                    "4. After built the star cannon, select a star system or a space dark fog hive in starmap mode, then launch the star cannon. Star cannon can NOT fire at its own star system.",
-                                                   "1.恒星炮开火时所有层级的旋转轴将重叠，并且让北极指向目标开火，因此设计时请以各层网格自身的北极点为炮口中心；\n2.恒星炮开火时，第1层的随机12个节点将发射出激光指向炮口，为美观考虑，请尽量使得第1层只包含12个（或更少的）节点，并使其相互对称。\n3.恒星炮建造需要经过多个阶段，随着各建造阶段完成，恒星炮能数次提高伤害、同时射击的目标数和充能速度等属性。在达到最终阶段后，继续修建壳层可以不断提高伤害。\n4.建造恒星炮后，在星图模式中选择一个恒星系或太空黑雾巢穴进行开火。恒星炮无法向自身所在星系开火。",
+                                                   "1.恒星炮开火时所有层级的旋转轴将重叠，并且让北极指向目标开火，为美观考虑，设计时请以各层网格自身的北极点为炮口中心；\n2.恒星炮开火时，第1层的随机36个节点将发射出激光指向炮口，为美观考虑，请尽量使得第1层只包含36个（或更少的）节点，并使其相互对称。\n3.恒星炮建造需要经过多个阶段，随着各建造阶段完成，恒星炮能数次提高伤害、同时射击的目标数和充能速度等属性。在达到最终阶段后，继续修建壳层可以不断提高伤害。\n4.建造恒星炮后，在星图模式中选择一个恒星系或太空黑雾巢穴进行开火。恒星炮无法向自身所在星系开火。",
                                                    "");
             LocalizationModule.RegisterTranslation("恒星炮开火按钮文本", "Launch Star Cannon (R)", " 启动恒星炮 (R)", "");
             LocalizationModule.RegisterTranslation("恒星炮开火标题", "Launch Star Cannon", "启动恒星炮", "");
@@ -1971,14 +1971,19 @@ namespace MoreMegaStructure
             LocalizationModule.RegisterTranslation("组装厂速度规范化2标题", "Normalize to final speed (based on fully proliferated state)", "规范化为最终速度(按满级喷涂计)", "");
             LocalizationModule.RegisterTranslation("组装厂速度规范化2描述", "Calculate and modify the expected speed so that the final production speed, <color=#FD965ECC>considering the current specialization and full-level proliferator effect</color>, is equal to the original input expected speed.\n<color=#FD965ECC>Note: This effect is only modified once when the button is clicked.</color> If there are changes in the specialization or proliferator effect later, it will not be recalculated and modified.", "计算并修改目标生产速度，使得考虑了<color=#FD965ECC>当前的特化和满级增产效果</color>后的生产速度等于原先输入的目标生产速度。\n<color=#FD965ECC>注意：此效果只在点击按钮时修改一次</color>，如果后续的特化或增产效果发生改变，不会自动重新计算并修改。", "");
 
-            LocalizationModule.RegisterTranslation("PF巨构", "MoreMegaStructure", "更多巨构", "");
-            LocalizationModule.RegisterTranslation("PF巨构主要逻辑", "MainLogic (MMS)", "主要逻辑（巨构）", "");
+            LocalizationModule.RegisterTranslation("PF巨构总览", "MoreMegaStructure", "更多巨构", "");
+            LocalizationModule.RegisterTranslation("PF主要逻辑", "MainLogic (MMS)", "主要逻辑（巨构）", "");
             LocalizationModule.RegisterTranslation("PF接收器", "Receivers", "接收器", "");
-            LocalizationModule.RegisterTranslation("PF星际组装厂", "Star Assembly", "星际组装厂", "");
+            LocalizationModule.RegisterTranslation("PF星际组装厂", "Interstellar Assembly", "星际组装厂", "");
+            LocalizationModule.RegisterTranslation("PF货物生产", "Produce", "生产", "");
+            LocalizationModule.RegisterTranslation("PF货物输送", "Cargo Transport", "货物输送", "");
             LocalizationModule.RegisterTranslation("PF恒星炮", "Star Cannon", "恒星炮", "");
+            LocalizationModule.RegisterTranslation("PF攻击逻辑", "Attack Logic", "攻击逻辑", "");
             LocalizationModule.RegisterTranslation("PF寻敌逻辑", "Enemy Search", "寻敌逻辑", "");
-            LocalizationModule.RegisterTranslation("PF巨构数据统计", "Statistics (MMS)", "数据统计（巨构）", "");
-            LocalizationModule.RegisterTranslation("PFOtherPatches", "Other Patch", "其他 Patch", "");
+            LocalizationModule.RegisterTranslation("PF绘制调用", "Render Call", "渲染调用", "");
+            LocalizationModule.RegisterTranslation("PF折跃场", "Warp Array", "折跃场", "");
+            LocalizationModule.RegisterTranslation("PF巨构数据统计", "Produce Statistics", "生产数据统计", "");
+            LocalizationModule.RegisterTranslation("PF其他补丁", "Other Patch", "其他补丁", "");
         }
 
         /// <summary>
