@@ -26,7 +26,7 @@ namespace MoreMegaStructure
     [BepInDependency(DSPModSavePlugin.MODGUID)]
     [CommonAPISubmoduleDependency(nameof(ProtoRegistry), nameof(TabSystem), nameof(LocalizationModule))]
     [BepInDependency("starfi5h.plugin.ModFixerOne")]
-    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "2.0.0")]
+    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "2.0.1")]
     public class MoreMegaStructure : BaseUnityPlugin, IModCanSave
     {
         /// <summary>
@@ -393,7 +393,7 @@ namespace MoreMegaStructure
                 pilerLvl = 1;
             }
 
-            if (Input.GetKeyDown(KeyCode.R) && UIRoot.instance.uiGame.starmap.active)
+            if (Input.GetKeyDown(KeyCode.R) && UIRoot.instance.uiGame.starmap.active && !VFInput.inputing)
             {
                 StarCannon.OnFireButtonClick();
             }
