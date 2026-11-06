@@ -2,6 +2,7 @@
 using Steamworks;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -24,6 +25,7 @@ namespace MoreMegaStructure
         public static List<int> inProgressSpecType = new List<int>(); // 正处在特化进程中的类型
         public static List<int> satisfiedSpecType = new List<int>(); // 当前正满足要求的特化类型
         public static List<List<int>> productSpeedRequest = new List<List<int>>(); // 手动期望的（要求的）生产速率
+        public static List<List<double>> recipeAssemblerFactor = new List<List<double>>(); // 手动分配的组装厂倍率
         public static Dictionary<int, Dictionary<int, int>> productStorage = new Dictionary<int, Dictionary<int, int>>(); // 存储产物已暂时堆积在巨构中的数量（可供相同星际组装厂的其他需要此产物作为原材料的配方取用），不区分slot只按照产物Id存储。
 
         // 以下为不需要存档的数据，在载入时重置或者重新计算
@@ -540,6 +542,7 @@ namespace MoreMegaStructure
             progress = new List<List<double>>();
             incProgress = new List<List<double>>();
             productSpeedRequest = new List<List<int>>();
+            recipeAssemblerFactor = new List<List<double>>();
             specProgress = new List<int>();
             curSpecType = new List<int>();
             inProgressSpecType = new List<int>();
@@ -551,6 +554,7 @@ namespace MoreMegaStructure
                 progress.Add(new List<double> { 0 });
                 incProgress.Add(new List<double> { 0 });
                 productSpeedRequest.Add(new List<int> { 0 });
+                recipeAssemblerFactor.Add(new List<double> { 0 });
                 for (int i = 1; i < slotCount; i++)
                 {
                     recipeIds[starIndex].Add(0);
@@ -558,6 +562,7 @@ namespace MoreMegaStructure
                     progress[starIndex].Add(0);
                     incProgress[starIndex].Add(0);
                     productSpeedRequest[starIndex].Add(0);
+                    recipeAssemblerFactor[starIndex].Add(0);
                 }
 
                 specProgress.Add(0);
@@ -578,6 +583,7 @@ namespace MoreMegaStructure
                     progress[i][j] = 0;
                     incProgress[i][j] = 0;
                     productSpeedRequest[i][j] = 0;
+                    recipeAssemblerFactor[i][j] = 0;
                 }
             }
         }
@@ -1431,6 +1437,8 @@ namespace MoreMegaStructure
             return prog;
         }
 
+
+
         /// <summary>
         /// 返回能量和原材料足够时，首要产物的产出速度
         /// </summary>
@@ -1973,6 +1981,7 @@ namespace MoreMegaStructure
             progress[starIndex][slotIndex] = 0;
             weights[starIndex][slotIndex] = 0;
             productSpeedRequest[starIndex][slotIndex] = 0;
+            recipeAssemblerFactor[starIndex][slotIndex] = 0;
             currentStarIncs[slotIndex] = 0;
             double total = 1;
             SetProductSpeedRequest(slotIndex, "0");
@@ -2028,6 +2037,7 @@ namespace MoreMegaStructure
             progress[starIndex][currentRecipeSlot] = 0;
             currentStarIncs[currentRecipeSlot] = 0;
             productSpeedRequest[starIndex][currentRecipeSlot] = 0;
+            recipeAssemblerFactor[starIndex][currentRecipeSlot] = 0;
             if (!recipe.productive) // 不能增产的配方，其incProgress标记为负数
                 incProgress[starIndex][currentRecipeSlot] = -1;
             if (!items.ContainsKey(starIndex))
@@ -2236,6 +2246,9 @@ namespace MoreMegaStructure
             {
                 if (!limitInputs[i].isFocused)
                     limitInputs[i].text = productSpeedRequest[starIndex][i].ToString();
+
+                // 此处要加recipeAssemblerFactor的输入框的刷新
+                // todo
             }
 
         }
@@ -2257,6 +2270,35 @@ namespace MoreMegaStructure
                     return n;
             }
             return 4;
+        }
+
+        public static void SetAssemblerFactor(int index, string text)
+        {
+            if (MoreMegaStructure.curStar == null)
+                return;
+            int starIndex = MoreMegaStructure.curStar.index;
+            double value = 0;
+            if (text.Length == 0 || text == "")
+                text = "0";
+            if (index > 0)
+            {
+                try
+                {
+                    double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out value);
+                }
+                catch (Exception)
+                {
+                    value = 0;
+                }
+                if (value < 0)
+                    value = 0;
+                // 此处设置recipeAssemblerFactor数值
+                // todo
+
+                // 然后同步计算并设置productSpeedRequest，这两个可能不会完全等价，最终方案是否采取一个计算特化前几个计算特化后有待定夺
+                SyncSpeedRequestByAssemblerFactor(starIndex, index);
+            }
+            CalcRecipeWeightsAndRefreshUI(starIndex);
         }
 
         public static void SetProductSpeedRequest(int index, string text)
@@ -2281,7 +2323,13 @@ namespace MoreMegaStructure
                     value = 0;
                 productSpeedRequest[starIndex][index] = value;
                 limitInputs[index].text = value.ToString();
+                SyncAssembleFactorBySpeedRequest(starIndex, index);
             }
+            CalcRecipeWeightsAndRefreshUI(starIndex);
+        }
+
+        public static void CalcRecipeWeightsAndRefreshUI(int starIndex)
+        {
             double sum = 0;
             for (int i = 1; i < slotCount; i++)
             {
@@ -2303,6 +2351,17 @@ namespace MoreMegaStructure
             }
             RefreshLimitInputUI();
             RefreshProduceSpeedContent();
+
+        }
+
+        public static void SyncAssembleFactorBySpeedRequest(int starIndex, int index)
+        {
+
+        }
+
+        public static void SyncSpeedRequestByAssemblerFactor(int starIndex, int index)
+        {
+
         }
 
         public static void DoubleAllSpeedRequest()
@@ -2324,6 +2383,7 @@ namespace MoreMegaStructure
                 if (recipeIds[starIndex][i] > 0)
                 {
                     productSpeedRequest[starIndex][i] = productSpeedRequest[starIndex][i] * 2 < 0 ? 0 : productSpeedRequest[starIndex][i] * 2;
+                    SyncAssembleFactorBySpeedRequest(starIndex, i);
                 }
             }
             SetProductSpeedRequest(0, "");
@@ -2336,6 +2396,7 @@ namespace MoreMegaStructure
             for (int i = 1; i < slotCount; i++)
             {
                 productSpeedRequest[starIndex][i] = productSpeedRequest[starIndex][i] / 2;
+                SyncAssembleFactorBySpeedRequest(starIndex, i);
             }
             SetProductSpeedRequest(0, "");
             RefreshUI();
