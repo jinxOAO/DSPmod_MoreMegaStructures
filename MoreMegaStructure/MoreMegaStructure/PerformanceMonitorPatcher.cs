@@ -27,7 +27,9 @@ namespace MoreMegaStructure
         Statistics,
         Patch,
         // 追加项：恒星炮的渲染期与特效结算开销（OnRenderObject / LateUpdate / 弹头特效抑制）
-        StarCannonRender
+        StarCannonRender,
+        // 追加项：折跃场原生模型组装的绘制开销（挂在 GameLogic.Draw 之后，与戴森壳同一时机）
+        WarpFieldModel
     }
 
     /// <summary>
@@ -868,6 +870,7 @@ namespace MoreMegaStructure
             MMSCPU.MapEnum(ECpuWorkEntryExtended.EnemySearch, MMSCPU.AddEntry("PF寻敌逻辑", 2));
             MMSCPU.MapEnum(ECpuWorkEntryExtended.StarCannonRender, MMSCPU.AddEntry("PF绘制调用", 2));
             MMSCPU.MapEnum(ECpuWorkEntryExtended.WarpField, MMSCPU.AddEntry("PF折跃场", 1));
+            MMSCPU.MapEnum(ECpuWorkEntryExtended.WarpFieldModel, MMSCPU.AddEntry("PF折跃场模型渲染", 2));
 
             // 其他统计项
             MMSCPU.MapEnum(ECpuWorkEntryExtended.Statistics, MMSCPU.AddEntry("PF巨构数据统计", 1));

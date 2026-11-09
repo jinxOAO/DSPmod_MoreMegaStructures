@@ -323,6 +323,7 @@ namespace MoreMegaStructure
             Harmony.CreateAndPatchAll(typeof(UIStationWindowPatcher));
             Harmony.CreateAndPatchAll(typeof(WarpArray));
             Harmony.CreateAndPatchAll(typeof(UIWarpArray));
+            Harmony.CreateAndPatchAll(typeof(ModelRenderer));   // 第十五轮 E14（R34）：原 WarpArrayModelRenderer 整体迁入 Model/ModelRenderer.cs
 
             MMSProtos.ChangeReceiverRelatedStringProto();
             MMSProtos.AddTranslateUILabel();
@@ -2155,6 +2156,18 @@ namespace MoreMegaStructure
                 = new Vector2(__instance.panelRect.sizeDelta.x - ((GameMain.history.TechState(__instance.techProto.ID).curLevel > 0) ? 65 : 25), 24f);
         }
 
+        // [E25 已撤销 2026-11-07]
+        // 实测结论：无论 prefix/postfix，改 farClipPlane 或只改投影矩阵，都导致深度图与后处理归一化范围
+        // 不一致，画面整体模糊。根因：Unity PostProcessing 用 farClipPlane 重建世界距离，
+        // 与投影矩阵里的 far 不一致时深度全部错位。
+        // 结论：F1（直接抬 far）不可行，除非同时 patch 后处理管线。转 F6（shader 侧保序 z 映射）。
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(GameCamera), "PostLogic")]
+        public static void GameCamera_PostLogic_E25()
+        {
+            // 已撤销：不再干预投影矩阵
+        }
+
         /// <summary>
         /// Save and Load
         /// </summary>
@@ -2223,6 +2236,8 @@ namespace MoreMegaStructure
 
             // 放在最后
             UIStatisticsPatcher.Import(r);
+            // E14（R34）：折跃场的模型层在首次读档时建一次（幂等；渲染第一帧还会再兜一次底，见 ModelRenderer.Render）
+            ModelHandler.InitWhenFirstLoad();
             if (GameMain.galaxy.starCount >= 100 && !Support1000Stars.Value)
             {
                 UIMessageBox.Show("警告mms".Translate(), "警告未开启大于1000星系支持".Translate(), "我明白".Translate(), 1);
@@ -2278,6 +2293,8 @@ namespace MoreMegaStructure
 
             // 放在最后
             UIStatisticsPatcher.IntoOtherSave();
+            // E14（R34）：这条路径是"读一个没有 MMS 数据的档"，同样要把模型层建出来（幂等，与 Import 那条不会重复跑）
+            ModelHandler.InitWhenFirstLoad();
         }
 
         private static string Capacity2Str(double capacityPerSecond)

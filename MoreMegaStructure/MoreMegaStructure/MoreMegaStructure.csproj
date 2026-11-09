@@ -72,6 +72,10 @@
       <HintPath>D:\SteamLibrary\steamapps\common\Dyson Sphere Program\DSPGAME_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UnityEngine.ParticleSystemModule">
+      <HintPath>$(DSPAssemblyPath)UnityEngine.ParticleSystemModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
       <HintPath>$(DSPAssemblyPath)UnityEngine.TextRenderingModule.dll</HintPath>
       <Private>False</Private>
@@ -95,6 +99,12 @@
     <Compile Include="EffectRenderer.cs" />
     <Compile Include="MegaButtonGroupBehaviour.cs" />
     <Compile Include="MMSProtos.cs" />
+    <Compile Include="Model\ModelCatalog.cs" />
+    <Compile Include="Model\ModelEntry.cs" />
+    <Compile Include="Model\ModelHandler.cs" />
+    <Compile Include="Model\ModelLayer.cs" />
+    <Compile Include="Model\ModelRenderer.cs" />
+    <Compile Include="Model\WarpArrayModelBuilder.cs" />
     <Compile Include="MoreMegaStructure.cs" />
     <Compile Include="PerformanceMonitorPatcher.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
