@@ -26,7 +26,7 @@ namespace MoreMegaStructure
     [BepInDependency(DSPModSavePlugin.MODGUID)]
     [CommonAPISubmoduleDependency(nameof(ProtoRegistry), nameof(TabSystem), nameof(LocalizationModule))]
     [BepInDependency("starfi5h.plugin.ModFixerOne")]
-    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "2.0.2")]
+    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "2.0.3")]
     public class MoreMegaStructure : BaseUnityPlugin, IModCanSave
     {
         /// <summary>
@@ -1596,7 +1596,7 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(UIDysonEditor), "_OnOpen")]
         public static void SetTextOnOpen(UIDysonEditor __instance)
         {
-            StarAssembly.ForceResetIncDataCache(); // 为了打开/切换星际组装厂页面时不错误地显示增产效果
+            //StarAssembly.ForceResetIncDataCache(-1); // 为了打开/切换星际组装厂页面时不错误地显示增产效果
             if (__instance.selection.viewDysonSphere != null)
             {
                 curDysonSphere = __instance.selection.viewDysonSphere;
@@ -1624,7 +1624,7 @@ namespace MoreMegaStructure
         [HarmonyPatch(typeof(UIDysonEditor), "OnViewStarChange")]
         public static void SetTextOnViewStarChange(UIDysonEditor __instance)
         {
-            StarAssembly.ForceResetIncDataCache(); // 为了打开/切换星际组装厂页面时不错误地显示增产效果
+            //StarAssembly.ForceResetIncDataCache(-1); // 为了打开/切换星际组装厂页面时不错误地显示增产效果
             if (__instance.selection.viewDysonSphere != null)
             {
                 curDysonSphere = __instance.selection.viewDysonSphere;
@@ -1972,7 +1972,7 @@ namespace MoreMegaStructure
                 {
                     StarAssembly.ResetArchiveDataByStarIndex(idx);
                     StarAssembly.ResetInGameDataByStarIndex(idx);
-                    StarAssembly.ForceResetIncDataCache();
+                    StarAssembly.ForceResetIncDataCache(idx);
                     RefreshUILabels(curStar, true);
                 }
                 else

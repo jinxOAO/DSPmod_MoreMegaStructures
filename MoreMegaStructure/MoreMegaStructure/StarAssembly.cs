@@ -36,7 +36,7 @@ namespace MoreMegaStructure
         public static Dictionary<int, List<int>> timeSpend = new Dictionary<int, List<int>>(); // 存储recipe的所需时间
         public static Dictionary<int, Dictionary<int,int>> productStorageInc = new Dictionary<int, Dictionary<int, int>>(); // 存储产物的增产点数
         public static Dictionary<int, List<int>> specBuffLevel = new Dictionary<int, List<int>>(); // 星际组装厂特化后，配方能触发加成
-        public static List<int> currentStarIncs = new List<int>();
+        public static List<List<int>> recipeIncs = new List<List<int>>();
         public static int blueBuffByTCFV = 0;
         public static int r002ByTCFV = 0;
         public static int r106ByTCFV = 0;
@@ -204,7 +204,7 @@ namespace MoreMegaStructure
                     GameObject slotObj = new GameObject("slot" + i.ToString());
                     slotObj.transform.SetParent(GigaFactoryUIObj.transform);
                     slotObj.transform.localScale = new Vector3(1, 1, 1);
-                    slotObj.transform.localPosition = new Vector3((i / 8) * 400, (i % 8) * 80, 0);
+                    slotObj.transform.localPosition = new Vector3((i / 8) * 400, 560 - (i % 8) * 80, 0);
 
                     GameObject recipeSelectionObj = GameObject.Instantiate(oriSelectObj, slotObj.transform);
                     recipeSelectionObj.SetActive(true);
@@ -623,10 +623,15 @@ namespace MoreMegaStructure
             }
             //currentStarIndex = 0;
             currentRecipeSlot = 0;
-            currentStarIncs = new List<int>();
-            for (int i = 0; i < slotCount; i++)
+            recipeIncs = new List<List<int>>();
+            for (int starIndex = 0; starIndex < maxStarIndex; starIndex++)
             {
-                currentStarIncs.Add(0);
+                List<int> sia = new List<int>();
+                for (int i = 0; i < slotCount; i++)
+                {
+                    sia.Add(0);
+                }
+                recipeIncs.Add(sia);
             }
             lockSliderListener = false;
             blueBuffByTCFV = 0;
@@ -650,10 +655,15 @@ namespace MoreMegaStructure
             }
             //currentStarIndex = 0;
             currentRecipeSlot = 0;
-            currentStarIncs = new List<int>();
-            for (int i = 0; i < slotCount; i++)
+            recipeIncs = new List<List<int>>();
+            for (int starIndex = 0; starIndex < maxStarIndex; starIndex++)
             {
-                currentStarIncs.Add(0);
+                List<int> sia = new List<int>();
+                for (int i = 0; i < slotCount; i++)
+                {
+                    sia.Add(0);
+                }
+                recipeIncs.Add(sia);
             }
             lockSliderListener = false;
             blueBuffByTCFV = 0;
@@ -662,12 +672,14 @@ namespace MoreMegaStructure
             r208ByTCFV = 0;
         }
 
-        public static void ForceResetIncDataCache()
+        public static void ForceResetIncDataCache(int starIndex)
         {
-            currentStarIncs.Clear();
-            for (int i = 0; i < slotCount; i++)
+            if (starIndex >= 0 && starIndex < recipeIncs.Count)
             {
-                currentStarIncs.Add(0);
+                for (int i = 0; i < slotCount; i++)
+                {
+                    recipeIncs[starIndex][i] = 0;
+                }
             }
         }
 
@@ -938,12 +950,11 @@ namespace MoreMegaStructure
                             if (incProgress[starIndex][i] >= 0 || specBuffLevel[starIndex][i] > 0) // 负数则视为是无法增产的配方，但是如果能够享受特化Buff，那么可以无视recipe设定，强行允许增产！
                             {
                                 incProgress[starIndex][i] += minSatisfied * GetFullIncMilli(starIndex, i, minInc);
-                                if (MoreMegaStructure.curStar != null && starIndex == MoreMegaStructure.curStar.index)
-                                {
-                                    currentStarIncs[i] = minInc; // 将这一帧的增产效果暂存，方便刷新
-                                    if (curSpecType[starIndex] == 2 && specBuffLevel[starIndex][i] > 0)
-                                        currentStarIncs[i] = 4;
-                                }
+                                // 下面保存增产实际的效果
+                                recipeIncs[starIndex][i] = minInc;
+                                if (curSpecType[starIndex] == 2 && specBuffLevel[starIndex][i] > 0)
+                                    recipeIncs[starIndex][i] = 4;
+                                
 
                                 // 增产点数满了之后
                                 if (incProgress[starIndex][i] >= 1)
@@ -1468,7 +1479,7 @@ namespace MoreMegaStructure
 
             }
             if (forceIncLevel < 0)
-                forceIncLevel = currentStarIncs[slotNum];
+                forceIncLevel = recipeIncs[starIndex][slotNum];
             float incFactor = GetFullIncMilli(starIndex, slotNum, forceIncLevel);
             return finalSpeed * (1 + incFactor);
 
@@ -1818,7 +1829,7 @@ namespace MoreMegaStructure
                 {
                     double PPM = GetConsumeProduceSpeedRatio(starIndex, i, out _) * 3600 * productCounts[starIndex][i][0];
                     string incStr = "";
-                    double extraProductRatio = GetFullIncMilli(starIndex, i, currentStarIncs[i] > 10 ? 10 : currentStarIncs[i]);
+                    double extraProductRatio = GetFullIncMilli(starIndex, i, recipeIncs[starIndex][i] > 10 ? 10 : recipeIncs[starIndex][i]);
                     if (extraProductRatio > 0)
                     {
                         incStr = string.Format("<color=#61D8FFC8>+{0:N2} %</color>\n", extraProductRatio * 100);
@@ -1855,7 +1866,7 @@ namespace MoreMegaStructure
             // 增产图标刷新
             for (int i = 1; i <slotCount; i++)
             {
-                int minInc = currentStarIncs[i];
+                int minInc = recipeIncs[starIndex][i];
                 if (minInc > 0 && i <= maxSlotIndex)
                 {
                     int iconIdx = minInc;
@@ -1982,7 +1993,7 @@ namespace MoreMegaStructure
             weights[starIndex][slotIndex] = 0;
             productSpeedRequest[starIndex][slotIndex] = 0;
             recipeAssemblerFactor[starIndex][slotIndex] = 0;
-            currentStarIncs[slotIndex] = 0;
+            recipeIncs[starIndex][slotIndex] = 0;
             double total = 1;
             SetProductSpeedRequest(slotIndex, "0");
             RefreshUI();
@@ -2035,7 +2046,7 @@ namespace MoreMegaStructure
             recipeIds[starIndex][currentRecipeSlot] = recipe.ID;
             incProgress[starIndex][currentRecipeSlot] = 0;
             progress[starIndex][currentRecipeSlot] = 0;
-            currentStarIncs[currentRecipeSlot] = 0;
+            recipeIncs[starIndex][currentRecipeSlot] = 0;
             productSpeedRequest[starIndex][currentRecipeSlot] = 0;
             recipeAssemblerFactor[starIndex][currentRecipeSlot] = 0;
             if (!recipe.productive) // 不能增产的配方，其incProgress标记为负数
@@ -2456,9 +2467,11 @@ namespace MoreMegaStructure
                     incProgress[i][j] = 0;
                 }
             }
+            int savedSupport1000Stars = 0;
             if (MoreMegaStructure.savedModVersion >= 116)
             {
                 int support1000 = r.ReadInt32(); // 读取是否后续记录了101~1000个星系的数据
+                savedSupport1000Stars = support1000;
                 if (support1000 > 0) // 如果记录了，则读取后续数据
                 {
                     for (int i = 100; i < MoreMegaStructure.MegaArrayOldLen; i++)
@@ -2529,7 +2542,7 @@ namespace MoreMegaStructure
             if (tickEnergyForFullSpeed <= 0) tickEnergyForFullSpeed = 100000;
 
             // 内部仓储读取
-            int maxStarIndex = MoreMegaStructure.Support1000Stars.Value ? MoreMegaStructure.MegaArrayLength : 100;
+            int maxStarIndex = (savedSupport1000Stars > 0) ? MoreMegaStructure.MegaArrayLength : 100;
             for (int starIndex = 0; starIndex < maxStarIndex; starIndex++)
             {
                 if (MoreMegaStructure.StarMegaStructureType[starIndex] == 4)
