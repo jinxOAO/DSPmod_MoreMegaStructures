@@ -44,9 +44,6 @@ namespace MoreMegaStructure
         /// <summary>key = 星系 index（StarData.index），每个星系一份，无更细颗粒度</summary>
         public static Dictionary<int, TodoEntry> todos = new Dictionary<int, TodoEntry>();
 
-        private static UIButton colorBtn;
-        private static UIButton iconBtn;
-        private static UIButton checkBoxBtn;
         private static int _loadingStarIndex = -1;   // 正在编辑的文本实际属于哪个星系（不依赖实时 curStar）
 
 
@@ -114,14 +111,8 @@ namespace MoreMegaStructure
                 // m_Calls（运行时 AddListener，Instantiate 不会复制）。宿主 _Init -> _OnRegEvent 注册的
                 // onEndEdit 属于后者，克隆体上原本没有；而克隆带过来的持久监听正是原生宿主的
                 // OnInputFieldEndEdit（负责关调色板/图标浮动窗），清掉它就等于砍掉写回与收尾逻辑。
-                // 我们的写回走下面自己挂的监听，两者并存无冲突（宿主那份只关窗、不碰数据）。
                 if (todoListInput != null)
                     todoListInput.onEndEdit.AddListener(OnEndEdit);
-
-                colorBtn = FindButton("editor/tool-bar/icons/text-color-btn");
-                iconBtn = FindButton("editor/tool-bar/icons/icon-select-btn");
-                checkBoxBtn = FindButton("editor/tool-bar/icons/checkbox-btn");
-                
 
                 if (host != null) host._Open();
                 else if (todoListObj != null) todoListObj.SetActive(true);
@@ -137,12 +128,6 @@ namespace MoreMegaStructure
             }
         }
 
-        private static UIButton FindButton(string path)
-        {
-            if (todoListObj == null) return null;
-            Transform t = todoListObj.transform.Find(path);
-            return (t != null) ? t.GetComponent<UIButton>() : null;
-        }
 
         /// <summary>
         /// 把克隆体上的原生宿主拨回"未初始化"状态，好让我们自己走一遍 _Create/_Init/_Open。
@@ -246,13 +231,6 @@ namespace MoreMegaStructure
             host._LateUpdate();
         }
 
-        /// <summary>
-        /// 高度管理已交给 UISmartInputField.HandleRectSize（由上面的 LateUpdate 驱动），
-        /// 这里不再写 inputRT/contentRT，避免两边互相覆盖。保留空壳只为兼容旧调用点。
-        /// </summary>
-        public static void CalcHeight()
-        {
-        }
 
         
         private static Vector2 CalcColorPickerPos()
@@ -300,52 +278,6 @@ namespace MoreMegaStructure
             return -1;
         }
 
-        private static void OnColorBtnClick(int data)
-        {
-            if (todoListInput == null || !todoListInput.isFocused) return;
-            if (UISimpleColorPicker.isOpened)
-            {
-                UISimpleColorPicker.Close();
-                return;
-            }
-            UISimpleColorPicker.Popup(new Vector2(-206f, 194f), GetBrushColor(), OnColorPickerReturn, OnAlphaChange);
-        }
-
-        /// <summary>换色：内部写 m_CharColors[选区] + CalculateColorText + UpdateLabel + SendOnValueChanged</summary>
-        private static void OnColorPickerReturn(short color)
-        {
-            if (todoListInput != null) todoListInput.OnColorChange(color, false);
-        }
-
-        /// <summary>只调透明度：索引打包规则 色号*4 + alpha档，由 OnColorChange 的 alphaOnly 分支完成</summary>
-        private static void OnAlphaChange(short alpha)
-        {
-            if (todoListInput != null) todoListInput.OnColorChange(alpha, true);
-        }
-
-        private static void OnIconBtnClick(int data)
-        {
-            if (todoListInput == null || !todoListInput.isFocused) return;
-            if (UISignalTagPicker.isOpened)
-            {
-                UISignalTagPicker.Close();
-                return;
-            }
-            UISignalTagPicker.Popup(new Vector2(-206f, 194f), OnIconSelectReturn);
-        }
-
-        /// <summary>插入 \iXXXX; 形式的图标 tag；isIconTag=true 会同步扩展 m_CharColors 保持对齐</summary>
-        private static void OnIconSelectReturn(int signalId)
-        {
-            if (signalId == 0 || todoListInput == null) return;
-            todoListInput.InsertGeneralString(LDB.signals.IconTag(signalId, false), true);
-        }
-
-        private static void OnCheckBoxBtnClick(int data)
-        {
-            if (todoListInput == null || !todoListInput.isFocused) return;
-            todoListInput.InsertCheckBox();
-        }
 
         private static short[] TrimColors(short[] src, int len)
         {
