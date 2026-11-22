@@ -2237,6 +2237,8 @@ namespace MoreMegaStructure
                 {
                     specializeObj.SetActive(true);
                     RefreshSpecializeUI();
+                    UIStarAssemblyTodoList.todoListObj.SetActive(true);
+                    UIStarAssemblyTodoList.RefreshTodoListUI();
                 }
                 else
                 {
@@ -2251,8 +2253,7 @@ namespace MoreMegaStructure
                     if (specializeObj.activeSelf)
                     {
                         specializeObj.SetActive(false);
-                        UIStarAssemblyTodoList.todoListObj.SetActive(true);
-                        UIStarAssemblyTodoList.RefreshTodoListUI();
+                        UIStarAssemblyTodoList.todoListObj.SetActive(false);
                     }
                     else
                     {
