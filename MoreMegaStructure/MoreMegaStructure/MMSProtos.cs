@@ -68,7 +68,7 @@ namespace MoreMegaStructure
             i9480.IconTag = "i9480";
             var r530 = ProtoRegistry.RegisterRecipe(recipeIdBias + 530, ERecipeType.Assemble, 180, new int[] { 1107, 1127 }, new int[] { 1, 1 }, new int[] { 9480 },
                                          new int[] { 1 }, "引力发生装置描述", 1704, 101 + pagePlus + linePlus, "Assets/MegaStructureTab/gravitygenerator");
-            r530.IconTag = "mmsr530";
+            r530.IconTag = "r530";
 
             var i9481 = ProtoRegistry.RegisterItem(9481, "位面约束环".Translate(), "位面约束环描述".Translate(), "Assets/MegaStructureTab/constrainring",
                                        102 + pagePlus + linePlus, 100, EItemType.Component,
@@ -80,13 +80,13 @@ namespace MoreMegaStructure
 
                 var r531 = ProtoRegistry.RegisterRecipe(recipeIdBias + 531, ERecipeType.Assemble, 180, new int[] { 1205, 1119, 1126 }, new int[] { 2, 1, 1 }, new int[] { 9481 },
                                              new int[] { 2 }, "位面约束环描述", 1141, 102 + pagePlus + linePlus, "Assets/MegaStructureTab/constrainring");
-                r531.IconTag = "mmsr531";
+                r531.IconTag = "r531";
             }
             else
             {
                 var r531 = ProtoRegistry.RegisterRecipe(recipeIdBias + 531, ERecipeType.Assemble, 180, new int[] { 1205, 1304 }, new int[] { 2, 1 }, new int[] { 9481 },
                                              new int[] { 2 }, "位面约束环描述", 1141, 102 + pagePlus + linePlus, "Assets/MegaStructureTab/constrainring");
-                r531.IconTag = "mmsr531";
+                r531.IconTag = "r531";
             }
 
 
@@ -99,7 +99,7 @@ namespace MoreMegaStructure
             i9482.IconTag = "i9482";
             var r532 = ProtoRegistry.RegisterRecipe(recipeIdBias + 532, ERecipeType.Assemble, 180, new int[] { 9480, 9481, 1209 }, new int[] { 1, 1, 1 }, new int[] { 9482 },
                                              new int[] { 1 }, "引力钻头描述", 1704, 103 + pagePlus + linePlus, "Assets/MegaStructureTab/gravitydrill2");
-            r532.IconTag = "mmsr532";
+            r532.IconTag = "r532";
 
             
             var i9483 = ProtoRegistry.RegisterItem(9483, "隧穿激发装置".Translate(), "隧穿激发装置描述".Translate(), "Assets/MegaStructureTab/tunnelingexciter2",
@@ -109,7 +109,7 @@ namespace MoreMegaStructure
             i9483.IconTag = "i9483";
             var r533 = ProtoRegistry.RegisterRecipe(recipeIdBias + 533, ERecipeType.Assemble, 360, new int[] { 1303, 1014 }, new int[] { 1, 2 }, new int[] { 9483 },
                                              new int[] { 6 }, "隧穿激发装置描述", 1703, 104 + pagePlus + linePlus, "Assets/MegaStructureTab/tunnelingexciter2");
-            r533.IconTag = "mmsr533";
+            r533.IconTag = "r533";
             
             var i9484 = ProtoRegistry.RegisterItem(9484, "谐振盘".Translate(), "谐振盘描述".Translate(), "Assets/MegaStructureTab/resonancedisc",
                                        105 + pagePlus + linePlus, 200, EItemType.Component,
@@ -118,7 +118,7 @@ namespace MoreMegaStructure
             i9484.IconTag = "i9484";
             var r534 = ProtoRegistry.RegisterRecipe(recipeIdBias + 534, ERecipeType.Assemble, 240, new int[] { 9483, 1113, 1305 }, new int[] { 3, 2, 1 }, new int[] { 9484 },
                                              new int[] { 1 }, "谐振盘描述", 1303, 105 + pagePlus + linePlus, "Assets/MegaStructureTab/resonancedisc");
-            r534.IconTag = "mmsr534";
+            r534.IconTag = "r534";
             
             var icondesc_alpha = ProtoRegistry.GetDefaultIconDesc(Color.gray, new Color(0.6f, 0.6f, 0.9f));
             icondesc_alpha.solidAlpha = 0.1f;
@@ -128,7 +128,7 @@ namespace MoreMegaStructure
             i9485.IconTag = "i9485";
             var r535 = ProtoRegistry.RegisterRecipe(recipeIdBias + 535, ERecipeType.Assemble, 240, new int[] { 1404, 1208 }, new int[] { 2, 1 }, new int[] { 9485 },
                                              new int[] { 1 }, "光子探针描述", 1504, 106 + pagePlus + linePlus, "Assets/MegaStructureTab/photonprobeflipsmall");
-            r535.IconTag = "mmsr535";
+            r535.IconTag = "r535";
 
        
             var icondesc_alpha2 = ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0f, 0.7f, 1f));
@@ -139,7 +139,7 @@ namespace MoreMegaStructure
             i9486.IconTag = "i9486";
             var r536 = ProtoRegistry.RegisterRecipe(recipeIdBias + 536, ERecipeType.Assemble, 720, new int[] { 1305, 1402, 9483 }, new int[] { 3, 2, 1 }, new int[] { 9486 },
                                              new int[] { 1 }, "量子计算机描述", 1303, 107 + pagePlus + linePlus, "Assets/MegaStructureTab/quantumcomputer3");
-            r536.IconTag = "mmsr536";
+            r536.IconTag = "r536";
             
             var i9487 = ProtoRegistry.RegisterItem(9487, "星际组装厂组件".Translate(), "星际组装厂组件描述".Translate(), "Assets/MegaStructureTab/iacomponent",
                                        108 + pagePlus + linePlus, 200, EItemType.Component,
@@ -148,7 +148,7 @@ namespace MoreMegaStructure
             i9487.IconTag = "i9487";
             var r537 = ProtoRegistry.RegisterRecipe(recipeIdBias + 537, ERecipeType.Assemble, 480, new int[] { 1125, 2305, 1143 }, new int[] { 3, 3, 1 }, new int[] { 9487 },
                                              new int[] { 1 }, "星际组装厂组件描述", 1303, 108 + pagePlus + linePlus, "Assets/MegaStructureTab/iacomponent");
-            r537.IconTag = "mmsr537";
+            r537.IconTag = "r537";
 
             //下面是火箭
             var oriRecipe2 = LDB.recipes.Select(83);
@@ -176,7 +176,7 @@ namespace MoreMegaStructure
             i9488.IconTag = "i9488";
             var rocketMDRecipe = ProtoRegistry.RegisterRecipe(recipeIdBias + 538, ERecipeType.Assemble, 480, new int[] { 9482, 9484, 1802 }, new int[] { 2, 1, 2 }, new int[] { 9488 },
                                              new int[] { 1 }, "物质解压器运载火箭描述", 1522, 201 + pagePlus, "Assets/MegaStructureTab/rocketMatter");
-            rocketMDRecipe.IconTag = "mmsr538";
+            rocketMDRecipe.IconTag = "r538";
             
             var i9489 = ProtoRegistry.RegisterItem(9489, "科学枢纽运载火箭".Translate(), "科学枢纽运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketScience",
                                        202 + pagePlus, 20, EItemType.Product,
@@ -184,7 +184,7 @@ namespace MoreMegaStructure
             i9489.IconTag = "i9489";
             var rocketSNRecipe = ProtoRegistry.RegisterRecipe(recipeIdBias + 539, ERecipeType.Assemble, 480, new int[] { 9481, 9486, 1802 }, new int[] { 3, 1, 2 }, new int[] { 9489 },
                                              new int[] { 1 }, "科学枢纽运载火箭描述", 1522, 202 + pagePlus, "Assets/MegaStructureTab/rocketScience");
-            rocketSNRecipe.IconTag = "mmsr539";
+            rocketSNRecipe.IconTag = "r539";
             rocketSNRecipe.NonProductive = true;
             
             var i9490 = ProtoRegistry.RegisterItem(9490, "谐振发射器运载火箭".Translate(), "谐振发射器运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketWarp", 203 + pagePlus,
@@ -193,7 +193,7 @@ namespace MoreMegaStructure
             i9490.IconTag = "i9490";
             var rocketWBARecipe = ProtoRegistry.RegisterRecipe(recipeIdBias + 540, ERecipeType.Assemble, 480, new int[] { 9480, 9484, 1802 }, new int[] { 1, 4, 2 }, new int[] { 9490 },
                                              new int[] { 1 }, "谐振发射器运载火箭描述", 1522, 203 + pagePlus, "Assets/MegaStructureTab/rocketWarp");
-            rocketWBARecipe.IconTag = "mmsr540";
+            rocketWBARecipe.IconTag = "r540";
             
             var i9491 = ProtoRegistry.RegisterItem(9491, "星际组装厂运载火箭".Translate(), "星际组装厂运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketAssembly",
                                        204 + pagePlus, 20, EItemType.Product,
@@ -201,7 +201,7 @@ namespace MoreMegaStructure
             i9491.IconTag = "i9491";
             var rocketIARecipe = ProtoRegistry.RegisterRecipe(recipeIdBias + 541, ERecipeType.Assemble, 480, new int[] { 9487, 1802 }, new int[] { 2, 2 }, new int[] { 9491 },
                                              new int[] { 1 }, "星际组装厂运载火箭描述", 1522, 204 + pagePlus, "Assets/MegaStructureTab/rocketAssembly");
-            rocketIARecipe.IconTag = "mmsr541";
+            rocketIARecipe.IconTag = "r541";
             
             var i9492 = ProtoRegistry.RegisterItem(9492, "晶体重构器运载火箭".Translate(), "晶体重构器运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketCrystal",
                                        205 + pagePlus, 20, EItemType.Product,
@@ -209,7 +209,7 @@ namespace MoreMegaStructure
             i9492.IconTag = "i9492";
             var rocketCRRecipe = ProtoRegistry.RegisterRecipe(recipeIdBias + 542, ERecipeType.Assemble, 480, new int[] { 9485, 1802, 1305 }, new int[] { 1, 2, 2 }, new int[] { 9492 },
                                              new int[] { 1 }, "晶体重构器运载火箭描述", 1522, 205 + pagePlus, "Assets/MegaStructureTab/rocketCrystal");
-            rocketCRRecipe.IconTag = "mmsr542";
+            rocketCRRecipe.IconTag = "r542";
 
 
             
@@ -219,7 +219,7 @@ namespace MoreMegaStructure
             i9500.IconTag = "i9500";
             var r550 = ProtoRegistry.RegisterRecipe(recipeIdBias + 550, ERecipeType.Assemble, 60, new int[] { 9500 }, new int[] { 1}, new int[] { 9500 },
                                              new int[] { 1 }, "多功能集成组件描述", 1203, 199 + pagePlus + linePlus, "Assets/MegaStructureTab/integratedcomponents");
-            r550.IconTag = "mmsr550";
+            r550.IconTag = "r550";
 
             //快速组装配方
             var oriRecipe5 = LDB.recipes.Select(47);
@@ -744,17 +744,15 @@ namespace MoreMegaStructure
             strIntOverloaderRecipe.Handcraft = false;
             dropRecipe.Handcraft = false;
 
-            // 这一批原本没接返回值，上面刚补了变量名；IconTag 命名规律与 AddNewItems 里的 "mmsrNNN" 一致。
-            // 快速组装那批（376-381）按约定不设 IconTag。
-            r565.IconTag = "mmsr565";
-            SIMRecipe.IconTag = "mmsr566";
-            r567.IconTag = "mmsr567";
-            gluonGenRecipe.IconTag = "mmsr568";
-            strIntOverloaderRecipe.IconTag = "mmsr569";
-            r570.IconTag = "mmsr570";
-            r571.IconTag = "mmsr571";
-            r572.IconTag = "mmsr572";
-            dropRecipe.IconTag = "mmsr573";
+            r565.IconTag = "r565";
+            SIMRecipe.IconTag = "r566";
+            r567.IconTag = "r567";
+            gluonGenRecipe.IconTag = "r568";
+            strIntOverloaderRecipe.IconTag = "r569";
+            r570.IconTag = "r570";
+            r571.IconTag = "r571";
+            r572.IconTag = "r572";
+            dropRecipe.IconTag = "r573";
 
         }
 
@@ -825,7 +823,7 @@ namespace MoreMegaStructure
             var ReceiverIronRecipe = oriRecipe3.Copy();
             var ReceiverIron = oriItem3.Copy();
             ReceiverIronRecipe.ID = recipeIdBias + 543;
-            ReceiverIronRecipe.IconTag = "mmsr543";
+            ReceiverIronRecipe.IconTag = "r543";
             ReceiverIronRecipe.Name = "星际组装厂生产机器图标专用"; // 原铁金属重构装置
             ReceiverIronRecipe.name = "星际组装厂生产机器图标专用".Translate();
             ReceiverIronRecipe.Description = "";
@@ -870,7 +868,7 @@ namespace MoreMegaStructure
             var ReceiverCopperRecipe = oriRecipe3.Copy();
             var ReceiverCopper = oriItem3.Copy();
             ReceiverCopperRecipe.ID = recipeIdBias + 544;
-            ReceiverCopperRecipe.IconTag = "mmsr544";
+            ReceiverCopperRecipe.IconTag = "r544";
             ReceiverCopperRecipe.Name = "铜金属重构装置";
             ReceiverCopperRecipe.name = "铜金属重构装置".Translate();
             ReceiverCopperRecipe.Description = "接收重构装置描述";
@@ -912,7 +910,7 @@ namespace MoreMegaStructure
             var ReceiverSiliconRecipe = oriRecipe3.Copy();
             var ReceiverSilicon = oriItem3.Copy();
             ReceiverSiliconRecipe.ID = recipeIdBias + 545;
-            ReceiverSiliconRecipe.IconTag = "mmsr545";
+            ReceiverSiliconRecipe.IconTag = "r545";
             ReceiverSiliconRecipe.Name = "高纯硅重构装置";
             ReceiverSiliconRecipe.name = "高纯硅重构装置".Translate();
             ReceiverSiliconRecipe.Description = "接收重构装置描述";
@@ -954,7 +952,7 @@ namespace MoreMegaStructure
             var ReceiverTitaniumRecipe = oriRecipe3.Copy();
             var ReceiverTitanium = oriItem3.Copy();
             ReceiverTitaniumRecipe.ID = recipeIdBias + 546;
-            ReceiverTitaniumRecipe.IconTag = "mmsr546";
+            ReceiverTitaniumRecipe.IconTag = "r546";
             ReceiverTitaniumRecipe.Name = "钛金属重构装置";
             ReceiverTitaniumRecipe.name = "钛金属重构装置".Translate();
             ReceiverTitaniumRecipe.Description = "接收重构装置描述";
@@ -996,7 +994,7 @@ namespace MoreMegaStructure
             var ReceiverMagoreRecipe = oriRecipe3.Copy();
             var ReceiverMagore = oriItem3.Copy();
             ReceiverMagoreRecipe.ID = recipeIdBias + 547;
-            ReceiverMagoreRecipe.IconTag = "mmsr547";
+            ReceiverMagoreRecipe.IconTag = "r547";
             ReceiverMagoreRecipe.Name = "单极磁石重构装置";
             ReceiverMagoreRecipe.name = "单极磁石重构装置".Translate();
             ReceiverMagoreRecipe.Description = "接收重构装置描述";
@@ -1038,7 +1036,7 @@ namespace MoreMegaStructure
             var ReceiverCoalRecipe = oriRecipe3.Copy();
             var ReceiverCoal = oriItem3.Copy();
             ReceiverCoalRecipe.ID = recipeIdBias + 563;
-            ReceiverCoalRecipe.IconTag = "mmsr563";
+            ReceiverCoalRecipe.IconTag = "r563";
             ReceiverCoalRecipe.Name = "石墨提炼装置";
             ReceiverCoalRecipe.name = "石墨提炼装置".Translate();
             ReceiverCoalRecipe.Description = "接收重构装置描述";
@@ -1080,7 +1078,7 @@ namespace MoreMegaStructure
             var ReceiverCasimirRecipe = oriRecipe3.Copy();
             var ReceiverCasimir = oriItem3.Copy();
             ReceiverCasimirRecipe.ID = recipeIdBias + 548;
-            ReceiverCasimirRecipe.IconTag = "mmsr548";
+            ReceiverCasimirRecipe.IconTag = "r548";
             ReceiverCasimirRecipe.Name = "晶体接收器";
             ReceiverCasimirRecipe.name = "晶体接收器".Translate();
             ReceiverCasimirRecipe.Description = "晶体接收器描述";
@@ -1122,7 +1120,7 @@ namespace MoreMegaStructure
             var ReceiverGratingRecipe = oriRecipe3.Copy();
             var ReceiverGrating = oriItem3.Copy();
             ReceiverGratingRecipe.ID = recipeIdBias + 564;
-            ReceiverGratingRecipe.IconTag = "mmsr564";
+            ReceiverGratingRecipe.IconTag = "r564";
             ReceiverGratingRecipe.Name = "光栅晶体接收器";
             ReceiverGratingRecipe.name = "光栅晶体接收器".Translate();
             ReceiverGratingRecipe.Description = "晶体接收器描述";
@@ -1164,7 +1162,7 @@ namespace MoreMegaStructure
             var ReceiverICRecipe = oriRecipe3.Copy();
             var ReceiverIC = oriItem3.Copy();
             ReceiverICRecipe.ID = recipeIdBias + 549;
-            ReceiverICRecipe.IconTag = "mmsr549";
+            ReceiverICRecipe.IconTag = "r549";
             ReceiverICRecipe.Name = "组件集成装置";
             ReceiverICRecipe.name = "组件集成装置".Translate();
             ReceiverICRecipe.Description = "组件集成装置描述";
@@ -1248,7 +1246,7 @@ namespace MoreMegaStructure
             }
 
             // 575 的两个分支注册的是同一个 ID，变量在外层声明，所以这里统一设一次即可
-            ExchangerRecipe.IconTag = "mmsr575";
+            ExchangerRecipe.IconTag = "r575";
 
             Exchanger.handcraft = ExchangerRecipe;
             Exchanger.handcrafts = new List<RecipeProto> { ExchangerRecipe };
