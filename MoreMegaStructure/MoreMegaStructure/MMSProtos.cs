@@ -61,16 +61,20 @@ namespace MoreMegaStructure
             }
 
             
-            ProtoRegistry.RegisterItem(9480, "引力发生装置".Translate(), "引力发生装置描述".Translate(), "Assets/MegaStructureTab/gravitygenerator",
+            var i9480 = ProtoRegistry.RegisterItem(9480, "引力发生装置".Translate(), "引力发生装置描述".Translate(), "Assets/MegaStructureTab/gravitygenerator",
                                        101 + pagePlus + linePlus, 100, EItemType.Component,
-                                       ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.9f, 0.3f))).Productive = true;
+                                       ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.9f, 0.3f)));
+            i9480.Productive = true;
+            i9480.IconTag = "i9480";
             ProtoRegistry.RegisterRecipe(recipeIdBias + 530, ERecipeType.Assemble, 180, new int[] { 1107, 1127 }, new int[] { 1, 1 }, new int[] { 9480 },
                                          new int[] { 1 }, "引力发生装置描述", 1704, 101 + pagePlus + linePlus, "Assets/MegaStructureTab/gravitygenerator");
 
-            
-            ProtoRegistry.RegisterItem(9481, "位面约束环".Translate(), "位面约束环描述".Translate(), "Assets/MegaStructureTab/constrainring",
+
+            var i9481 = ProtoRegistry.RegisterItem(9481, "位面约束环".Translate(), "位面约束环描述".Translate(), "Assets/MegaStructureTab/constrainring",
                                        102 + pagePlus + linePlus, 100, EItemType.Component,
-                                       ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.4f, 0.08f, 0.4f))).Productive = true;
+                                       ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.4f, 0.08f, 0.4f)));
+            i9481.Productive = true;
+            i9481.IconTag = "i9481";
             if (MoreMegaStructure.GenesisCompatibility)
             {
 
@@ -86,43 +90,55 @@ namespace MoreMegaStructure
 
 
             
-            ProtoRegistry.RegisterItem(9482, "引力钻头".Translate(), "引力钻头描述".Translate(), "Assets/MegaStructureTab/gravitydrill2",
+            var i9482 = ProtoRegistry.RegisterItem(9482, "引力钻头".Translate(), "引力钻头描述".Translate(), "Assets/MegaStructureTab/gravitydrill2",
                                        103 + pagePlus + linePlus, 50, EItemType.Component,
-                                       ProtoRegistry.GetDefaultIconDesc(Color.black, new Color(0.3f, 0.9f, 0.3f))).Productive = true;
+                                       ProtoRegistry.GetDefaultIconDesc(Color.black, new Color(0.3f, 0.9f, 0.3f)));
+            i9482.Productive = true;
+            i9482.IconTag = "i9482";
             ProtoRegistry.RegisterRecipe(recipeIdBias + 532, ERecipeType.Assemble, 180, new int[] { 9480, 9481, 1209 }, new int[] { 1, 1, 1 }, new int[] { 9482 },
                                              new int[] { 1 }, "引力钻头描述", 1704, 103 + pagePlus + linePlus, "Assets/MegaStructureTab/gravitydrill2");
 
             
-            ProtoRegistry.RegisterItem(9483, "隧穿激发装置".Translate(), "隧穿激发装置描述".Translate(), "Assets/MegaStructureTab/tunnelingexciter2",
+            var i9483 = ProtoRegistry.RegisterItem(9483, "隧穿激发装置".Translate(), "隧穿激发装置描述".Translate(), "Assets/MegaStructureTab/tunnelingexciter2",
                                        104 + pagePlus + linePlus, 200, EItemType.Component,
-                                       ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.1f, 0.0f))).Productive = true;
+                                       ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.1f, 0.0f)));
+            i9483.Productive = true;
+            i9483.IconTag = "i9483";
             ProtoRegistry.RegisterRecipe(recipeIdBias + 533, ERecipeType.Assemble, 360, new int[] { 1303, 1014 }, new int[] { 1, 2 }, new int[] { 9483 },
                                              new int[] { 6 }, "隧穿激发装置描述", 1703, 104 + pagePlus + linePlus, "Assets/MegaStructureTab/tunnelingexciter2");
             
-            ProtoRegistry.RegisterItem(9484, "谐振盘".Translate(), "谐振盘描述".Translate(), "Assets/MegaStructureTab/resonancedisc",
+            var i9484 = ProtoRegistry.RegisterItem(9484, "谐振盘".Translate(), "谐振盘描述".Translate(), "Assets/MegaStructureTab/resonancedisc",
                                        105 + pagePlus + linePlus, 200, EItemType.Component,
-                                       ProtoRegistry.GetDefaultIconDesc(Color.gray, new Color(0.4f, 0.4f, 0.8f))).Productive = true;
+                                       ProtoRegistry.GetDefaultIconDesc(Color.gray, new Color(0.4f, 0.4f, 0.8f)));
+            i9484.Productive = true;
+            i9484.IconTag = "i9484";
             ProtoRegistry.RegisterRecipe(recipeIdBias + 534, ERecipeType.Assemble, 240, new int[] { 9483, 1113, 1305 }, new int[] { 3, 2, 1 }, new int[] { 9484 },
                                              new int[] { 1 }, "谐振盘描述", 1303, 105 + pagePlus + linePlus, "Assets/MegaStructureTab/resonancedisc");
             
             var icondesc_alpha = ProtoRegistry.GetDefaultIconDesc(Color.gray, new Color(0.6f, 0.6f, 0.9f));
             icondesc_alpha.solidAlpha = 0.1f;
-            ProtoRegistry.RegisterItem(9485, "光子探针".Translate(), "光子探针描述".Translate(), "Assets/MegaStructureTab/photonprobeflipsmall",
-                                       106 + pagePlus + linePlus, 200, EItemType.Component, icondesc_alpha).Productive = true;
+            var i9485 = ProtoRegistry.RegisterItem(9485, "光子探针".Translate(), "光子探针描述".Translate(), "Assets/MegaStructureTab/photonprobeflipsmall",
+                                       106 + pagePlus + linePlus, 200, EItemType.Component, icondesc_alpha);
+            i9485.Productive = true;
+            i9485.IconTag = "i9485";
             ProtoRegistry.RegisterRecipe(recipeIdBias + 535, ERecipeType.Assemble, 240, new int[] { 1404, 1208 }, new int[] { 2, 1 }, new int[] { 9485 },
                                              new int[] { 1 }, "光子探针描述", 1504, 106 + pagePlus + linePlus, "Assets/MegaStructureTab/photonprobeflipsmall");
 
        
             var icondesc_alpha2 = ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0f, 0.7f, 1f));
             icondesc_alpha2.solidAlpha = 0f;
-            ProtoRegistry.RegisterItem(9486, "量子计算机".Translate(), "量子计算机描述".Translate(), "Assets/MegaStructureTab/quantumcomputer3",
-                                       107 + pagePlus + linePlus, 200, EItemType.Component, icondesc_alpha2).Productive = true;
+            var i9486 = ProtoRegistry.RegisterItem(9486, "量子计算机".Translate(), "量子计算机描述".Translate(), "Assets/MegaStructureTab/quantumcomputer3",
+                                       107 + pagePlus + linePlus, 200, EItemType.Component, icondesc_alpha2);
+            i9486.Productive = true;
+            i9486.IconTag = "i9486";
             ProtoRegistry.RegisterRecipe(recipeIdBias + 536, ERecipeType.Assemble, 720, new int[] { 1305, 1402, 9483 }, new int[] { 3, 2, 1 }, new int[] { 9486 },
                                              new int[] { 1 }, "量子计算机描述", 1303, 107 + pagePlus + linePlus, "Assets/MegaStructureTab/quantumcomputer3");
             
-            ProtoRegistry.RegisterItem(9487, "星际组装厂组件".Translate(), "星际组装厂组件描述".Translate(), "Assets/MegaStructureTab/iacomponent",
+            var i9487 = ProtoRegistry.RegisterItem(9487, "星际组装厂组件".Translate(), "星际组装厂组件描述".Translate(), "Assets/MegaStructureTab/iacomponent",
                                        108 + pagePlus + linePlus, 200, EItemType.Component,
-                                       ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.7f, 0.2f, 0.7f))).Productive = true;
+                                       ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.7f, 0.2f, 0.7f)));
+            i9487.Productive = true;
+            i9487.IconTag = "i9487";
             ProtoRegistry.RegisterRecipe(recipeIdBias + 537, ERecipeType.Assemble, 480, new int[] { 1125, 2305, 1143 }, new int[] { 3, 3, 1 }, new int[] { 9487 },
                                              new int[] { 1 }, "星际组装厂组件描述", 1303, 108 + pagePlus + linePlus, "Assets/MegaStructureTab/iacomponent");
 
@@ -146,42 +162,48 @@ namespace MoreMegaStructure
             //rocketMDRecipe.preTech = LDB.techs.Select(1522); //垂直发射井科技
             //if (MoreMegaStructure.isBattleActive) rocketMDRecipe.preTech = LDB.techs.Select(1920);
             //Traverse.Create(rocketMDRecipe).Field("_iconSprite").SetValue(MoreMegaStructure.iconRocketMattD);
-            ProtoRegistry.RegisterItem(9488, "物质解压器运载火箭".Translate(), "物质解压器运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketMatter",
+            var i9488 = ProtoRegistry.RegisterItem(9488, "物质解压器运载火箭".Translate(), "物质解压器运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketMatter",
                                        201 + pagePlus, 20, EItemType.Product,
                                        ProtoRegistry.GetDefaultIconDesc(new Color(1f, 0.9f, 0.9f), new Color(0.7f, 0.2f, 0.2f)));
+            i9488.IconTag = "i9488";
             var rocketMDRecipe = ProtoRegistry.RegisterRecipe(recipeIdBias + 538, ERecipeType.Assemble, 480, new int[] { 9482, 9484, 1802 }, new int[] { 2, 1, 2 }, new int[] { 9488 },
                                              new int[] { 1 }, "物质解压器运载火箭描述", 1522, 201 + pagePlus, "Assets/MegaStructureTab/rocketMatter");
             
-            ProtoRegistry.RegisterItem(9489, "科学枢纽运载火箭".Translate(), "科学枢纽运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketScience",
+            var i9489 = ProtoRegistry.RegisterItem(9489, "科学枢纽运载火箭".Translate(), "科学枢纽运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketScience",
                                        202 + pagePlus, 20, EItemType.Product,
                                        ProtoRegistry.GetDefaultIconDesc(new Color(1f, 1f, 0.9f), new Color(0.7f, 0.7f, 0.2f)));
+            i9489.IconTag = "i9489";
             var rocketSNRecipe = ProtoRegistry.RegisterRecipe(recipeIdBias + 539, ERecipeType.Assemble, 480, new int[] { 9481, 9486, 1802 }, new int[] { 3, 1, 2 }, new int[] { 9489 },
                                              new int[] { 1 }, "科学枢纽运载火箭描述", 1522, 202 + pagePlus, "Assets/MegaStructureTab/rocketScience");
             rocketSNRecipe.NonProductive = true;
             
-            ProtoRegistry.RegisterItem(9490, "谐振发射器运载火箭".Translate(), "谐振发射器运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketWarp", 203 + pagePlus,
+            var i9490 = ProtoRegistry.RegisterItem(9490, "谐振发射器运载火箭".Translate(), "谐振发射器运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketWarp", 203 + pagePlus,
                                        20, EItemType.Product,
                                        ProtoRegistry.GetDefaultIconDesc(new Color(0.9f, 1f, 0.9f), new Color(0.2f, 0.7f, 0.2f)));
+            i9490.IconTag = "i9490";
             var rocketWBARecipe = ProtoRegistry.RegisterRecipe(recipeIdBias + 540, ERecipeType.Assemble, 480, new int[] { 9480, 9484, 1802 }, new int[] { 1, 4, 2 }, new int[] { 9490 },
                                              new int[] { 1 }, "谐振发射器运载火箭描述", 1522, 203 + pagePlus, "Assets/MegaStructureTab/rocketWarp");
             
-            ProtoRegistry.RegisterItem(9491, "星际组装厂运载火箭".Translate(), "星际组装厂运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketAssembly",
+            var i9491 = ProtoRegistry.RegisterItem(9491, "星际组装厂运载火箭".Translate(), "星际组装厂运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketAssembly",
                                        204 + pagePlus, 20, EItemType.Product,
                                        ProtoRegistry.GetDefaultIconDesc(new Color(0.9f, 0.9f, 1f), new Color(0.1f, 0.5f, 0.7f)));
+            i9491.IconTag = "i9491";
             var rocketIARecipe = ProtoRegistry.RegisterRecipe(recipeIdBias + 541, ERecipeType.Assemble, 480, new int[] { 9487, 1802 }, new int[] { 2, 2 }, new int[] { 9491 },
                                              new int[] { 1 }, "星际组装厂运载火箭描述", 1522, 204 + pagePlus, "Assets/MegaStructureTab/rocketAssembly");
             
-            ProtoRegistry.RegisterItem(9492, "晶体重构器运载火箭".Translate(), "晶体重构器运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketCrystal",
+            var i9492 = ProtoRegistry.RegisterItem(9492, "晶体重构器运载火箭".Translate(), "晶体重构器运载火箭描述".Translate(), "Assets/MegaStructureTab/rocketCrystal",
                                        205 + pagePlus, 20, EItemType.Product,
                                        ProtoRegistry.GetDefaultIconDesc(new Color(1f, 0.9f, 1f), new Color(0.7f, 0.2f, 0.7f)));
+            i9492.IconTag = "i9492";
             var rocketCRRecipe = ProtoRegistry.RegisterRecipe(recipeIdBias + 542, ERecipeType.Assemble, 480, new int[] { 9485, 1802, 1305 }, new int[] { 1, 2, 2 }, new int[] { 9492 },
                                              new int[] { 1 }, "晶体重构器运载火箭描述", 1522, 205 + pagePlus, "Assets/MegaStructureTab/rocketCrystal");
 
 
             
-            ProtoRegistry.RegisterItem(9500, "多功能集成组件".Translate(), "多功能集成组件描述".Translate(), "Assets/MegaStructureTab/integratedcomponents",
+            var i9500 = ProtoRegistry.RegisterItem(9500, "多功能集成组件".Translate(), "多功能集成组件描述".Translate(), "Assets/MegaStructureTab/integratedcomponents",
                                        109 + pagePlus + linePlus, 1000, EItemType.Component,
                                        ProtoRegistry.GetDefaultIconDesc(Color.white, Color.white));
+            i9500.IconTag = "i9500";
             ProtoRegistry.RegisterRecipe(recipeIdBias + 550, ERecipeType.Assemble, 60, new int[] { 9500 }, new int[] { 1}, new int[] { 9500 },
                                              new int[] { 1 }, "多功能集成组件描述", 1203, 199 + pagePlus + linePlus, "Assets/MegaStructureTab/integratedcomponents");
 
@@ -635,25 +657,40 @@ namespace MoreMegaStructure
             //    recipeIdBias = -200;
             //}
 
-            ProtoRegistry.RegisterItem(9503, "力场发生器", "力场发生器描述", "Assets/MegaStructureTab/forceGen", 201 + pagePlus, 20, EItemType.Component,
-                                       ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.7f, 0.7f))).Productive = true;
-            ProtoRegistry.RegisterItem(9504, "复合态晶体", "复合态晶体描述", "Assets/MegaStructureTab/compoCrystal", 202 + pagePlus, 100, EItemType.Component,
+            var i9503 = ProtoRegistry.RegisterItem(9503, "力场发生器", "力场发生器描述", "Assets/MegaStructureTab/forceGen", 201 + pagePlus, 20, EItemType.Component,
                                        ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.7f, 0.7f)));
-            ProtoRegistry.RegisterItem(9505, "电磁力抑制器", "电磁力抑制器描述", "Assets/MegaStructureTab/elemaginhibitor2", 203 + pagePlus, 50,
-                                       EItemType.Component, ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.7f, 0.7f))).Productive = true;
-            ProtoRegistry.RegisterItem(9506, "胶子发生器", "胶子发生器描述", "Assets/MegaStructureTab/gluonGen", 204 + pagePlus, 50, EItemType.Component,
-                                       ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.7f, 0.7f))).Productive = true;
-            ProtoRegistry.RegisterItem(9507, "强力过载装置", "强力过载装置描述", "Assets/MegaStructureTab/strIntOverloader", 205 + pagePlus, 20,
-                                       EItemType.Component, ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.7f, 0.7f))).Productive = true;
-            ProtoRegistry.RegisterItem(9508, "导流框架", "导流框架描述", "Assets/MegaStructureTab/starcannonframe", 206 + pagePlus, 20, EItemType.Component,
-                                       ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.7f, 0.7f))).Productive = true;
-            ProtoRegistry.RegisterItem(9509, "恒星炮组件", "恒星炮组件描述", "Assets/MegaStructureTab/starcannoncompo", 207 + pagePlus, 20, EItemType.Component,
-                                       ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.3f, 0.3f, 0.9f))).Productive = true;
-            ProtoRegistry.RegisterItem(9510, "恒星炮运载火箭", "恒星炮运载火箭描述", "Assets/MegaStructureTab/rocketStarcannon", 306 + pagePlus, 20,
+            i9503.Productive = true;
+            i9503.IconTag = "i9503";
+            var i9504 = ProtoRegistry.RegisterItem(9504, "复合态晶体", "复合态晶体描述", "Assets/MegaStructureTab/compoCrystal", 202 + pagePlus, 100, EItemType.Component,
+                                       ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.7f, 0.7f)));
+            i9504.IconTag = "i9504";
+            var i9505 = ProtoRegistry.RegisterItem(9505, "电磁力抑制器", "电磁力抑制器描述", "Assets/MegaStructureTab/elemaginhibitor2", 203 + pagePlus, 50,
+                                       EItemType.Component, ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.7f, 0.7f)));
+            i9505.Productive = true;
+            i9505.IconTag = "i9505";
+            var i9506 = ProtoRegistry.RegisterItem(9506, "胶子发生器", "胶子发生器描述", "Assets/MegaStructureTab/gluonGen", 204 + pagePlus, 50, EItemType.Component,
+                                       ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.7f, 0.7f)));
+            i9506.Productive = true;
+            i9506.IconTag = "i9506";
+            var i9507 = ProtoRegistry.RegisterItem(9507, "强力过载装置", "强力过载装置描述", "Assets/MegaStructureTab/strIntOverloader", 205 + pagePlus, 20,
+                                       EItemType.Component, ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.7f, 0.7f)));
+            i9507.Productive = true;
+            i9507.IconTag = "i9507";
+            var i9508 = ProtoRegistry.RegisterItem(9508, "导流框架", "导流框架描述", "Assets/MegaStructureTab/starcannonframe", 206 + pagePlus, 20, EItemType.Component,
+                                       ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.2f, 0.7f, 0.7f)));
+            i9508.Productive = true;
+            i9508.IconTag = "i9508";
+            var i9509 = ProtoRegistry.RegisterItem(9509, "恒星炮组件", "恒星炮组件描述", "Assets/MegaStructureTab/starcannoncompo", 207 + pagePlus, 20, EItemType.Component,
+                                       ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.3f, 0.3f, 0.9f)));
+            i9509.Productive = true;
+            i9509.IconTag = "i9509";
+            var i9510 = ProtoRegistry.RegisterItem(9510, "恒星炮运载火箭", "恒星炮运载火箭描述", "Assets/MegaStructureTab/rocketStarcannon", 306 + pagePlus, 20,
                                        EItemType.Product, ProtoRegistry.GetDefaultIconDesc(Color.white, new Color(0.3f, 0.9f, 0.9f)));
+            i9510.IconTag = "i9510";
 
             ItemProto dropletItem = ProtoRegistry.RegisterItem(9511, "水滴gm", "水滴描述gm", "Assets/MegaStructureTab/drop1", 707 + pagePlus, 10,
                                                                EItemType.Product, ProtoRegistry.GetDefaultIconDesc(Color.white, Color.white));
+            dropletItem.IconTag = "droplet";
             // 下面这些由深空来敌自行完成，深空来敌必须new一个新的prefabDesc!!!否则会改了别的物品
             //dropletItem.DescFields = new int[] { 81, 82, 80, 59, 11, 1 };
             //dropletItem.AmmoType = EAmmoType.Bullet;
@@ -686,6 +723,7 @@ namespace MoreMegaStructure
             techStarCannon.PreTechsImplicit = new int[] { 1522 };
             techStarCannon.IsHiddenTech = true;
             techStarCannon.PreItem = new int[] { 5201 };
+            techStarCannon.IconTag = "tstarcannon";
 
             SIMRecipe.Handcraft = false;
             gluonGenRecipe.Handcraft = false;

@@ -107,6 +107,7 @@
     <Compile Include="UIDialogPatch.cs" />
     <Compile Include="UIMechaWindowPatcher.cs" />
     <Compile Include="UIPerformancePanelPatcher.cs" />
+    <Compile Include="UIStarAssemblyTodoList.cs" />
     <Compile Include="UIStarCannon.cs" />
     <Compile Include="UIBuildMenuPatcher.cs" />
     <Compile Include="UIReceiverPatchers.cs" />

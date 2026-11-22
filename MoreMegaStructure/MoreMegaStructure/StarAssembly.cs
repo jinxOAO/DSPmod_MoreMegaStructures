@@ -529,7 +529,7 @@ namespace MoreMegaStructure
                     //if(lowUIResolution)
                     //    tipButtonObj.GetComponent<UIButton>().tips.offset = new Vector2(150, 90);
                 }
-
+                UIStarAssemblyTodoList.InitUI();
             }
         }
 
@@ -1739,10 +1739,16 @@ namespace MoreMegaStructure
                 {
                     showingLimit = false; // 强制打开时，默认不显示生产速率限制的编辑栏
                     GigaFactoryUIObj.SetActive(true);
-                    if(lowUIResolution)
+                    if (lowUIResolution)
+                    {
                         specializeObj.SetActive(false);
+                        UIStarAssemblyTodoList.todoListObj.SetActive(false);
+                    }
                     else
+                    {
                         specializeObj.SetActive(true);
+                        UIStarAssemblyTodoList.todoListObj.SetActive(true);
+                    }
                 }
                 showHideButtonObj.SetActive(true);
                 showHideBtnText.text = "显示/隐藏星际组装厂配置".Translate();
@@ -1801,6 +1807,7 @@ namespace MoreMegaStructure
                 GigaFactoryUIObj.SetActive(false);
                 specializeObj.SetActive(false);
                 showHideButtonObj.SetActive(false);
+                UIStarAssemblyTodoList.todoListObj.SetActive(false);
             }
         }
 
@@ -2232,15 +2239,33 @@ namespace MoreMegaStructure
                     RefreshSpecializeUI();
                 }
                 else
+                {
+                    UIStarAssemblyTodoList.todoListObj.SetActive(false);
                     specializeObj.SetActive(false);
+                }
             }
             else
             {
-                GigaFactoryUIObj.SetActive(true);
                 if (lowUIResolution)
-                    specializeObj.SetActive(false);
+                {
+                    if (specializeObj.activeSelf)
+                    {
+                        specializeObj.SetActive(false);
+                        UIStarAssemblyTodoList.todoListObj.SetActive(true);
+                        UIStarAssemblyTodoList.RefreshTodoListUI();
+                    }
+                    else
+                    {
+                        UIStarAssemblyTodoList.todoListObj.SetActive(false);
+                        specializeObj.SetActive(false);
+                        GigaFactoryUIObj.SetActive(true);
+                    }
+                }
                 else
                 {
+                    GigaFactoryUIObj.SetActive(true);
+                    UIStarAssemblyTodoList.todoListObj.SetActive(true);
+                    UIStarAssemblyTodoList.RefreshTodoListUI();
                     specializeObj.SetActive(true);
                     RefreshSpecializeUI();
                 }
@@ -2575,6 +2600,7 @@ namespace MoreMegaStructure
                     }
                 }
             }
+            UIStarAssemblyTodoList.Import(r);
         }
 
         public static void Export(BinaryWriter w)
@@ -2637,6 +2663,7 @@ namespace MoreMegaStructure
                     }
                 }
             }
+            UIStarAssemblyTodoList.Export(w);
         }
 
         public static void IntoOtherSave()
@@ -2645,6 +2672,7 @@ namespace MoreMegaStructure
             InitInGameData();
             tickEnergyForFullSpeed = (int)(20000.0 / MoreMegaStructure.IASpdFactor.Value);
             if (tickEnergyForFullSpeed <= 0) tickEnergyForFullSpeed = 100000;
+            UIStarAssemblyTodoList.IntoOtherSave();
         }
     }
 }

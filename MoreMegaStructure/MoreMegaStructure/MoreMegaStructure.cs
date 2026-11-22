@@ -26,13 +26,13 @@ namespace MoreMegaStructure
     [BepInDependency(DSPModSavePlugin.MODGUID)]
     [CommonAPISubmoduleDependency(nameof(ProtoRegistry), nameof(TabSystem), nameof(LocalizationModule))]
     [BepInDependency("starfi5h.plugin.ModFixerOne")]
-    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "2.0.3")]
+    [BepInPlugin("Gnimaerd.DSP.plugin.MoreMegaStructure", "MoreMegaStructure", "2.0.4")]
     public class MoreMegaStructure : BaseUnityPlugin, IModCanSave
     {
         /// <summary>
         /// mod版本会进行存档
         /// </summary>
-        public static int modVersion = 200;
+        public static int modVersion = 204;
 
         public static int savedModVersion = 193;
 
@@ -1605,10 +1605,12 @@ namespace MoreMegaStructure
             if (__instance.selection.viewStar != null)
             {
                 RefreshUILabels(__instance.selection.viewStar, ShowIAUIWhenOpenDE.Value);
+                CheckAndRefreshStarAssemblyTodoListUI();
             }
             else
             {
                 RefreshUILabels(__instance.gameData.localStar, ShowIAUIWhenOpenDE.Value);
+                CheckAndRefreshStarAssemblyTodoListUI();
             }
 
             try
@@ -1633,10 +1635,12 @@ namespace MoreMegaStructure
             if (__instance.selection.viewStar != null)
             {
                 RefreshUILabels(__instance.selection.viewStar, ShowIAUIWhenOpenDE.Value);
+                CheckAndRefreshStarAssemblyTodoListUI();
             }
             else
             {
                 RefreshUILabels(__instance.gameData.localStar, ShowIAUIWhenOpenDE.Value);
+                CheckAndRefreshStarAssemblyTodoListUI();
             }
 
             try
@@ -1665,12 +1669,28 @@ namespace MoreMegaStructure
 
             if (__instance.selection.viewStar != null)
             {
-                RefreshUILabels(__instance.selection.viewStar);
+                RefreshUILabels(__instance.selection.viewStar, false);
             }
             else
             {
-                RefreshUILabels(__instance.gameData.localStar);
+                RefreshUILabels(__instance.gameData.localStar, false);
             }
+        }
+
+        /// <summary>
+        /// 驱动克隆体自带的原生宿主 UISmartInputField：
+        /// 它的 _Update 里做高度自适应(HandleRectSize)、光标跟随滚动(EnsureCaretInScrollView)，
+        /// _LateUpdate 里做图标点击后的延迟失焦。ManualBehaviour 不会被 Instantiate 自动点亮，
+        /// 必须外部每帧调用；其内部自带 active / activeInHierarchy 守卫，非可见时是空转。
+        /// 注意这里不调 CheckAndRefreshStarAssemblyTodoListUI：本方法会被"点击巨构壳面"触发，
+        /// 输入框和壳面重叠时很容易在还没 endEdit 的情况下点进来，绝不能拿字典值覆盖正在编辑的内容。
+        /// </summary>
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(UIDysonEditor), "_OnLateUpdate")]
+        public static void TickStarAssemblyTodoList()
+        {
+            UIStarAssemblyTodoList.LateUpdate();
+            // 不要在这里调 __instance._LateUpdate()：它就转发到本方法，postfix 里再调会无限递归
         }
 
         public static void RefreshButtonPos()
@@ -1681,6 +1701,26 @@ namespace MoreMegaStructure
             int warnTxtPosY = Math.Min((int)(-940 * ParentUIHeight / 1080), -835);
             if (setMegaGroupObj != null) setMegaGroupObj.transform.localPosition = new Vector3(MegaButtonGroupBehaviour.currentX, groupPosY, 0);
             if (LeftMegaBuildWarning != null) LeftMegaBuildWarning.transform.localPosition = new Vector3(280, warnTxtPosY, 0);
+        }
+
+        /// <summary>
+        /// 只需要在切换、打开时刷新的。且必须只在RefreshUILabels之后执行
+        /// </summary>
+        public static void CheckAndRefreshStarAssemblyTodoListUI()
+        {
+            if (curStar == null)
+                return;
+            int idx = curStar.index;
+            if (idx < 0 || idx >= StarMegaStructureType.Length)
+                return;
+            if (StarMegaStructureType[idx] == (int)EMegaType.InterstellarAssembly)
+            {
+                UIStarAssemblyTodoList.RefreshTodoListUI();
+            }
+            else
+            {
+                UIStarAssemblyTodoList.todoListObj.SetActive(false);
+            }
         }
 
         public static void RefreshUILabels(StarData star)
@@ -1698,6 +1738,7 @@ namespace MoreMegaStructure
                 idx = idx < 0 ? 0 : (idx >= MegaArrayLength ? MegaArrayLength - 1 : idx);
 
                 StarAssembly.RefreshUI(forceShowUI);
+                
 
                 //Console.WriteLine($"Refreshing phase. ori_idx={star.id -1} and finding idx the name is {GameMain.galaxy.stars[idx].displayName}, while cur name is {star.displayName}");
 
@@ -1974,10 +2015,11 @@ namespace MoreMegaStructure
                     StarAssembly.ResetInGameDataByStarIndex(idx);
                     StarAssembly.ForceResetIncDataCache(idx);
                     RefreshUILabels(curStar, true);
+                    CheckAndRefreshStarAssemblyTodoListUI();
                 }
                 else
                 {
-                    RefreshUILabels(curStar);
+                    RefreshUILabels(curStar, false);
                 }
 
                 if (type == 2) // 改成科学枢纽后删除所有太阳帆
